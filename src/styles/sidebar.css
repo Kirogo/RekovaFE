@@ -1,0 +1,321 @@
+/* src/styles/sidebar.css - CENTURY GOTHIC WITH PROPER FONT SIZES */
+
+.sidebar {
+  width: 200px;
+  height: 100vh;
+  background: #5c4730;
+  background: linear-gradient(145deg, #5c4730 0%, #3c2a1c 100%);
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow-y: auto;
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.sidebar.collapsed {
+  width: 55px;
+}
+
+/* Logo Section - Century Gothic with proper sizes */
+.sidebar-logo {
+  padding: 16px 12px;
+  border-bottom: 1px solid rgba(212, 167, 98, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  min-height: 60px;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  background: #d4a762;
+}
+
+.logo-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+.logo-text-container h3 {
+  font-size: 16px; /* Slightly larger for brand name */
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.1px;
+  color: white;
+  font-family: 'Century Gothic', sans-serif;
+  line-height: 1.2;
+}
+
+.logo-subtitle {
+  font-size: 11px; /* Readable subtitle size */
+  font-weight: 500;
+  margin: 3px 0 0 0;
+  opacity: 0.8;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Century Gothic', sans-serif;
+  line-height: 1.2;
+  letter-spacing: 0.2px;
+}
+
+.collapse-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+  padding: 0;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+.collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) scale(1.05);
+}
+
+/* Navigation - Century Gothic with clear, readable sizes */
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.nav-item {
+  padding: 11px 12px; 
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Century Gothic', sans-serif;
+  font-size: 11px; 
+  font-weight: 600 ;
+  text-align: left;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.3px; 
+}
+
+.nav-item:hover {
+  background: rgba(212, 167, 98, 0.25);
+  transform: translateX(3px);
+  color: white;
+}
+
+.nav-item.active {
+  background: rgba(212, 167, 98, 0.3);
+  border-left: 3px solid #ffd166; /* Brighter gold for active */
+  color: white;
+  font-weight: 700; /* Bold for active item */
+}
+
+/* Material UI Icon Styling */
+.nav-icon.mui-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; /* Slightly larger for better visibility */
+  height: 22px;
+  flex-shrink: 0;
+  opacity: 0.9;
+  font-size: 19px !important;
+}
+
+.nav-icon.mui-icon svg {
+  width: 19px;
+  height: 19px;
+  fill: currentColor;
+}
+
+.nav-item.active .nav-icon.mui-icon {
+  opacity: 1;
+  color: #ffd166;
+}
+
+.nav-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+/* Footer - Century Gothic */
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid rgba(212, 167, 98, 0.2);
+  text-align: center;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+.system-info p {
+  font-size: 11px; /* Readable footer text */
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+  font-weight: 500;
+  font-family: 'Century Gothic', sans-serif;
+  letter-spacing: 0.2px;
+}
+
+/* Collapsed State Adjustments */
+.sidebar.collapsed .logo-text-container,
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .system-info p {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-logo {
+  justify-content: center;
+  padding: 16px 8px;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 11px;
+}
+
+.sidebar.collapsed .nav-item:hover {
+  transform: translateX(1px);
+}
+
+.sidebar.collapsed .collapse-btn {
+  right: 50%;
+  transform: translate(50%, -50%);
+}
+
+/* Collapsed state icon centering */
+.sidebar.collapsed .nav-icon.mui-icon {
+  margin: 0;
+  justify-content: center;
+}
+
+/* Scrollbar styling */
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(212, 167, 98, 0.4);
+  border-radius: 2px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 167, 98, 0.6);
+}
+
+.sidebar.collapsed::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hover effects for Material UI icons */
+.nav-item:hover .nav-icon.mui-icon {
+  color: #ffd166;
+  transform: scale(1.05);
+}
+
+.nav-item.active:hover .nav-icon.mui-icon {
+  color: #ffea00;
+}
+
+/* Active state with subtle pulse effect */
+@keyframes subtlePulse {
+  0% { opacity: 0.9; }
+  50% { opacity: 1; }
+  100% { opacity: 0.9; }
+}
+
+.nav-item.active {
+  animation: subtlePulse 3s ease-in-out infinite;
+}
+
+/* Improve focus states for accessibility */
+.nav-item:focus {
+  outline: 2px solid rgba(212, 167, 98, 0.5);
+  outline-offset: -2px;
+}
+
+.collapse-btn:focus {
+  outline: 2px solid rgba(212, 167, 98, 0.5);
+  outline-offset: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar:not(.collapsed) {
+    width: 190px;
+  }
+  
+  .sidebar.collapsed {
+    width: 50px;
+  }
+  
+  .sidebar-logo {
+    padding: 14px 10px;
+    min-height: 55px;
+  }
+  
+  .logo-icon {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .logo-text {
+    font-size: 13px;
+  }
+  
+  .logo-text-container h3 {
+    font-size: 15px;
+  }
+  
+  .logo-subtitle {
+    font-size: 10px;
+  }
+  
+  .nav-item {
+    padding: 10px 11px;
+    font-size: 12px;
+  }
+  
+  .nav-icon.mui-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 18px !important;
+  }
+  
+  .nav-icon.mui-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+}

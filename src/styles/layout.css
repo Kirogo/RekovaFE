@@ -1,0 +1,385 @@
+/* src/styles/layout.css */
+
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #333;
+  background: #f8f9fa;
+}
+
+/* App layout */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background: #f8f9fa;
+  position: relative;
+}
+
+/* Main content wrapper */
+.main-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 205px;
+  transition: margin-left 0.3s ease;
+  width: calc(100% - 205px);
+  min-height: 100vh;
+  position: relative;
+}
+
+.main-content-wrapper.collapsed {
+  margin-left: 60px;
+  width: calc(100% - 60px);
+}
+
+/* Main content area */
+.main-content {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  background: #f8f9fa;
+  padding-top: 70px; /* Account for fixed navbar */
+  min-height: 100vh;
+  position: relative;
+  transition: padding-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Navbar fixes */
+.navbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 205px;
+  z-index: 1000;
+  transition: left 0.3s ease;
+  height: 70px;
+}
+
+.main-content-wrapper.collapsed .navbar {
+  left: 60px;
+}
+
+/* ==================== RIGHT SIDEBAR LAYOUT HANDLING ==================== */
+
+/* Base page wrapper styles - APPLY TO ALL PAGES */
+.page-wrapper-base,
+.dashboard-wrapper,
+.customer-page-wrapper,
+.transactions-page-wrapper,
+.reports-page-wrapper,
+.payment-page-wrapper,
+.promises-page-wrapper {
+  min-height: calc(100vh - 70px);
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: #f8f9fa;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1.5rem;
+  transition: padding-right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* When right sidebar is COLLAPSED - NO extra padding */
+.right-sidebar-collapsed .page-wrapper-base,
+.right-sidebar-collapsed .dashboard-wrapper,
+.right-sidebar-collapsed .customer-page-wrapper,
+.right-sidebar-collapsed .transactions-page-wrapper,
+.right-sidebar-collapsed .reports-page-wrapper,
+.right-sidebar-collapsed .payment-page-wrapper,
+.right-sidebar-collapsed .promises-page-wrapper {
+  padding-right: 1.5rem !important;
+}
+
+/* When right sidebar is EXPANDED - Add space for sidebar */
+.right-sidebar-expanded .page-wrapper-base,
+.right-sidebar-expanded .dashboard-wrapper,
+.right-sidebar-expanded .customer-page-wrapper,
+.right-sidebar-expanded .transactions-page-wrapper,
+.right-sidebar-expanded .reports-page-wrapper,
+.right-sidebar-expanded .payment-page-wrapper,
+.right-sidebar-expanded .promises-page-wrapper {
+  padding-right: calc(320px + 1.5rem) !important;
+}
+
+/* Customer Details specific handling */
+.customer-details-wrapper {
+  min-height: calc(100vh - 70px);
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: #f8f9fa;
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  transition: padding-right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.customer-details-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+  height: calc(100vh - 140px);
+  transition: padding-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Apply right sidebar padding to customer details content */
+.right-sidebar-collapsed .customer-details-content {
+  padding-right: 0.75rem !important;
+}
+
+.right-sidebar-expanded .customer-details-content {
+  padding-right: calc(320px + 0.75rem) !important;
+}
+
+/* Layout wrapper */
+.layout-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* Main content inside layout */
+.layout-main-content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* Right Sidebar - FIXED POSITIONING */
+.right-sidebar {
+  position: fixed !important;
+  top: 70px !important;
+  right: 0 !important;
+  width: 320px !important;
+  height: calc(100vh - 70px) !important;
+  background: white !important;
+  border-left: 1px solid rgba(92, 71, 48, 0.1) !important;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.05) !important;
+  z-index: 90 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden !important;
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* When collapsed - COMPLETELY hidden except toggle button */
+.right-sidebar.collapsed {
+  width: 40px !important;
+  background: #5c4730 !important;
+  border-left: none !important;
+  transform: translateX(calc(100% - 45px)) !important; /* Only toggle button visible */
+}
+
+/* When expanded - fully visible */
+.right-sidebar.expanded {
+  transform: translateX(0) !important;
+  width: 280px !important;
+}
+
+/* Ensure sidebar is above content but below modals */
+.right-sidebar {
+  z-index: 90 !important;
+}
+
+/* Modal should be above sidebar */
+.MuiModal-root,
+.payment-modal-overlay-customer,
+.transaction-modal-container {
+  z-index: 2000 !important;
+}
+
+/* Responsive adjustments for right sidebar */
+@media (max-width: 1200px) {
+  .right-sidebar-expanded .page-wrapper-base,
+  .right-sidebar-expanded .dashboard-wrapper,
+  .right-sidebar-expanded .customer-page-wrapper,
+  .right-sidebar-expanded .transactions-page-wrapper,
+  .right-sidebar-expanded .reports-page-wrapper,
+  .right-sidebar-expanded .payment-page-wrapper,
+  .right-sidebar-expanded .promises-page-wrapper {
+    padding-right: calc(280px + 1.5rem) !important;
+  }
+  
+  .right-sidebar-expanded .customer-details-content {
+    padding-right: calc(280px + 0.75rem) !important;
+  }
+  
+  .right-sidebar {
+    width: 280px !important;
+  }
+  
+  .right-sidebar.collapsed {
+    width: 40px !important;
+    transform: translateX(calc(100% - 45px)) !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .right-sidebar-expanded .page-wrapper-base,
+  .right-sidebar-expanded .dashboard-wrapper,
+  .right-sidebar-expanded .customer-page-wrapper,
+  .right-sidebar-expanded .transactions-page-wrapper,
+  .right-sidebar-expanded .reports-page-wrapper,
+  .right-sidebar-expanded .payment-page-wrapper,
+  .right-sidebar-expanded .promises-page-wrapper {
+    padding-right: calc(240px + 1.5rem) !important;
+  }
+  
+  .right-sidebar-expanded .customer-details-content {
+    padding-right: calc(240px + 0.75rem) !important;
+  }
+  
+  .right-sidebar {
+    width: 240px !important;
+  }
+  
+  .right-sidebar.collapsed {
+    width: 35px !important;
+    transform: translateX(calc(100% - 40px)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 65px !important;
+  }
+  
+  .navbar {
+    height: 65px !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+  
+  .main-content-wrapper:not(.collapsed) .navbar {
+    left: 190px !important;
+  }
+  
+  .main-content-wrapper.collapsed .navbar {
+    left: 50px !important;
+  }
+  
+  .page-wrapper-base,
+  .dashboard-wrapper,
+  .customer-page-wrapper,
+  .transactions-page-wrapper,
+  .reports-page-wrapper,
+  .payment-page-wrapper,
+  .promises-page-wrapper {
+    padding: 1rem !important;
+  }
+  
+  .right-sidebar-expanded .page-wrapper-base,
+  .right-sidebar-expanded .dashboard-wrapper,
+  .right-sidebar-expanded .customer-page-wrapper,
+  .right-sidebar-expanded .transactions-page-wrapper,
+  .right-sidebar-expanded .reports-page-wrapper,
+  .right-sidebar-expanded .payment-page-wrapper,
+  .right-sidebar-expanded .promises-page-wrapper {
+    padding-right: calc(200px + 1rem) !important;
+  }
+  
+  .customer-details-content {
+    padding: 0.5rem !important;
+    height: calc(100vh - 130px) !important;
+  }
+  
+  .right-sidebar-expanded .customer-details-content {
+    padding-right: calc(200px + 0.5rem) !important;
+  }
+  
+  .right-sidebar {
+    top: 65px !important;
+    width: 200px !important;
+  }
+  
+  .right-sidebar.collapsed {
+    width: 30px !important;
+    transform: translateX(calc(100% - 35px)) !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .main-content {
+    padding-top: 60px !important;
+  }
+  
+  .navbar {
+    height: 60px !important;
+  }
+  
+  .page-wrapper-base,
+  .dashboard-wrapper,
+  .customer-page-wrapper,
+  .transactions-page-wrapper,
+  .reports-page-wrapper,
+  .payment-page-wrapper,
+  .promises-page-wrapper {
+    padding: 1rem !important;
+  }
+  
+  .right-sidebar-expanded .page-wrapper-base,
+  .right-sidebar-expanded .dashboard-wrapper,
+  .right-sidebar-expanded .customer-page-wrapper,
+  .right-sidebar-expanded .transactions-page-wrapper,
+  .right-sidebar-expanded .reports-page-wrapper,
+  .right-sidebar-expanded .payment-page-wrapper,
+  .right-sidebar-expanded .promises-page-wrapper {
+    padding-right: calc(150px + 1rem) !important;
+  }
+  
+  .customer-details-content {
+    padding: 0.5rem !important;
+    height: calc(100vh - 120px) !important;
+  }
+  
+  .right-sidebar-expanded .customer-details-content {
+    padding-right: calc(150px + 0.5rem) !important;
+  }
+  
+  .right-sidebar {
+    top: 60px !important;
+    width: 150px !important;
+  }
+  
+  .right-sidebar.collapsed {
+    width: 25px !important;
+    transform: translateX(calc(100% - 30px)) !important;
+  }
+}
+
+/* Special case for very small screens - hide sidebar */
+@media (max-width: 360px) {
+  .page-wrapper-base,
+  .dashboard-wrapper,
+  .customer-page-wrapper,
+  .transactions-page-wrapper,
+  .reports-page-wrapper,
+  .payment-page-wrapper,
+  .promises-page-wrapper {
+    padding-right: 1rem !important;
+  }
+  
+  .right-sidebar {
+    display: none !important;
+  }
+}

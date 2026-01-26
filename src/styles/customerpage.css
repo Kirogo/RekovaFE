@@ -1,0 +1,1727 @@
+/* src/styles/customerpage.css - UPDATED WITH INCREASED ROW HEIGHT */
+.customer-page-wrapper {
+  min-height: calc(100vh - 70px);
+  padding: 1.5rem;
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
+  background: #f8f9fa;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+/* Ensure all text uses Century Gothic */
+.customer-page-wrapper * {
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
+}
+
+/* Header - Matching Dashboard */
+.page-header-section {
+  margin-bottom: 1rem;
+  padding: 0;
+  width: 100%;
+}
+
+.customer-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.page-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin: 0;
+  color: #2c1810;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-family: 'Century Gothic' !important;
+  text-transform: capitalize;
+}
+
+.page-subtitle {
+  font-size: 0.6875rem;
+  margin: 0.25rem 0 0 0;
+  color: #666666;
+  font-weight: 500;
+  opacity: 0.8;
+  font-family: 'Century Gothic' !important;
+  letter-spacing: 0.1px;
+}
+
+/* Main Content */
+.customer-main-content {
+  margin-bottom: 1.875rem;
+  width: 100%;
+}
+
+.customer-content-card {
+  border-radius: 0.5rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  padding: 0;
+  background: white;
+  width: 100%;
+  box-shadow: 0 1px 3px rgba(92, 71, 48, 0.03);
+  box-sizing: border-box;
+  font-family: 'Century Gothic' !important;
+  overflow: hidden;
+}
+
+/* Section Headers - Matching Dashboard */
+.customer-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(92, 71, 48, 0.08);
+  font-family: 'Century Gothic' !important;
+  background: #faf9f8;
+  padding: 0.75rem 1rem;
+  margin: 0;
+  border-bottom: 1px solid rgba(212, 167, 98, 0.15);
+}
+
+.customer-section-title {
+  font-size: 0.8125rem !important;
+  font-family: 'Century Gothic' !important;
+  font-weight: 900;
+  color: #3c2a1c;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  opacity: 1;
+  display: inline-block;
+  line-height: 1.1;
+  position: relative;
+  padding-bottom: 0.375rem;
+}
+
+.customer-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 2.25rem;
+  height: 0.15rem;
+  background: linear-gradient(90deg, #d4a762, #5c4730);
+  border-radius: 0.125rem;
+  display: block !important;
+}
+
+/* Action Buttons - Matching Dashboard */
+.customer-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid rgba(92, 71, 48, 0.1);
+  border-radius: 0.375rem;
+  background: white;
+  color: #5c4730;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.6875rem;
+  letter-spacing: 0.15px;
+  font-family: 'Century Gothic' !important;
+  height: 28px;
+}
+
+.customer-action-btn:hover {
+  background: #faf9f8;
+  border-color: #d4a762;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.05);
+}
+
+.customer-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.customer-primary-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: #5c4730;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.6875rem;
+  letter-spacing: 0.15px;
+  font-family: 'Century Gothic' !important;
+  height: 28px;
+}
+
+.customer-primary-btn:hover {
+  background: #3c2a1c;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.08);
+}
+
+.customer-primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ==================== SEARCH AND FILTER SECTION ==================== */
+.customer-search-container {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.customer-search-input {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid rgba(92, 71, 48, 0.1);
+  border-radius: 0.375rem;
+  font-size: 0.6875rem;
+  font-family: 'Century Gothic' !important;
+  background: white;
+  color: #3c2a1c;
+  transition: all 0.15s ease;
+  width: 250px;
+}
+
+.customer-search-input:focus {
+  outline: none;
+  border-color: #d4a762;
+  box-shadow: 0 0 0 3px rgba(212, 167, 98, 0.1);
+}
+
+.customer-search-input::placeholder {
+  color: #999;
+  font-weight: 500;
+}
+
+.customer-status-filter {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid rgba(92, 71, 48, 0.1);
+  border-radius: 0.375rem;
+  font-size: 0.6875rem;
+  font-family: 'Century Gothic' !important;
+  background: white;
+  color: #5c4730;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.customer-status-filter:focus {
+  outline: none;
+  border-color: #d4a762;
+  box-shadow: 0 0 0 3px rgba(212, 167, 98, 0.1);
+}
+
+/* ==================== OPTIMIZED TABLE STYLES ==================== */
+.table-container-wrapper {
+  width: 100%;
+  overflow: hidden;
+  background: white;
+  box-sizing: border-box;
+}
+
+/* Table cell text sizes - Optimized for compact layout */
+.customer-table-cell {
+  font-family: 'Century Gothic' !important;
+  padding: 0.625rem 0.75rem !important; /* Increased from 0.5rem */
+  border-bottom: 1px solid rgba(92, 71, 48, 0.04) !important;
+  vertical-align: middle !important;
+}
+
+.customer-table-header-cell {
+  font-family: 'Century Gothic' !important;
+  font-size: 0.6875rem !important;
+  font-weight: 700 !important;
+  color: #5c4730 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.4px !important;
+  padding: 0.75rem 0.75rem !important; /* Increased from 0.625rem */
+  background: #faf9f8 !important;
+  border-bottom: 1px solid rgba(212, 167, 98, 0.15) !important;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+}
+
+/* Table row hover */
+.customer-table-row {
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  background: white !important;
+  height: 52px !important; /* Increased row height */
+}
+
+.customer-table-row:hover {
+  background: #f8f5f0 !important;
+  transform: translateX(0.25rem) !important;
+  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.03) !important;
+}
+
+/* ==================== CUSTOMER CELL STYLES ==================== */
+.customer-name-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1875rem; /* Increased from 0.125rem */
+  min-width: 0;
+}
+
+.customer-name-text {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #3c2a1c !important;
+  line-height: 1.3 !important; /* Increased from 1.2 */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.customer-account-text {
+  font-size: 0.625rem !important;
+  color: #666 !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important; /* Increased from 1.1 */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Contact cell styles */
+.customer-contact-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1875rem; /* Increased from 0.125rem */
+  min-width: 0;
+}
+
+.customer-phone-text {
+  font-size: 0.6875rem !important;
+  font-weight: 600 !important;
+  color: #5c4730 !important;
+  line-height: 1.3 !important; /* Increased from 1.2 */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.customer-email-text {
+  font-size: 0.625rem !important;
+  color: #999 !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important; /* Increased from 1.1 */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Amount cell styling */
+.amount-cell {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1px !important;
+  text-align: right !important;
+  line-height: 1.3 !important; /* Added line height */
+}
+
+/* ID cell styling */
+.customer-id-text {
+  font-size: 0.6875rem !important;
+  font-weight: 600 !important;
+  color: #666 !important;
+  line-height: 1.3 !important; /* Increased from 1.2 */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Alert Styles */
+.customer-alert {
+  margin-bottom: 1rem !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid #fecaca !important;
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  font-family: 'Century Gothic' !important;
+  font-size: 0.75rem !important;
+  padding: 0.5rem 1rem !important;
+}
+
+/* Loading Styles */
+.customer-loading {
+  padding: 1.5rem !important;
+  text-align: center !important;
+  font-family: 'Century Gothic' !important;
+}
+
+.customer-loading .MuiLinearProgress-root {
+  height: 0.25rem !important;
+  border-radius: 0.25rem !important;
+  background-color: #f5f0ea !important;
+  margin-bottom: 1rem !important;
+}
+
+.customer-loading .MuiLinearProgress-bar {
+  background-color: #5c4730 !important;
+}
+
+.customer-loading-text {
+  font-size: 0.75rem !important;
+  color: #666 !important;
+  font-weight: 500 !important;
+  font-family: 'Century Gothic' !important;
+}
+
+/* Empty State - Matching Dashboard */
+.table-empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+  border: 1px dashed rgba(212, 167, 98, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Century Gothic' !important;
+  min-height: 200px;
+  margin: 1rem;
+}
+
+.empty-icon {
+  font-size: 1.5rem;
+  color: #d4a762;
+  margin-bottom: 0.75rem;
+  opacity: 0.7;
+}
+
+.empty-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #5c4730;
+  margin-bottom: 0.375rem;
+  font-family: 'Century Gothic' !important;
+}
+
+.empty-subtitle {
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 1rem;
+  font-family: 'Century Gothic' !important;
+  font-weight: 500;
+}
+
+/* Dialog Styles - Matching Dashboard Theme */
+.MuiDialog-paper {
+  border-radius: 0.5rem !important;
+  border: 1px solid rgba(92, 71, 48, 0.1) !important;
+  box-shadow: 0 0.125rem 0.75rem rgba(92, 71, 48, 0.08) !important;
+  font-family: 'Century Gothic' !important;
+}
+
+.MuiDialogTitle-root {
+  padding: 1rem 1.5rem 0.5rem 1.5rem !important;
+  background: #faf9f8 !important;
+  border-bottom: 1px solid rgba(212, 167, 98, 0.15) !important;
+}
+
+.MuiDialogTitle-root .MuiTypography-root {
+  font-size: 0.8125rem !important;
+  font-weight: 900 !important;
+  color: #3c2a1c !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.35px !important;
+  font-family: 'Century Gothic' !important;
+}
+
+.MuiDialogContent-root {
+  padding: 1rem 1.5rem !important;
+}
+
+.MuiDialogActions-root {
+  padding: 0.75rem 1.5rem 1rem 1.5rem !important;
+  gap: 0.5rem !important;
+  border-top: 1px solid rgba(92, 71, 48, 0.08) !important;
+}
+
+/* Dialog Form Fields */
+.MuiTextField-root {
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.MuiTextField-root .MuiOutlinedInput-root {
+  border-radius: 0.375rem !important;
+  font-size: 0.75rem !important;
+  font-family: 'Century Gothic' !important;
+}
+
+.MuiTextField-root .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(92, 71, 48, 0.1) !important;
+}
+
+.MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(212, 167, 98, 0.3) !important;
+}
+
+.MuiTextField-root .MuiInputLabel-root {
+  font-size: 0.75rem !important;
+  color: #666 !important;
+  font-weight: 600 !important;
+  font-family: 'Century Gothic' !important;
+}
+
+.MuiTextField-root .MuiFormHelperText-root {
+  font-size: 0.625rem !important;
+  color: #999 !important;
+  font-family: 'Century Gothic' !important;
+}
+
+/* Dialog Buttons */
+.customer-secondary-dialog-btn {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid rgba(92, 71, 48, 0.1);
+  border-radius: 0.375rem;
+  background: white;
+  color: #5c4730;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.6875rem;
+  letter-spacing: 0.15px;
+  font-family: 'Century Gothic' !important;
+  height: 28px;
+}
+
+.customer-secondary-dialog-btn:hover {
+  background: #faf9f8;
+  border-color: #d4a762;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.05);
+}
+
+.customer-primary-dialog-btn {
+  padding: 0.375rem 0.75rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: #5c4730;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.6875rem;
+  letter-spacing: 0.15px;
+  font-family: 'Century Gothic' !important;
+  height: 28px;
+}
+
+.customer-primary-dialog-btn:hover {
+  background: #3c2a1c;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.08);
+}
+
+.customer-primary-dialog-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ==================== PAGINATION STYLES ==================== */
+.customer-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid rgba(92, 71, 48, 0.08);
+  background: #faf9f8;
+  font-family: 'Century Gothic' !important;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.pagination-info {
+  font-size: 0.6875rem;
+  color: #666;
+  font-weight: 500;
+  flex: 1;
+  min-width: 200px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  justify-content: center;
+  flex: 1;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: 1px solid rgba(92, 71, 48, 0.1);
+  border-radius: 0.25rem;
+  background: white;
+  color: #5c4730;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #faf9f8;
+  border-color: #d4a762;
+  transform: translateY(-0.0625rem);
+  box-shadow: 0 0.125rem 0.25rem rgba(92, 71, 48, 0.1);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.page-indicator {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #5c4730;
+  padding: 0.25rem 0.75rem;
+  background: white;
+  border: 1px solid rgba(92, 71, 48, 0.1);
+  border-radius: 0.25rem;
+  min-width: 100px;
+  text-align: center;
+}
+
+.rows-per-page {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 150px;
+}
+
+.rows-select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid rgba(92, 71, 48, 0.15);
+  border-radius: 0.25rem;
+  background: white;
+  color: #5c4730;
+  font-size: 0.625rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Century Gothic' !important;
+  min-width: 100px;
+}
+
+.rows-select:focus {
+  outline: none;
+  border-color: #d4a762;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .customer-section-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  
+  .customer-search-container {
+    width: 100%;
+  }
+  
+  .customer-search-input {
+    flex: 1;
+  }
+}
+
+@media (max-width: 992px) {
+  .table-container-wrapper {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .customer-page-wrapper {
+    padding: 1rem;
+  }
+  
+  .page-title {
+    font-size: 0.8125rem;
+  }
+  
+  .page-subtitle {
+    font-size: 0.625rem;
+  }
+  
+  .customer-header-content {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  
+  .customer-section-title {
+    font-size: 0.75rem !important;
+    letter-spacing: 0.3px;
+  }
+  
+  .customer-table-cell {
+    padding: 0.5rem 0.625rem !important;
+  }
+  
+  .customer-table-header-cell {
+    font-size: 0.625rem !important;
+    padding: 0.625rem 0.625rem !important;
+  }
+  
+  .customer-name-text {
+    font-size: 0.6875rem !important;
+  }
+  
+  .customer-account-text {
+    font-size: 0.5625rem !important;
+  }
+  
+  .customer-phone-text {
+    font-size: 0.625rem !important;
+  }
+  
+  .customer-email-text {
+    font-size: 0.5625rem !important;
+  }
+  
+  .customer-id-text {
+    font-size: 0.625rem !important;
+  }
+  
+  .amount-cell {
+    font-size: 0.6875rem !important;
+  }
+  
+  .customer-search-input,
+  .customer-status-filter {
+    font-size: 0.625rem;
+    padding: 0.3125rem 0.625rem;
+  }
+  
+  .customer-search-input {
+    width: 200px;
+  }
+  
+  .MuiDialog-paper {
+    margin: 1rem !important;
+    max-width: calc(100% - 2rem) !important;
+  }
+  
+  /* Responsive Pagination */
+  .customer-pagination {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+  
+  .pagination-info,
+  .rows-per-page {
+    text-align: center;
+    justify-content: center;
+  }
+  
+  .pagination-controls {
+    order: -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 0.75rem;
+  }
+  
+  .page-subtitle {
+    font-size: 0.5625rem;
+  }
+  
+  .customer-action-btn,
+  .customer-primary-btn {
+    font-size: 0.625rem;
+    padding: 0.3125rem 0.625rem;
+    height: 24px;
+  }
+  
+  .customer-section-title {
+    font-size: 0.6875rem !important;
+    letter-spacing: 0.25px;
+  }
+  
+  .customer-table-cell {
+    padding: 0.4375rem 0.5rem !important;
+  }
+  
+  .customer-table-header-cell {
+    font-size: 0.5625rem !important;
+    padding: 0.5rem 0.5rem !important;
+  }
+  
+  .customer-name-text {
+    font-size: 0.625rem !important;
+  }
+  
+  .customer-account-text {
+    font-size: 0.5rem !important;
+  }
+  
+  .customer-phone-text {
+    font-size: 0.5625rem !important;
+  }
+  
+  .customer-email-text {
+    font-size: 0.5rem !important;
+  }
+  
+  .customer-id-text {
+    font-size: 0.5625rem !important;
+  }
+  
+  .amount-cell {
+    font-size: 0.625rem !important;
+  }
+  
+  .customer-search-input {
+    width: 150px;
+  }
+  
+  .MuiDialogTitle-root .MuiTypography-root {
+    font-size: 0.75rem !important;
+  }
+  
+  .MuiTextField-root .MuiInputLabel-root {
+    font-size: 0.6875rem !important;
+  }
+  
+  .MuiTextField-root .MuiOutlinedInput-root {
+    font-size: 0.6875rem !important;
+  }
+  
+  /* Responsive Pagination */
+  .pagination-controls {
+    gap: 0.125rem;
+  }
+  
+  .page-indicator {
+    font-size: 0.625rem;
+    min-width: 80px;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .pagination-btn {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 0.125rem;
+  }
+  
+  .rows-select {
+    font-size: 0.5625rem;
+    min-width: 80px;
+  }
+}
+
+/* Century Gothic font fallback */
+@supports not (font-family: 'Century Gothic') {
+  .customer-page-wrapper,
+  .customer-content-card,
+  .customer-action-btn,
+  .customer-primary-btn,
+  .customer-table-cell,
+  .customer-table-header-cell {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
+  }
+}
+
+/* ==================== ADD THESE STYLES TO customerpage.css ==================== */
+
+/* Stats Grid - Matching Dashboard */
+.customer-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
+}
+
+.customer-stat-card {
+  border-radius: 0.5rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  padding: 1rem;
+  background: white;
+  transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  min-height: 6rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  font-family: 'Century Gothic' !important;
+}
+
+.customer-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0.125rem;
+  background: linear-gradient(90deg, #d4a762, #5c4730);
+  opacity: 0.8;
+}
+
+.customer-stat-card:hover {
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 0.75rem rgba(92, 71, 48, 0.05);
+  border-color: rgba(212, 167, 98, 0.2);
+}
+
+.customer-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.customer-stat-label {
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin: 0;
+  color: #5c4730;
+  opacity: 1;
+  font-family: 'Century Gothic' !important;
+  line-height: 1.1;
+}
+
+.customer-stat-icon-wrapper {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #5c4730, #3c2a1c);
+  color: white;
+  flex-shrink: 0;
+  font-size: 1rem;
+  transition: transform 0.15s ease;
+  font-family: 'Century Gothic' !important;
+}
+
+.customer-stat-card:hover .customer-stat-icon-wrapper {
+  transform: scale(1.05);
+}
+
+.customer-stat-value {
+  font-size: 1.125rem;
+  font-weight: 900;
+  margin: 0;
+  line-height: 1;
+  color: #3c2a1c;
+  letter-spacing: -0.2px;
+  font-family: 'Century Gothic' !important;
+}
+
+.customer-stat-meta {
+  font-size: 0.625rem;
+  color: #666;
+  font-weight: 500;
+  margin-top: 0.25rem;
+  opacity: 0.8;
+  font-family: 'Century Gothic' !important;
+  line-height: 1.1;
+}
+
+/* Recent Transactions Section */
+.recent-transactions-section {
+  margin-bottom: 1.25rem;
+}
+
+.recent-transactions-table-container {
+  width: 100%;
+  overflow-x: auto;
+  background: white;
+  box-sizing: border-box;
+  padding: 0;
+}
+
+.recent-transactions-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 100%;
+}
+
+.recent-transactions-table thead {
+  background: #faf9f8;
+}
+
+.recent-transactions-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.6875rem !important;
+  font-weight: 700 !important;
+  color: #5c4730 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.4px !important;
+  font-family: 'Century Gothic' !important;
+  border-bottom: 1px solid rgba(212, 167, 98, 0.15) !important;
+  white-space: nowrap;
+  height: 40px;
+  vertical-align: middle;
+  border-right: 1px solid rgba(92, 71, 48, 0.05);
+}
+
+.recent-transactions-table th:last-child {
+  border-right: none;
+}
+
+.recent-transactions-table tbody tr {
+  transition: all 0.15s ease;
+  background: white;
+  border-left: 2px solid transparent;
+}
+
+.recent-transactions-table tbody tr:hover {
+  background: #f8f5f0;
+  transform: translateX(0.25rem);
+  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.03);
+  border-left-color: #d4a762;
+  cursor: pointer;
+}
+
+.recent-transactions-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(92, 71, 48, 0.04);
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  color: #3c2a1c !important;
+  letter-spacing: 0.08px !important;
+  font-family: 'Century Gothic' !important;
+  vertical-align: middle;
+  height: 40px;
+  border-right: 1px solid rgba(92, 71, 48, 0.03);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-transactions-table td:last-child {
+  border-right: none;
+}
+
+/* Column Widths for Recent Transactions */
+.recent-transactions-table th:nth-child(1),
+.recent-transactions-table td:nth-child(1) {
+  width: 40%;
+  min-width: 180px;
+  max-width: 300px;
+}
+
+.recent-transactions-table th:nth-child(2),
+.recent-transactions-table td:nth-child(2) {
+  width: 20%;
+  min-width: 90px;
+  max-width: 120px;
+  text-align: right;
+}
+
+.recent-transactions-table th:nth-child(3),
+.recent-transactions-table td:nth-child(3) {
+  width: 20%;
+  min-width: 80px;
+  max-width: 100px;
+  text-align: center;
+}
+
+.recent-transactions-table th:nth-child(4),
+.recent-transactions-table td:nth-child(4) {
+  width: 20%;
+  min-width: 120px;
+  max-width: 160px;
+}
+
+/* Align specific columns */
+.recent-transactions-table th:nth-child(2),
+.recent-transactions-table td:nth-child(2) {
+  text-align: right;
+  padding-right: 1.5rem;
+}
+
+.recent-transactions-table th:nth-child(3),
+.recent-transactions-table td:nth-child(3) {
+  text-align: center;
+}
+
+/* Recent Transactions cell text styling */
+.recent-transaction-customer {
+  font-weight: 700;
+  color: #3c2a1c;
+  font-size: 0.75rem;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-transaction-amount {
+  font-weight: 700;
+  color: #3c2a1c;
+  font-size: 0.75rem;
+  display: block;
+  text-align: right;
+  letter-spacing: 0.15px;
+  white-space: nowrap;
+}
+
+.recent-transaction-date {
+  color: #999;
+  font-size: 0.625rem;
+  font-weight: 500;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Recent Transactions Status Chip */
+.recent-transactions-status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.75rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  min-width: 65px;
+  max-width: 85px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 20px;
+  font-family: 'Century Gothic' !important;
+  margin: 0 auto;
+}
+
+.recent-transactions-status-chip.success {
+  background: rgba(46, 204, 113, 0.1);
+  color: #27ae60;
+}
+
+.recent-transactions-status-chip.failed {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
+.recent-transactions-status-chip.pending {
+  background: rgba(243, 156, 18, 0.1);
+  color: #d35400;
+}
+
+.recent-transactions-status-chip.expired {
+  background: rgba(149, 165, 166, 0.1);
+  color: #7f8c8d;
+}
+
+.recent-transactions-status-chip.cancelled {
+  background: rgba(127, 140, 141, 0.1);
+  color: #7f8c8d;
+  text-decoration: line-through;
+}
+
+/* ===== TRANSACTION DETAILS MODAL STYLES ===== */
+.transaction-modal-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  outline: none;
+  border-radius: 0.5rem;
+  background: white;
+  box-shadow: 0 0.125rem 0.75rem rgba(92, 71, 48, 0.08);
+  border: 1px solid rgba(92, 71, 48, 0.1);
+  display: flex;
+  flex-direction: column;
+  font-family: 'Century Gothic' !important;
+}
+
+.transaction-modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.transaction-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(212, 167, 98, 0.15);
+  background: #faf9f8;
+  flex-shrink: 0;
+}
+
+.transaction-modal-header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.transaction-modal-title {
+  font-size: 0.8125rem !important;
+  font-weight: 900 !important;
+  color: #3c2a1c !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.35px !important;
+  font-family: 'Century Gothic' !important;
+  margin: 0 !important;
+  line-height: 1.1 !important;
+}
+
+.transaction-modal-subtitle {
+  font-size: 0.625rem !important;
+  color: #666 !important;
+  font-weight: 500 !important;
+  font-family: 'Century Gothic' !important;
+  margin: 0.125rem 0 0 0 !important;
+  line-height: 1.1 !important;
+  background: #f8f9fa;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  display: inline-block;
+}
+
+.transaction-modal-close-btn {
+  color: #5c4730 !important;
+  padding: 0.25rem !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  background: white;
+  border: 1px solid rgba(92, 71, 48, 0.1);
+  border-radius: 0.375rem;
+}
+
+.transaction-modal-close-btn:hover {
+  background: #faf9f8;
+  border-color: #d4a762;
+}
+
+.transaction-modal-body {
+  padding: 1rem;
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(90vh - 120px);
+  font-family: 'Century Gothic' !important;
+}
+
+/* Compact Grid Layout */
+.transaction-details-grid-compact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* Compact Columns */
+.transaction-column-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Compact Cards */
+.transaction-card-compact {
+  background: white;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  font-family: 'Century Gothic' !important;
+}
+
+.transaction-card-compact:hover {
+  border-color: rgba(212, 167, 98, 0.2);
+}
+
+.loan-card-compact {
+  background: #faf9f8;
+  border-color: rgba(212, 167, 98, 0.2);
+}
+
+.status-card-compact {
+  background: #f8f9fa;
+}
+
+/* Compact Card Header */
+.transaction-card-header-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #5c4730;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid rgba(92, 71, 48, 0.1);
+  font-family: 'Century Gothic' !important;
+}
+
+.transaction-card-header-compact svg {
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+/* Compact Card Content */
+.transaction-card-content-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+/* Compact Detail Items */
+.transaction-detail-item-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.375rem 0;
+  min-height: 28px;
+}
+
+.transaction-detail-label-compact {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #666;
+  font-family: 'Century Gothic' !important;
+  flex: 1;
+}
+
+.transaction-detail-value-compact {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #3c2a1c;
+  text-align: right;
+  font-family: 'Century Gothic' !important;
+  flex: 1;
+  padding-left: 0.5rem;
+}
+
+/* Special value styles */
+.amount-highlight {
+  font-size: 0.875rem;
+  color: #5c4730;
+}
+
+.balance-amount {
+  font-size: 0.875rem;
+  color: #5c4730;
+}
+
+.arrears-amount {
+  color: #e74c3c;
+  font-weight: 700;
+}
+
+.success-amount {
+  color: #27ae60;
+}
+
+.total-success-amount {
+  font-size: 0.875rem;
+  color: #27ae60;
+  font-weight: 800;
+}
+
+.paid-off-amount {
+  color: #27ae60;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.new-balance-amount {
+  color: #3c2a1c;
+  font-weight: 800;
+}
+
+/* Paid Off Badge */
+.paid-off-badge-compact {
+  display: inline-flex;
+  align-items: center;
+  background: #27ae60;
+  color: white;
+  font-size: 0.5rem;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15px;
+  gap: 0.125rem;
+}
+
+.pending-note-compact {
+  color: #666;
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-align: left;
+  line-height: 1.2;
+  font-style: italic;
+}
+
+/* Special item backgrounds */
+.highlighted-compact {
+  background: #f8f9fa;
+  margin: 0 -0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+}
+
+.arrears-info-compact {
+  background: #fef2f2;
+  margin: 0 -0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(220, 38, 38, 0.1);
+}
+
+.success-compact {
+  background: #f0fdf4;
+  margin: 0 -0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(5, 150, 105, 0.1);
+}
+
+.total-cleared-compact {
+  background: #ecfdf5;
+  margin: 0 -0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  border: 2px solid rgba(5, 150, 105, 0.2);
+}
+
+.new-balance-compact {
+  background: #f8f9fa;
+  margin: 0 -0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  border: 2px solid rgba(92, 71, 48, 0.1);
+}
+
+/* Status Display */
+.transaction-status-wrapper-compact {
+  padding: 0.5rem 0;
+}
+
+.transaction-status-display-compact {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  border: 1px solid;
+}
+
+.transaction-status-display-compact.success {
+  background: rgba(46, 204, 113, 0.1);
+  border-color: rgba(46, 204, 113, 0.2);
+}
+
+.transaction-status-display-compact.pending {
+  background: rgba(243, 156, 18, 0.1);
+  border-color: rgba(243, 156, 18, 0.2);
+}
+
+.transaction-status-display-compact.failed,
+.transaction-status-display-compact.expired,
+.transaction-status-display-compact.cancelled {
+  background: rgba(149, 165, 166, 0.1);
+  border-color: rgba(149, 165, 166, 0.2);
+}
+
+.status-icon-compact {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.125rem;
+}
+
+.transaction-status-text-compact {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  margin-bottom: 0.125rem;
+  font-family: 'Century Gothic' !important;
+}
+
+.transaction-status-message-compact {
+  font-size: 0.625rem;
+  color: #666;
+  line-height: 1.2;
+  font-family: 'Century Gothic' !important;
+}
+
+/* Modal Footer */
+.transaction-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid rgba(92, 71, 48, 0.08);
+  background: white;
+  flex-shrink: 0;
+}
+
+.transaction-modal-secondary-btn {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid rgba(92, 71, 48, 0.1);
+  border-radius: 0.375rem;
+  background: white;
+  color: #5c4730;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.6875rem;
+  letter-spacing: 0.15px;
+  font-family: 'Century Gothic' !important;
+  height: 28px;
+}
+
+.transaction-modal-secondary-btn:hover {
+  background: #faf9f8;
+  border-color: #d4a762;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.05);
+}
+
+/* Scrollbar Styling */
+.transaction-modal-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.transaction-modal-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.transaction-modal-body::-webkit-scrollbar-thumb {
+  background: #c1b7a9;
+  border-radius: 2px;
+}
+
+.transaction-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #a99c8a;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .customer-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.625rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .customer-section-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  
+  .customer-search-container {
+    width: 100%;
+  }
+  
+  .customer-search-input {
+    flex: 1;
+  }
+  
+  .recent-transactions-table {
+    min-width: 600px;
+  }
+}
+
+@media (max-width: 768px) {
+  .customer-page-wrapper {
+    padding: 1rem;
+  }
+  
+  .page-title {
+    font-size: 0.8125rem;
+  }
+  
+  .page-subtitle {
+    font-size: 0.625rem;
+  }
+  
+  .customer-header-content {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  
+  .customer-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .customer-stat-card {
+    padding: 0.875rem;
+    min-height: 5.5rem;
+  }
+  
+  .customer-stat-value {
+    font-size: 1rem;
+  }
+  
+  .customer-section-title {
+    font-size: 0.75rem !important;
+    letter-spacing: 0.3px;
+  }
+  
+  .recent-transactions-table th,
+  .recent-transactions-table td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.6875rem !important;
+    height: 36px;
+  }
+  
+  .recent-transactions-table th {
+    font-size: 0.625rem !important;
+  }
+  
+  .recent-transactions-status-chip {
+    font-size: 0.5rem !important;
+    min-width: 55px;
+    max-width: 70px;
+    height: 18px;
+  }
+  
+  /* Responsive Modal */
+  .transaction-details-grid-compact {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .transaction-modal-container {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .transaction-modal-header {
+    padding: 0.625rem 0.875rem;
+  }
+  
+  .transaction-modal-body {
+    padding: 0.875rem;
+    max-height: calc(95vh - 110px);
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 0.75rem;
+  }
+  
+  .page-subtitle {
+    font-size: 0.5625rem;
+  }
+  
+  .customer-stat-value {
+    font-size: 0.9375rem;
+  }
+  
+  .customer-stat-icon-wrapper {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .customer-action-btn,
+  .customer-primary-btn {
+    font-size: 0.625rem;
+    padding: 0.3125rem 0.625rem;
+    height: 24px;
+  }
+  
+  .customer-section-title {
+    font-size: 0.6875rem !important;
+    letter-spacing: 0.25px;
+  }
+  
+  .recent-transactions-table th,
+  .recent-transactions-table td {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.625rem !important;
+    height: 32px;
+  }
+  
+  .recent-transactions-table th {
+    font-size: 0.5625rem !important;
+  }
+  
+  .customer-search-input,
+  .customer-status-filter {
+    font-size: 0.625rem;
+    padding: 0.3125rem 0.625rem;
+  }
+  
+  .customer-search-input {
+    width: 150px;
+  }
+  
+  .recent-transactions-table {
+    min-width: 500px;
+  }
+  
+  /* Responsive Modal */
+  .transaction-modal-container {
+    width: 98%;
+    max-height: 98vh;
+  }
+  
+  .transaction-card-compact {
+    padding: 0.625rem;
+  }
+  
+  .transaction-card-header-compact {
+    font-size: 0.6875rem;
+  }
+  
+  .transaction-detail-label-compact,
+  .transaction-detail-value-compact {
+    font-size: 0.625rem;
+  }
+}

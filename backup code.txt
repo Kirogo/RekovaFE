@@ -1,0 +1,147 @@
+ {/* Recent Transactions Card - SIMPLIFIED */}
+            <div className="details-card transactions-card">
+                <div className="card-header">
+                    <Typography className="card-title">
+                        Recent Transactions
+                    </Typography>
+                    <button
+                        className="customer-details-action-btn"
+                        onClick={handleRefreshTransactions}
+                        style={{
+                            fontSize: '12px',
+                            padding: '6px 12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}
+                    >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+
+                <div className="card-body simple-transactions-container">
+                    {/* Transaction Filters */}
+                    <div className="simple-filters">
+                        <input
+                            type="text"
+                            placeholder="Search transactions..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="simple-search-input"
+                        />
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="simple-status-filter"
+                        >
+                            <option value="">All Status</option>
+                            <option value="success">Success</option>
+                            <option value="pending">Pending</option>
+                            <option value="failed">Failed</option>
+                            <option value="expired">Expired</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+
+                    {transactionsLoading ? (
+                        <div className="simple-loading">
+                            <div className="simple-spinner"></div>
+                            <div className="simple-loading-text">Loading transactions...</div>
+                        </div>
+                    ) : filteredTransactions.length === 0 ? (
+                        <div className="simple-empty-state">
+                            <div className="simple-empty-icon">📄</div>
+                            <div className="simple-empty-text">
+                                {searchTerm || statusFilter ? 'No transactions match your filters' : 'No transactions found for this customer'}
+                            </div>
+                            {(searchTerm || statusFilter) && (
+                                <button
+                                    onClick={() => {
+                                        setSearchTerm('');
+                                        setStatusFilter('');
+                                    }}
+                                    className="simple-clear-btn"
+                                >
+                                    Clear Filters
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <>
+                            <div className="simple-table-wrapper">
+                                <table className="simple-transactions-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Transaction No</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredTransactions.map((transaction) => {
+                                            const { date, time } = formatTransactionDate(transaction.createdAt);
+                                            const status = transaction.status?.toLowerCase();
+
+                                            return (
+                                                <tr key={transaction._id || transaction.transactionId}>
+                                                    <td className="simple-transaction-id">
+                                                        {getTransactionNumber(transaction)}
+                                                    </td>
+                                                    <td className="simple-amount">
+                                                        {formatCurrency(transaction.amount)}
+                                                    </td>
+                                                    <td>
+                                                        <span
+                                                            className="simple-status"
+                                                            style={{
+                                                                backgroundColor: status === 'success' ? '#d1fae5' :
+                                                                    status === 'pending' ? '#fef3c7' :
+                                                                        status === 'failed' ? '#fee2e2' :
+                                                                            status === 'expired' ? '#f3f4f6' : '#f3f4f6',
+                                                                color: status === 'success' ? '#059669' :
+                                                                    status === 'pending' ? '#d97706' :
+                                                                        status === 'failed' ? '#dc2626' : '#6b7280',
+                                                                borderColor: status === 'success' ? '#a7f3d0' :
+                                                                    status === 'pending' ? '#fde68a' :
+                                                                        status === 'failed' ? '#fecaca' : '#d1d5db'
+                                                            }}
+                                                        >
+                                                            {getStatusDisplayText(transaction.status, transaction.failureReason)}
+                                                        </span>
+                                                    </td>
+                                                    <td className="simple-date">
+                                                        <div className="simple-date-text">{date}</div>
+                                                        <div className="simple-time-text">{time}</div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Total row - Successful transactions only */}
+                            {(() => {
+                                const successfulTotal = filteredTransactions
+                                    .filter(transaction => transaction.status?.toLowerCase() === 'success')
+                                    .reduce((sum, transaction) => sum + parseFloat(transaction.amount || 0), 0);
+
+                                return successfulTotal > 0 ? (
+                                    <div className="simple-total-row">
+                                        <div className="simple-total-label">Total Successful:</div>
+                                        <div className="simple-total-amount">{formatCurrency(successfulTotal)}</div>
+                                    </div>
+                                ) : null;
+                            })()}
+
+                            <div className="simple-count">
+                                Showing {filteredTransactions.length} of {transactions.length} transactions
+                            </div>
+                        </>
+                    )}
+                </div>
+            </div>

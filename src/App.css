@@ -1,0 +1,735 @@
+/* src/App.css */
+
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #333;
+  background: #f8f9fa;
+}
+
+/* App layout */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background: #f8f9fa;
+  position: relative;
+}
+
+/* Main content wrapper */
+.main-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 205px;
+  transition: margin-left 0.3s ease;
+  width: calc(100% - 205px);
+  min-height: 100vh;
+  position: relative;
+}
+
+.main-content-wrapper.collapsed {
+  margin-left: 60px;
+  width: calc(100% - 60px);
+}
+
+/* Main content area */
+.main-content {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  background: #f8f9fa;
+  padding-top: 70px; /* Account for fixed navbar */
+  min-height: 100vh;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Navbar fixes */
+.navbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 205px;
+  z-index: 1000;
+  transition: left 0.3s ease;
+  height: 70px;
+}
+
+.main-content-wrapper.collapsed .navbar {
+  left: 60px;
+}
+
+/* ==================== RIGHT SIDEBAR STYLES - FIXED VERSION ==================== */
+
+/* Right Sidebar - FIXED POSITIONING */
+.right-sidebar {
+  position: fixed;
+  top: 70px;
+  right: 0;
+  width: 50px; /* Collapsed width */
+  height: calc(100vh - 70px);
+  background: transparent;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* When collapsed - SHOW ONLY TOGGLE BUTTON CENTERED VERTICALLY */
+.right-sidebar.collapsed {
+  width: 50px;
+  background: transparent;
+  z-index: 100;
+}
+
+/* When expanded - OVERLAY ON TOP OF CONTENT */
+.right-sidebar.expanded {
+  width: 320px;
+  background: white;
+  border-left: 1px solid rgba(92, 71, 48, 0.1);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000; /* Higher z-index to overlay content */
+}
+
+/* Collapsed sidebar content - ENTIRE AREA CLICKABLE AND CENTERED */
+.right-sidebar-collapsed-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  height: 100%; /* Make entire height clickable */
+  width: 100%; /* Make entire width clickable */
+  cursor: pointer;
+  color: white;
+  background: #5c4730;
+  transition: all 0.2s ease;
+  border-radius: 8px 0 0 8px;
+}
+
+.right-sidebar-collapsed-content:hover {
+  background: #3c2a1c;
+}
+
+/* Center the icon and text vertically */
+.collapsed-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: auto 0; /* Center vertically */
+}
+
+.collapsed-text {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  text-align: center;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  margin-top: 0.5rem;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+/* When collapsed, hide all content except toggle */
+.right-sidebar.collapsed .right-sidebar-header,
+.right-sidebar.collapsed .right-sidebar-content {
+  display: none;
+}
+
+/* Right sidebar content - only visible when expanded */
+.right-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Right sidebar header */
+.right-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(92, 71, 48, 0.1);
+  background: white;
+}
+
+.right-sidebar-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #3c2a1c;
+  display: flex;
+  align-items: center;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+.right-sidebar-toggle {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(92, 71, 48, 0.12);
+  border-radius: 6px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.right-sidebar-toggle:hover {
+  background: #f5f0ea;
+  border-color: #d4a762;
+}
+
+/* CALENDAR SECTION - UPDATED TO MATCH DASHBOARD STYLE */
+.calendar-section {
+  background: #faf9f8;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(212, 167, 98, 0.2);
+  background: linear-gradient(to right, rgba(245, 240, 234, 0.3), transparent);
+  padding: 0.75rem;
+  margin: -1rem -1rem 1rem -1rem;
+  border-radius: 8px 8px 0 0;
+}
+
+.calendar-nav-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(92, 71, 48, 0.12);
+  border-radius: 4px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  color: #5c4730;
+  transition: all 0.2s ease;
+  padding: 0;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+.calendar-nav-btn:hover {
+  background: #f5f0ea;
+  border-color: #d4a762;
+  transform: translateY(-1px);
+}
+
+.calendar-title {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #3c2a1c;
+  font-family: 'Century Gothic', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  position: relative;
+  padding-bottom: 0.375rem;
+}
+
+.calendar-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 2.25rem;
+  height: 0.175rem;
+  background: linear-gradient(90deg, #ffd166, #5c4730);
+  border-radius: 0.125rem;
+}
+
+.calendar-grid-promises {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day-header-promises {
+  font-size: 0.625rem;
+  font-weight: 900;
+  color: #666;
+  text-align: center;
+  padding: 4px 0;
+  text-transform: uppercase;
+  font-family: 'Century Gothic', sans-serif;
+  letter-spacing: 0.2px;
+}
+
+.calendar-day-promises {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  background: white;
+}
+
+.calendar-day-promises:hover {
+  background: #f8f5f0;
+  border-color: rgba(212, 167, 98, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(92, 71, 48, 0.05);
+}
+
+.calendar-day-promises.today {
+  background: rgba(212, 167, 98, 0.15);
+  border-color: #d4a762;
+  border-width: 2px;
+}
+
+.calendar-day-promises.selected {
+  background: #5c4730;
+  color: white;
+  border-color: #3c2a1c;
+}
+
+.calendar-date-number {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+/* SELECTED DATE PROMISES SECTION */
+.selected-date-promises {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.selected-date-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(212, 167, 98, 0.2);
+}
+
+.selected-date-title {
+  font-size: 0.8125rem !important;
+  font-weight: 900 !important;
+  color: #3c2a1c !important;
+  font-family: 'Century Gothic', sans-serif !important;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  margin-right: 0.5rem !important;
+}
+
+.selected-date-count {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #666;
+  background: rgba(92, 71, 48, 0.1);
+  padding: 0.125rem 0.5rem;
+  border-radius: 10px;
+  margin-left: auto;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+/* DATE PROMISES LIST */
+.date-promises-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.no-promises-for-date {
+  text-align: center;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px dashed rgba(212, 167, 98, 0.2);
+  font-size: 0.75rem;
+  color: #666;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+/* PROMISE ITEMS - MATCHING DASHBOARD TRANSACTION STYLE */
+.date-promise-item {
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  background: #faf9f8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+.date-promise-item:hover {
+  background: #f8f5f0;
+  border-color: rgba(212, 167, 98, 0.25);
+  transform: translateX(2px);
+  box-shadow: 0 2px 4px rgba(92, 71, 48, 0.05);
+}
+
+.date-promise-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.date-promise-customer {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #3c2a1c;
+  font-family: 'Century Gothic', sans-serif;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.date-promise-amount {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #5c4730;
+  font-family: 'Century Gothic', sans-serif;
+  margin-left: 0.5rem;
+  white-space: nowrap;
+}
+
+.date-promise-time {
+  font-size: 0.6875rem;
+  color: #666;
+  font-weight: 600;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+/* UPCOMING PROMISES SECTION */
+.upcoming-promises-sidebar {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.upcoming-promises-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(212, 167, 98, 0.2);
+  background: linear-gradient(to right, rgba(245, 240, 234, 0.3), transparent);
+  padding: 0.75rem;
+  margin: -1rem -1rem 1rem -1rem;
+  border-radius: 8px 8px 0 0;
+}
+
+.upcoming-promises-title {
+  font-size: 0.8125rem !important;
+  font-weight: 900 !important;
+  color: #3c2a1c !important;
+  font-family: 'Century Gothic', sans-serif !important;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  position: relative;
+  padding-bottom: 0.375rem;
+}
+
+.upcoming-promises-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 2.25rem;
+  height: 0.175rem;
+  background: linear-gradient(90deg, #ffd166, #5c4730);
+  border-radius: 0.125rem;
+}
+
+.view-all-promises-btn {
+  background: rgba(92, 71, 48, 0.1);
+  border: 1px solid rgba(92, 71, 48, 0.15);
+  color: #5c4730;
+  font-size: 0.625rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.25rem;
+  transition: all 0.15s ease;
+  font-family: 'Century Gothic', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.15px;
+}
+
+.view-all-promises-btn:hover {
+  background: rgba(92, 71, 48, 0.15);
+  border-color: #d4a762;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(92, 71, 48, 0.1);
+}
+
+/* UPCOMING PROMISES LIST */
+.upcoming-promises-list-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.no-upcoming-promises-sidebar {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 2px dashed rgba(212, 167, 98, 0.2);
+}
+
+.no-promises-icon {
+  font-size: 1.5rem;
+  color: #d4a762;
+  margin-bottom: 0.75rem;
+  opacity: 0.7;
+}
+
+.no-promises-text {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  color: #666 !important;
+  font-family: 'Century Gothic', sans-serif !important;
+}
+
+/* UPCOMING PROMISE ITEM */
+.upcoming-promise-item-sidebar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  background: #faf9f8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+.upcoming-promise-item-sidebar:hover {
+  background: #f8f5f0;
+  border-color: rgba(212, 167, 98, 0.25);
+  transform: translateX(2px);
+  box-shadow: 0 2px 4px rgba(92,71,48,0.05);
+}
+
+.upcoming-promise-date-sidebar {
+  min-width: 3rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #5c4730;
+  background: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid rgba(92, 71, 48, 0.12);
+  text-align: center;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+.upcoming-promise-info-sidebar {
+  flex: 1;
+  min-width: 0;
+}
+
+.upcoming-promise-customer-sidebar {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #3c2a1c;
+  margin-bottom: 0.125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+.upcoming-promise-amount-sidebar {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #5c4730;
+  font-family: 'Century Gothic', sans-serif;
+}
+
+/* ==================== MAIN CONTENT ADJUSTMENTS ==================== */
+
+/* When right sidebar is collapsed, add margin to create space */
+.right-sidebar-collapsed .main-content {
+  margin-right: 50px; /* Space for collapsed sidebar */
+}
+
+/* When right sidebar is expanded, remove margin (sidebar overlays) */
+.right-sidebar-expanded .main-content {
+  margin-right: 0;
+}
+
+/* Page wrappers should NOT have right padding */
+.dashboard-wrapper,
+.customer-page-wrapper,
+.transactions-page-wrapper,
+.page-wrapper-base {
+  width: 100%;
+}
+
+/* CustomerDetails specific adjustments */
+.customer-details-wrapper {
+  min-height: calc(100vh - 70px);
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: #f8f9fa;
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.customer-details-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+  height: calc(100vh - 140px);
+}
+
+/* Apply margin to customer details content */
+.right-sidebar-collapsed .customer-details-content {
+  margin-right: 50px;
+}
+
+.right-sidebar-expanded .customer-details-content {
+  margin-right: 0;
+}
+
+/* ==================== RESPONSIVE ADJUSTMENTS ==================== */
+
+@media (max-width: 768px) {
+  .right-sidebar {
+    top: 65px;
+    height: calc(100vh - 65px);
+  }
+  
+  .right-sidebar.expanded {
+    width: 280px;
+  }
+  
+  .right-sidebar.collapsed {
+    width: 45px;
+  }
+  
+  .main-content {
+    padding-top: 65px;
+  }
+  
+  .right-sidebar-collapsed .main-content {
+    margin-right: 45px;
+  }
+  
+  .right-sidebar-collapsed .customer-details-content {
+    margin-right: 45px;
+  }
+  
+  .navbar {
+    height: 65px;
+    left: 0;
+    right: 0;
+  }
+  
+  .main-content-wrapper:not(.collapsed) .navbar {
+    left: 190px;
+  }
+  
+  .main-content-wrapper.collapsed .navbar {
+    left: 50px;
+  }
+}
+
+@media (max-width: 576px) {
+  .right-sidebar {
+    top: 60px;
+    height: calc(100vh - 60px);
+  }
+  
+  .right-sidebar.expanded {
+    width: 250px;
+  }
+  
+  .right-sidebar.collapsed {
+    width: 40px;
+  }
+  
+  .main-content {
+    padding-top: 60px;
+  }
+  
+  .right-sidebar-collapsed .main-content {
+    margin-right: 40px;
+  }
+  
+  .right-sidebar-collapsed .customer-details-content {
+    margin-right: 40px;
+  }
+  
+  .navbar {
+    height: 60px;
+  }
+}
+
+/* Special case for very small screens */
+@media (max-width: 360px) {
+  .right-sidebar.collapsed {
+    width: 35px;
+  }
+  
+  .right-sidebar.expanded {
+    width: 220px;
+  }
+  
+  .right-sidebar-collapsed .main-content {
+    margin-right: 35px;
+  }
+  
+  .right-sidebar-collapsed .customer-details-content {
+    margin-right: 35px;
+  }
+}

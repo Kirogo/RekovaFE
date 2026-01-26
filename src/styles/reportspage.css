@@ -1,0 +1,1387 @@
+/* src/styles/reportspage.css - COMPLETE VERSION */
+
+/* ==================== MINIMAL HEADER ==================== */
+
+/* Add this minimal wrapper style instead: */
+.reports-page-wrapper {
+  min-height: calc(100vh - 70px);
+  padding: 1.5rem;
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
+  background: #f8f9fa;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  transition: padding-right 0.3s ease;
+}
+
+/* Ensure all text uses Century Gothic */
+.reports-page-wrapper * {
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
+}
+
+.dashboard-header {
+  margin-bottom: 1rem;
+  padding: 0;
+  width: 100%;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.dashboard-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin: 0;
+  color: #2c1810;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-family: 'Century Gothic' !important;
+  text-transform: capitalize;
+}
+
+.dashboard-subtitle {
+  font-size: 0.6875rem;
+  margin: 0.25rem 0 0 0;
+  color: #666666;
+  font-weight: 500;
+  opacity: 0.8;
+  font-family: 'Century Gothic' !important;
+  letter-spacing: 0.1px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* ==================== MINIMAL BUTTONS ==================== */
+.minimal-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid rgba(92, 71, 48, 0.12);
+  border-radius: 0.375rem;
+  background: white;
+  color: #5c4730;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.6875rem;
+  letter-spacing: 0.15px;
+  font-family: 'Century Gothic' !important;
+  height: 28px;
+}
+
+.minimal-refresh-btn:hover {
+  background: #faf9f8;
+  border-color: #d4a762;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.08);
+}
+
+.minimal-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.minimal-primary-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: #5c4730;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.6875rem;
+  letter-spacing: 0.15px;
+  font-family: 'Century Gothic' !important;
+  height: 28px;
+}
+
+.minimal-primary-btn:hover {
+  background: #3c2a1c;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.08);
+}
+
+/* ==================== MINIMAL DATE SELECTOR ==================== */
+.minimal-date-selector {
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.date-selector-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #5c4730;
+  white-space: nowrap;
+  font-family: 'Century Gothic' !important;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.date-range-options {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.minimal-date-btn {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid rgba(92, 71, 48, 0.2);
+  border-radius: 0.375rem;
+  background: white;
+  color: #5c4730;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  font-family: 'Century Gothic' !important;
+}
+
+.minimal-date-btn:hover {
+  background: #faf9f8;
+  border-color: #d4a762;
+}
+
+.minimal-date-btn.active {
+  background: #5c4730;
+  color: white;
+  border-color: #5c4730;
+}
+
+.custom-date-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.minimal-date-input {
+  padding: 0.375rem 0.625rem;
+  border: 1px solid rgba(92, 71, 48, 0.2);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  background: white;
+  min-width: 120px;
+  font-family: 'Century Gothic' !important;
+}
+
+.minimal-date-input:focus {
+  outline: none;
+  border-color: #5c4730;
+  box-shadow: 0 0 0 2px rgba(92, 71, 48, 0.1);
+}
+
+/* ==================== PERFORMANCE ANALYTICS SECTION ==================== */
+.performance-dashboard-section {
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.minimal-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 0.125rem solid rgba(92, 71, 48, 0.12);
+  font-family: 'Century Gothic' !important;
+  background: linear-gradient(to right, rgba(245, 240, 234, 0.3), transparent);
+  padding: 0.75rem;
+  margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+  border-radius: 0.5rem 0.5rem 0 0;
+  border-bottom: 0.125rem solid rgba(212, 167, 98, 0.2);
+}
+
+.minimal-section-title {
+  font-size: 0.8125rem !important;
+  font-family: 'Century Gothic' !important;
+  font-weight: 900;
+  color: #3c2a1c;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  opacity: 1;
+  display: inline-block;
+  line-height: 1.1;
+  position: relative;
+  padding-bottom: 0.375rem;
+}
+
+.minimal-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 2.25rem;
+  height: 0.175rem;
+  background: linear-gradient(90deg, #ffd166, #5c4730);
+  border-radius: 0.125rem;
+  display: block !important;
+}
+
+/* Real-time Stats Grid */
+.realtime-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.realtime-stat-card {
+  border-radius: 0.5rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  padding: 1rem;
+  background: white;
+  transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  min-height: 6rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  font-family: 'Century Gothic' !important;
+}
+
+.realtime-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0.125rem;
+  background: linear-gradient(90deg, #d4a762, #5c4730);
+  opacity: 0.8;
+}
+
+.realtime-stat-card:hover {
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 0.75rem rgba(92, 71, 48, 0.05);
+  border-color: rgba(212, 167, 98, 0.2);
+}
+
+.stat-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  font-size: 1rem;
+  transition: transform 0.15s ease;
+  font-family: 'Century Gothic' !important;
+  background: linear-gradient(135deg, #5c4730, #3c2a1c);
+}
+
+.realtime-stat-card:hover .stat-icon {
+  transform: scale(1.05);
+}
+
+.stat-value {
+  font-size: 1.125rem;
+  font-weight: 900;
+  margin: 0.5rem 0 0.25rem 0;
+  line-height: 1;
+  color: #3c2a1c;
+  letter-spacing: -0.2px;
+  font-family: 'Century Gothic' !important;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #5c4730;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-family: 'Century Gothic' !important;
+  line-height: 1.1;
+}
+
+.stat-trend {
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  margin-top: 0.25rem;
+  display: inline-block;
+  font-family: 'Century Gothic' !important;
+}
+
+.stat-trend.positive {
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+}
+
+.stat-trend.negative {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+}
+
+/* Team Metrics Card */
+.team-metrics-card {
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.team-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.team-metric {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: #faf9f8;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  transition: all 0.15s ease;
+}
+
+.team-metric:hover {
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 0.75rem rgba(92, 71, 48, 0.08);
+  border-color: rgba(212, 167, 98, 0.2);
+}
+
+.team-metric.highlight {
+  background: linear-gradient(135deg, rgba(92, 71, 48, 0.05), rgba(212, 167, 98, 0.05));
+  border-color: rgba(212, 167, 98, 0.2);
+}
+
+.team-metric-value {
+  font-size: 1rem;
+  font-weight: 900;
+  color: #5c4730;
+  margin-bottom: 0.375rem;
+  font-family: 'Century Gothic' !important;
+}
+
+.team-metric-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  font-family: 'Century Gothic' !important;
+}
+
+.team-metric-subtext {
+  font-size: 0.625rem;
+  color: #999;
+  font-weight: 600;
+  font-family: 'Century Gothic' !important;
+}
+
+/* Leaderboard Card */
+.leaderboard-card {
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  padding: 1.5rem;
+  height: 100%;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(212, 167, 98, 0.2);
+}
+
+.section-title {
+  font-size: 0.8125rem !important;
+  font-weight: 900 !important;
+  color: #3c2a1c !important;
+  font-family: 'Century Gothic' !important;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  margin: 0 !important;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-top: 1rem;
+}
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.375rem;
+  background: #faf9f8;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  transition: all 0.15s ease;
+  font-family: 'Century Gothic' !important;
+  min-height: 3.5rem;
+}
+
+.leaderboard-row:hover {
+  background: #f8f5f0;
+  border-color: rgba(212, 167, 98, 0.25);
+  transform: translateX(0.25rem);
+  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.05);
+}
+
+.leaderboard-row.highlighted {
+  background: linear-gradient(90deg, rgba(212, 167, 98, 0.1), rgba(92, 71, 48, 0.05));
+  border-color: rgba(212, 167, 98, 0.2);
+}
+
+.rank-cell {
+  min-width: 3rem;
+}
+
+.rank-badge {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  background: #f5f0ea;
+  color: #5c4730;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.75rem;
+  font-family: 'Century Gothic' !important;
+}
+
+.rank-badge.top-rank {
+  background: linear-gradient(135deg, #d4a762, #5c4730);
+  color: white;
+}
+
+.officer-cell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.officer-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5c4730, #3c2a1c);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+  font-family: 'Century Gothic' !important;
+}
+
+.officer-name {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #3c2a1c !important;
+  margin: 0 !important;
+  font-family: 'Century Gothic' !important;
+}
+
+.top-badge {
+  font-size: 0.5625rem;
+  background: #f39c12;
+  color: white;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  margin-left: 0.375rem;
+  font-weight: 700;
+}
+
+.officer-stats {
+  font-size: 0.6875rem !important;
+  color: #666 !important;
+  margin: 0.125rem 0 0 0 !important;
+  font-family: 'Century Gothic' !important;
+}
+
+.score-cell {
+  text-align: right;
+  min-width: 6rem;
+}
+
+.score-value {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #5c4730 !important;
+  margin: 0 !important;
+  font-family: 'Century Gothic' !important;
+}
+
+.trend-badge {
+  font-size: 0.5625rem;
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+  display: inline-block;
+}
+
+.view-all-btn {
+  background: rgba(92, 71, 48, 0.1);
+  border: 1px solid rgba(92, 71, 48, 0.15);
+  color: #5c4730;
+  font-size: 0.625rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.25rem;
+  transition: all 0.15s ease;
+  font-family: 'Century Gothic' !important;
+  text-transform: uppercase;
+  letter-spacing: 0.15px;
+}
+
+.view-all-btn:hover {
+  background: rgba(92, 71, 48, 0.15);
+  border-color: #d4a762;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(92, 71, 48, 0.1);
+}
+
+/* Activity Timeline Card */
+.activity-timeline-card {
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  padding: 1.5rem;
+  height: 100%;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.timeline::-webkit-scrollbar {
+  width: 4px;
+}
+
+.timeline::-webkit-scrollbar-track {
+  background: rgba(92, 71, 48, 0.05);
+  border-radius: 2px;
+}
+
+.timeline::-webkit-scrollbar-thumb {
+  background: rgba(92, 71, 48, 0.2);
+  border-radius: 2px;
+}
+
+.timeline-item {
+  display: flex;
+}
+
+.timeline-marker {
+  position: relative;
+  margin-right: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.marker-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #5c4730;
+  border: 2px solid white;
+  box-shadow: 0 0 0 2px rgba(92, 71, 48, 0.1);
+  z-index: 2;
+}
+
+.marker-dot.success {
+  background: #2ecc71;
+  box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.1);
+}
+
+.marker-dot.failed {
+  background: #e74c3c;
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.1);
+}
+
+.marker-dot.pending {
+  background: #f39c12;
+  box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.1);
+}
+
+.marker-line {
+  flex: 1;
+  width: 2px;
+  background: rgba(92, 71, 48, 0.1);
+  margin-top: 2px;
+  min-height: 40px;
+}
+
+.timeline-content {
+  flex: 1;
+  padding-bottom: 0.75rem;
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.375rem;
+}
+
+.activity-title {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #3c2a1c !important;
+  margin: 0 !important;
+  font-family: 'Century Gothic' !important;
+}
+
+.activity-time {
+  font-size: 0.6875rem !important;
+  color: #666 !important;
+  margin: 0 !important;
+  font-family: 'Century Gothic' !important;
+}
+
+.activity-details {
+  font-size: 0.6875rem !important;
+  color: #666 !important;
+  margin: 0 0 0.5rem 0 !important;
+  line-height: 1.4;
+  font-family: 'Century Gothic' !important;
+}
+
+.activity-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.activity-officer {
+  font-size: 0.6875rem;
+  color: #5c4730;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  font-family: 'Century Gothic' !important;
+}
+
+.activity-amount {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.amount-badge {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #5c4730;
+  background: rgba(92, 71, 48, 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-family: 'Century Gothic' !important;
+}
+
+.amount-badge.success {
+  color: #2ecc71;
+  background: rgba(46, 204, 113, 0.1);
+}
+
+.amount-badge.failed {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.amount-badge.pending {
+  color: #f39c12;
+  background: rgba(243, 156, 18, 0.1);
+}
+
+.status-badge {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  font-family: 'Century Gothic' !important;
+}
+
+.status-badge.success {
+  color: #2ecc71;
+  background: rgba(46, 204, 113, 0.1);
+}
+
+.status-badge.failed {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.status-badge.pending {
+  color: #f39c12;
+  background: rgba(243, 156, 18, 0.1);
+}
+
+/* Officer KPIs Grid */
+.officer-kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.officer-kpi-card {
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  padding: 1rem;
+  position: relative;
+  transition: all 0.15s ease;
+  font-family: 'Century Gothic' !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.officer-kpi-card:hover {
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 0.75rem rgba(92, 71, 48, 0.05);
+  border-color: rgba(212, 167, 98, 0.2);
+}
+
+.kpi-rank-badge {
+  position: absolute;
+  top: -0.625rem;
+  right: -0.625rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: #f5f0ea;
+  color: #5c4730;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1;
+  font-family: 'Century Gothic' !important;
+}
+
+.kpi-rank-badge.top-rank {
+  background: linear-gradient(135deg, #d4a762, #5c4730);
+  color: white;
+}
+
+.kpi-officer-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.officer-info {
+  flex: 1;
+}
+
+.officer-stats {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.125rem;
+}
+
+.officer-stat {
+  font-size: 0.6875rem;
+  color: #666;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  font-family: 'Century Gothic' !important;
+}
+
+.kpi-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.kpi-metric {
+  background: #faf9f8;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  padding: 0.5rem;
+}
+
+.metric-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 0.125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  font-family: 'Century Gothic' !important;
+}
+
+.metric-value {
+  font-size: 0.875rem;
+  font-weight: 900;
+  color: #3c2a1c;
+  margin: 0;
+  font-family: 'Century Gothic' !important;
+}
+
+.metric-progress {
+  height: 3px;
+  background: rgba(92, 71, 48, 0.1);
+  border-radius: 1.5px;
+  margin-top: 0.375rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #d4a762, #5c4730);
+  border-radius: 1.5px;
+  transition: width 0.3s ease;
+}
+
+.view-details-btn {
+  width: 100%;
+  padding: 0.375rem;
+  border: 1px solid rgba(92, 71, 48, 0.2);
+  border-radius: 0.375rem;
+  background: white;
+  color: #5c4730;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.6875rem;
+  font-family: 'Century Gothic' !important;
+}
+
+.view-details-btn:hover {
+  background: #f5f0ea;
+  border-color: #d4a762;
+}
+
+/* Export Options */
+.export-options {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.minimal-export-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid rgba(92, 71, 48, 0.2);
+  border-radius: 0.375rem;
+  background: white;
+  color: #5c4730;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.6875rem;
+  font-family: 'Century Gothic' !important;
+}
+
+.minimal-export-btn:hover {
+  background: #f5f0ea;
+  border-color: #d4a762;
+  transform: translateY(-0.125rem);
+}
+
+/* ==================== MINIMAL CHART SECTION ==================== */
+.minimal-chart-section {
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.minimal-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 0.125rem solid rgba(92, 71, 48, 0.12);
+  font-family: 'Century Gothic' !important;
+  background: linear-gradient(to right, rgba(245, 240, 234, 0.3), transparent);
+  padding: 0.75rem;
+  margin: -1rem -1rem 1rem -1rem;
+  border-radius: 0.5rem 0.5rem 0 0;
+  border-bottom: 0.125rem solid rgba(212, 167, 98, 0.2);
+}
+
+.minimal-chart-title {
+  font-size: 0.8125rem !important;
+  font-weight: 900 !important;
+  color: #3c2a1c !important;
+  margin: 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.375rem;
+}
+
+.minimal-chart-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 2.25rem;
+  height: 0.175rem;
+  background: linear-gradient(90deg, #ffd166, #5c4730);
+  border-radius: 0.125rem;
+}
+
+.chart-container {
+  height: 200px;
+  width: 100%;
+  position: relative;
+}
+
+/* ==================== MINIMAL QUICK STATS ==================== */
+.minimal-quick-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.minimal-quick-stat-card {
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(92, 71, 48, 0.08);
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.minimal-quick-stat-card:hover {
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 0.75rem rgba(92, 71, 48, 0.05);
+  border-color: rgba(212, 167, 98, 0.2);
+}
+
+.minimal-quick-stat-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: var(--stat-color, #f5f0ea);
+  color: var(--stat-color, #5c4730);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.5rem;
+  font-size: 1rem;
+}
+
+.minimal-quick-stat-value {
+  font-size: 0.875rem;
+  font-weight: 900;
+  color: #3c2a1c;
+  margin-bottom: 0.125rem;
+  font-family: 'Century Gothic' !important;
+}
+
+.minimal-quick-stat-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  font-family: 'Century Gothic' !important;
+}
+
+/* ==================== MINIMAL ERROR ALERT ==================== */
+.minimal-error-alert {
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  background-color: #fffbeb;
+  border: 1px solid #fef3c7;
+  border-radius: 0.5rem;
+  color: #92400e;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Century Gothic' !important;
+  font-weight: 600;
+}
+
+/* ==================== MINIMAL MODAL ==================== */
+.minimal-report-modal {
+  background: white;
+  border-radius: 0.75rem;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.report-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.minimal-modal-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(92, 71, 48, 0.1);
+}
+
+.minimal-modal-title {
+  margin: 0;
+  color: #3c2a1c;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: 'Century Gothic' !important;
+}
+
+.minimal-modal-body {
+  padding: 1.5rem;
+}
+
+.minimal-report-options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.minimal-report-option {
+  padding: 0.75rem;
+  border: 1px solid rgba(92, 71, 48, 0.2);
+  border-radius: 0.5rem;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Century Gothic' !important;
+}
+
+.minimal-report-option:hover {
+  border-color: #d4a762;
+  background: #f5f0ea;
+}
+
+.minimal-report-option.selected {
+  border-color: #5c4730;
+  background: #f5f0ea;
+}
+
+.minimal-report-option-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #5c4730;
+  margin-bottom: 0.25rem;
+  font-family: 'Century Gothic' !important;
+}
+
+.minimal-report-option-desc {
+  font-size: 0.75rem;
+  color: #666;
+  line-height: 1.4;
+  font-family: 'Century Gothic' !important;
+}
+
+.minimal-modal-info {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+  font-family: 'Century Gothic' !important;
+}
+
+.minimal-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(92, 71, 48, 0.1);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.minimal-modal-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid rgba(92, 71, 48, 0.2);
+  border-radius: 0.375rem;
+  background: white;
+  color: #5c4730;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.6875rem;
+  font-family: 'Century Gothic' !important;
+}
+
+.minimal-modal-btn:hover {
+  background: #f5f0ea;
+  border-color: #d4a762;
+}
+
+.minimal-modal-btn.primary {
+  background: #5c4730;
+  color: white;
+  border-color: #5c4730;
+}
+
+.minimal-modal-btn.primary:hover {
+  background: #3c2a1c;
+}
+
+.mini-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ==================== LOADING STATE ==================== */
+.reports-loading {
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #f5f0ea;
+  border-top: 2px solid #5c4730;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1.5rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+@media (max-width: 1200px) {
+  .realtime-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .team-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .minimal-quick-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .officer-kpis-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .reports-page-wrapper {
+    padding: 1rem;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  
+  .header-actions {
+    width: 100%;
+  }
+  
+  .minimal-date-selector {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .date-range-options {
+    width: 100%;
+  }
+  
+  .minimal-date-btn {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .performance-dashboard-section {
+    padding: 1rem;
+  }
+  
+  .performance-dashboard-section > div {
+    flex-direction: column;
+  }
+  
+  .realtime-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .team-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .officer-kpis-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .kpi-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .export-options {
+    flex-direction: column;
+  }
+  
+  .minimal-section-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  
+  .minimal-quick-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-title {
+    font-size: 0.8125rem;
+  }
+  
+  .dashboard-subtitle {
+    font-size: 0.625rem;
+  }
+  
+  .minimal-refresh-btn,
+  .minimal-primary-btn {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.625rem;
+  }
+  
+  .leaderboard-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    min-height: auto;
+  }
+  
+  .score-cell {
+    text-align: left;
+    width: 100%;
+  }
+  
+  .activity-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .activity-amount {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* Century Gothic font fallback */
+@supports not (font-family: 'Century Gothic') {
+  .reports-page-wrapper,
+  .minimal-date-selector,
+  .performance-dashboard-section,
+  .officer-kpi-card,
+  .leaderboard-card,
+  .activity-timeline-card,
+  .team-metrics-card,
+  .realtime-stat-card,
+  .minimal-quick-stat-card {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
+  }
+}

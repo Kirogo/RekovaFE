@@ -1,0 +1,565 @@
+/* src/styles/components.css - Clean with Subtle Fill Animation - FIXED */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.kollect-century-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: 'Roboto', 'Century Gothic', 'Futura', 'Avenir', 'Helvetica Neue', 'Segoe UI', sans-serif;
+}
+
+.kollect-century-card {
+  width: 90%;
+  max-width: 900px;
+  min-height: 480px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 
+    0 15px 40px rgba(92, 71, 48, 0.06),
+    0 5px 20px rgba(0, 0, 0, 0.03),
+    0 0 0 1px rgba(0, 0, 0, 0.01);
+  display: flex;
+  overflow: hidden;
+  animation: centuryFadeIn 0.5s ease-out;
+}
+
+@keyframes centuryFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* LEFT PANEL */
+.kollect-century-left-panel {
+  flex: 0 0 40%;
+  background: linear-gradient(145deg, #5c4730 0%, #3c2a1c 100%);
+  padding: 40px 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kollect-century-left-content {
+  text-align: center;
+  width: 100%;
+}
+
+/* SIMPLE SUBTLE FILL ANIMATION - FIXED Z-INDEX */
+.kollect-century-icon-container {
+  margin-bottom: 25px;
+}
+
+.kollect-money-fill-container {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 25px;
+}
+
+/* SUBTLE FILL EFFECT - LOWEST Z-INDEX */
+.kollect-money-fill-effect {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  width: 120px;
+  height: 120px;
+  border-radius: 30px;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* Slow filling animation - NOW VISIBLE */
+.kollect-money-fill-layer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 10%;
+  background: linear-gradient(
+    to top,
+    rgba(212, 167, 98, 0.5) 0%,
+    rgba(255, 215, 170, 0.4) 30%,
+    rgba(255, 237, 213, 0.3) 70%,
+    transparent 100%
+  );
+  border-radius: 30px;
+  z-index: 0;
+  
+  /* Slow and fluid animation */
+  animation: subtleFill 15s ease-in-out infinite;
+}
+
+@keyframes subtleFill {
+  0%, 20% {
+    height: 10%;
+    opacity: 0.7;
+  }
+  40% {
+    height: 40%;
+    opacity: 0.8;
+  }
+  60% {
+    height: 60%;
+    opacity: 0.9;
+  }
+  80% {
+    height: 80%;
+    opacity: 1;
+  }
+  95% {
+    height: 95%;
+    opacity: 0.9;
+  }
+  100% {
+    height: 10%;
+    opacity: 0.7;
+  }
+}
+
+/* Very subtle wave effect on the surface */
+.kollect-money-fill-layer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  border-radius: 30px 30px 0 0;
+  animation: surfaceWave 8s ease-in-out infinite;
+}
+
+@keyframes surfaceWave {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateX(8px);
+    opacity: 0.6;
+  }
+}
+
+/* Money icon container - ABOVE FILL */
+.kollect-money-icon {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 30px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  z-index: 1;
+}
+
+.kollect-money-symbol {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Container outline - HIGHEST Z-INDEX */
+.kollect-money-container-outline {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 120px;
+  height: 120px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 30px;
+  box-shadow: 
+    0 0 0 1px rgba(0, 0, 0, 0.1) inset,
+    0 0 20px rgba(212, 167, 98, 0.4);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Brand text */
+.kollect-century-brand {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.kollect-century-title {
+  font-size: 34px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.kollect-century-subtitle {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 300;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+/* RIGHT PANEL - Login Form */
+.kollect-century-right-panel {
+  flex: 0 0 60%;
+  background: white;
+  padding: 40px 45px;
+  display: flex;
+  align-items: center;
+}
+
+.kollect-century-form-container {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.kollect-century-form-header {
+  margin-bottom: 35px;
+}
+
+.kollect-century-form-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.kollect-century-form-subtitle {
+  font-size: 14px;
+  color: #718096;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+}
+
+.kollect-century-form {
+  width: 100%;
+}
+
+.kollect-century-alert {
+  background: rgba(231, 76, 60, 0.05);
+  border: 1px solid rgba(231, 76, 60, 0.15);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: centurySlideIn 0.2s ease;
+}
+
+@keyframes centurySlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kollect-century-alert-icon {
+  width: 18px;
+  height: 18px;
+  background: #e53e3e;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.kollect-century-alert-text {
+  font-size: 13px;
+  color: #c53030;
+  line-height: 1.4;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+}
+
+.kollect-century-field-group {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.kollect-century-field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.kollect-century-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  color: #2d3748;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+  height: 44px;
+  letter-spacing: 0.2px;
+}
+
+.kollect-century-input:focus {
+  border-color: #5c4730;
+  box-shadow: 0 0 0 3px rgba(92, 71, 48, 0.06);
+}
+
+.kollect-century-input::placeholder {
+  color: #a0aec0;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  font-weight: 300;
+}
+
+.kollect-century-input:disabled {
+  background: #f7fafc;
+  border-color: #e2e8f0;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.kollect-century-actions {
+  margin: 30px 0 20px;
+  width: 100%;
+}
+
+.kollect-century-primary-btn {
+  width: 100%;
+  padding: 14px;
+  background: #5c4730;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.kollect-century-primary-btn:hover:not(:disabled) {
+  background: #4a3825;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(92, 71, 48, 0.12);
+}
+
+.kollect-century-primary-btn:disabled {
+  background: #cbd5e0;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.kollect-century-btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: centurySpin 1s linear infinite;
+}
+
+@keyframes centurySpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.kollect-century-secondary {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.kollect-century-secondary-btn {
+  background: transparent;
+  color: #5c4730;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  letter-spacing: 0.4px;
+}
+
+.kollect-century-secondary-btn:hover:not(:disabled) {
+  background: #f7fafc;
+  border-color: #5c4730;
+}
+
+.kollect-century-secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kollect-century-footer {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+  width: 100%;
+}
+
+.kollect-century-footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 11px;
+  color: #718096;
+}
+
+.kollect-century-footer-text {
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+.kollect-century-footer-separator {
+  color: #e2e8f0;
+  font-size: 9px;
+}
+
+.kollect-century-warning {
+  position: fixed;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff5eb;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+  animation: centurySlideDown 0.3s ease;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  font-size: 13px;
+  font-weight: 400;
+  font-family: inherit;
+  letter-spacing: 0.2px;
+}
+
+.kollect-century-warning .kollect-warning-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+@keyframes centurySlideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .kollect-money-fill-container {
+    width: 110px;
+    height: 110px;
+  }
+  
+  .kollect-money-fill-effect {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .kollect-money-icon {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .kollect-money-symbol {
+    font-size: 56px;
+  }
+  
+  .kollect-money-container-outline {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .kollect-money-fill-container {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .kollect-money-fill-effect {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .kollect-money-icon {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .kollect-money-symbol {
+    font-size: 48px;
+  }
+  
+  .kollect-money-container-outline {
+    width: 90px;
+    height: 90px;
+  }
+}
