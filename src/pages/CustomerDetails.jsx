@@ -1397,11 +1397,16 @@ const CustomerDetails = () => {
 
                             <div className="customer-details-actions">
                                 <button
-                                    className="customer-details-action-btn"
-                                    onClick={handleExportStatement}
+                                    className="customer-details-primary-btn"
+                                    onClick={handleProcessPayment}
+                                    disabled={parseFloat(customer?.loanBalance || 0) <= 0 || hasActiveTransaction}
+                                    style={{
+                                        opacity: hasActiveTransaction ? 0.6 : 1,
+                                        cursor: hasActiveTransaction ? 'not-allowed' : 'pointer'
+                                    }}
                                 >
-                                    <Download sx={{ fontSize: 16 }} />
-                                    Statement
+                                    <SendToMobile sx={{ fontSize: 16 }} />
+                                    {hasActiveTransaction ? `Active (${activeTransactionStatus})` : 'Prompt'}
                                 </button>
 
                                 <button
@@ -1418,17 +1423,12 @@ const CustomerDetails = () => {
                                     Promise
                                 </button>
 
-                                <button
-                                    className="customer-details-primary-btn"
-                                    onClick={handleProcessPayment}
-                                    disabled={parseFloat(customer?.loanBalance || 0) <= 0 || hasActiveTransaction}
-                                    style={{
-                                        opacity: hasActiveTransaction ? 0.6 : 1,
-                                        cursor: hasActiveTransaction ? 'not-allowed' : 'pointer'
-                                    }}
+                                  <button
+                                    className="customer-details-action-btn"
+                                    onClick={handleExportStatement}
                                 >
-                                    <SendToMobile sx={{ fontSize: 16 }} />
-                                    {hasActiveTransaction ? `Active (${activeTransactionStatus})` : 'Prompt'}
+                                    <Download sx={{ fontSize: 16 }} />
+                                    Statement
                                 </button>
                             </div>
                         </div>
