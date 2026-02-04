@@ -355,6 +355,46 @@
   text-overflow: ellipsis;
 }
 
+
+
+/* Loan Type Styling in Customer Information */
+.customer-info-item.loan-type {
+    background: #f8f9fa;
+    border-color: rgba(92, 71, 48, 0.1);
+}
+
+.customer-info-item.loan-type .info-label {
+    color: #5c4730;
+}
+
+.customer-info-item.loan-type .info-value {
+    font-weight: 600;
+    color: #3c2a1c;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Optional: Add different background colors for different loan types */
+.customer-info-item.loan-type[data-loan-type*="personal"] {
+    background: #e3f2fd;
+    border-color: #bbdefb;
+}
+
+.customer-info-item.loan-type[data-loan-type*="business"] {
+    background: #e8f5e9;
+    border-color: #c8e6c9;
+}
+
+.customer-info-item.loan-type[data-loan-type*="emergency"] {
+    background: #fff3e0;
+    border-color: #ffe0b2;
+}
+
+.customer-info-item.loan-type[data-loan-type*="salary"] {
+    background: #f3e5f5;
+    border-color: #e1bee7;
+}
+
 /* For email and long values that need wrapping */
 .customer-info-item.email-item .info-value {
   word-break: break-all;

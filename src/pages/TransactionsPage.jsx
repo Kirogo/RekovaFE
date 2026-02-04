@@ -63,48 +63,84 @@ const TransactionsPage = () => {
       setError(null);
 
       const api = getApi();
-      
-      // FIXED: Use correct endpoint /api/transactions instead of /api/payments/transactions
-      console.log('📡 Fetching transactions from /api/transactions...');
-      
-      const response = await api.get('/transactions?limit=100');
-      
-      console.log('✅ Transactions API Response:', response.data);
+      const userRole = authService.getUserRole();
 
-      // FIXED: Extract transactions from response correctly
-      let transactionsData = [];
-      const resData = response.data;
-      
-      if (resData.data && Array.isArray(resData.data)) {
-        // Direct array in data field
-        transactionsData = resData.data;
-      } else if (resData.data?.transactions) {
-        // Nested transactions in data field
-        transactionsData = resData.data.transactions;
-      } else if (Array.isArray(resData)) {
-        // Direct array response
-        transactionsData = resData;
-      } else if (resData.transactions) {
-        // Transactions in root
-        transactionsData = resData.transactions;
+      console.log(`📡 Fetching transactions for ${userRole}...`);
+
+      let response;
+      let transactionsData = []; // DECLARE HERE AT FUNCTION SCOPE
+
+      // FIXED: Use different endpoints based on user role
+      if (userRole === 'officer') {
+        // For officers: fetch only their transactions
+        console.log('👤 Fetching officer transactions from /api/transactions/my-transactions...');
+        response = await api.get('/transactions/my-transactions?limit=100');
+
+        console.log('✅ Officer transactions response:', response.data);
+
+        // Extract transactions from officer endpoint
+        const resData = response.data;
+
+        if (resData.data && resData.data.transactions) {
+          // Structure: { data: { transactions: [] } }
+          transactionsData = resData.data.transactions;
+        } else if (resData.transactions) {
+          // Structure: { transactions: [] }
+          transactionsData = resData.transactions;
+        } else if (Array.isArray(resData)) {
+          // Direct array response
+          transactionsData = resData;
+        } else if (Array.isArray(resData.data)) {
+          // Direct array in data field
+          transactionsData = resData.data;
+        }
+
+        console.log(`📊 Found ${transactionsData.length} transactions for officer`);
+
+        // Map officer-specific data structure
+        transactionsData = transactionsData.map(transaction => ({
+          ...transaction,
+          customerId: transaction.customerId || transaction.customer,
+          phoneNumber: transaction.phoneNumber || (transaction.customerId?.phoneNumber),
+          customerName: transaction.customerId?.name || transaction.customer?.name || 'Unknown Customer'
+        }));
+
+      } else {
+        // For admins/supervisors: fetch all transactions
+        console.log('👑 Fetching all transactions from /api/transactions...');
+        response = await api.get('/transactions?limit=100');
+
+        console.log('✅ All transactions response:', response.data);
+
+        // Extract transactions from general endpoint
+        const resData = response.data;
+
+        if (resData.data && Array.isArray(resData.data)) {
+          // Direct array in data field
+          transactionsData = resData.data;
+        } else if (resData.data?.transactions) {
+          // Nested transactions in data field
+          transactionsData = resData.data.transactions;
+        } else if (Array.isArray(resData)) {
+          // Direct array response
+          transactionsData = resData;
+        } else if (resData.transactions) {
+          // Transactions in root
+          transactionsData = resData.transactions;
+        }
+
+        console.log(`📊 Found ${transactionsData.length} total transactions`);
       }
-      
-      console.log(`📊 Found ${transactionsData.length} transactions`);
-      
-      // Log first transaction to see structure
-      if (transactionsData.length > 0) {
-        console.log('📋 First transaction sample:', transactionsData[0]);
-        console.log('👤 Customer data in transaction:', transactionsData[0].customerId);
-      }
-      
+
+      // Now set the state with transactionsData
       setTransactions(transactionsData);
 
-      // Calculate stats
+      // Calculate stats based on filtered transactions
       const totalAmount = transactionsData.reduce((sum, t) => {
         const amount = parseFloat(t?.amount || 0);
         return sum + (isNaN(amount) ? 0 : amount);
       }, 0);
-      
+
       const successful = transactionsData.filter(t => t?.status?.toUpperCase() === 'SUCCESS').length;
       const failed = transactionsData.filter(t => t?.status?.toUpperCase() === 'FAILED').length;
       const pending = transactionsData.filter(t => t?.status?.toUpperCase() === 'PENDING').length;
@@ -144,7 +180,7 @@ const TransactionsPage = () => {
     try {
       const api = getApi();
       const response = await api.get(`/customers/${customerId}`);
-      
+
       if (response.data.success) {
         return response.data.data?.customer || response.data.data;
       }
@@ -161,10 +197,10 @@ const TransactionsPage = () => {
 
   // Filter transactions
   const filteredTransactions = transactions.filter(transaction => {
-    const customerName = transaction.customerId?.name || 
-                        transaction.customerName || 
-                        'Unknown Customer';
-    
+    const customerName = transaction.customerId?.name ||
+      transaction.customerName ||
+      'Unknown Customer';
+
     const matchesSearch = !searchTerm ||
       customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (transaction.transactionId || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -370,19 +406,19 @@ const TransactionsPage = () => {
     }
   };
 
-  // Stats data - 3 cards matching dashboard
+  // Stats data - Update the meta descriptions
   const statsData = [
     {
-      label: 'Total Amount',
+      label: authService.getUserRole() === 'officer' ? 'My Collections' : 'Total Amount',
       value: formatCurrency(stats?.totalAmount || 0),
       icon: <AccountBalanceWallet />,
-      meta: 'Total value processed'
+      meta: authService.getUserRole() === 'officer' ? 'Total amount collected' : 'Total value processed'
     },
     {
       label: 'Successful',
       value: stats?.successfulTransactions || 0,
       icon: <CheckCircle />,
-      meta: 'Completed payments'
+      meta: authService.getUserRole() === 'officer' ? 'Your successful payments' : 'Completed payments'
     },
     {
       label: 'Pending',
@@ -403,7 +439,9 @@ const TransactionsPage = () => {
                 Transactions
               </Typography>
               <Typography className="transactions-subtitle">
-                View and manage all payment transactions
+                {authService.getUserRole() === 'officer'
+                  ? 'My Initiated transactions'
+                  : 'View and manage all payment transactions'}
               </Typography>
             </Box>
 
@@ -459,7 +497,9 @@ const TransactionsPage = () => {
             <div className="transactions-section-header">
               <Box>
                 <Typography className="transactions-section-title">
-                  TRANSACTIONS ({transactions.length})
+                  {authService.getUserRole() === 'officer'
+                    ? `MY TRANSACTIONS (${transactions.length})`
+                    : `ALL TRANSACTIONS (${transactions.length})`}
                 </Typography>
               </Box>
 
@@ -548,15 +588,15 @@ const TransactionsPage = () => {
                     <tbody>
                       {paginatedTransactions.map((transaction, index) => {
                         const statusProps = getStatusProps(transaction.status);
-                        
+
                         // FIXED: Handle customer data correctly
-                        const customerName = transaction.customerId?.name || 
-                                            transaction.customerName || 
-                                            'Unknown Customer';
-                        const phoneNumber = transaction.customerId?.phoneNumber || 
-                                           transaction.phoneNumber || 
-                                           'N/A';
-                        
+                        const customerName = transaction.customerId?.name ||
+                          transaction.customerName ||
+                          'Unknown Customer';
+                        const phoneNumber = transaction.customerId?.phoneNumber ||
+                          transaction.phoneNumber ||
+                          'N/A';
+
                         return (
                           <tr
                             key={transaction._id || transaction.transactionId || `transaction-${index}`}

@@ -1,3 +1,4 @@
+//src/LayoutWrapper.jsx
 import React, { useState, useEffect } from 'react';
 import RightSidebar from './components/layout/RightSidebar';
 import Sidebar from './components/layout/Sidebar'; 

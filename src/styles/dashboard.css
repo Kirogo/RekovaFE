@@ -1,4 +1,4 @@
-/* src/styles/dashboard.css - UPDATED TO MATCH CUSTOMER PAGE */
+/* src/styles/dashboard.css - UPDATED WITH HORIZONTAL PERFORMANCE SUMMARY AND TRANSACTION STYLES */
 
 .dashboard-wrapper {
   min-height: calc(100vh - 70px);
@@ -52,10 +52,101 @@
   letter-spacing: 0.1px;
 }
 
-/* ==================== STATS GRID - MATCHING CUSTOMER PAGE ==================== */
+/* ==================== OFFICER PERFORMANCE SUMMARY - HORIZONTAL CARD ==================== */
+.officer-performance-summary {
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.performance-summary-card {
+  background: linear-gradient(135deg, #f5e8d5, #efe0ca);
+  border: 1px solid #e0c9a3;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(139, 108, 73, 0.12);
+  position: relative;
+  overflow: hidden;
+  min-height: 4.5rem;
+}
+
+.performance-summary-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0.125rem;
+  background: linear-gradient(90deg, #d4a762, #8b6c49, #5c4730);
+  opacity: 0.9;
+}
+
+.performance-title {
+  font-size: 0.8125rem !important;
+  font-weight: 900 !important;
+  color: #5c4730 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  margin: 0;
+  min-width: 140px;
+  font-family: 'Century Gothic' !important;
+  line-height: 1.1;
+}
+
+.performance-metrics {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  flex-wrap: wrap;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.performance-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 100px;
+}
+
+.metric-label {
+  font-size: 0.6875rem;
+  color: #8b6c49;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-family: 'Century Gothic' !important;
+  line-height: 1.1;
+}
+
+.metric-value {
+  font-size: 1rem;
+  font-weight: 900;
+  color: #3c2a1c;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(139, 108, 73, 0.2);
+  min-width: 80px;
+  text-align: center;
+  font-family: 'Century Gothic' !important;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(139, 108, 73, 0.08);
+}
+
+.metric-value.success-rate {
+  background: linear-gradient(135deg, #e8f5e9, #d4efdf);
+  border-color: #27ae60;
+  color: #2e7d32;
+}
+
+/* ==================== STATS GRID - ONLY 3 CARDS ==================== */
 .minimal-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
   margin-bottom: 1.25rem;
   width: 100%;
@@ -154,56 +245,6 @@
   line-height: 1.1;
 }
 
-/* ==================== ROLE INFO SECTION ==================== */
-.role-info-section {
-  margin: 20px 0;
-}
-
-.role-info-card {
-  background: linear-gradient(135deg, #f9f3e9, #f5ebdd);
-  border: 1px solid #e8d9c3;
-  border-radius: 12px;
-  padding: 20px;
-}
-
-.role-info-title {
-  font-size: 0.875rem !important;
-  font-weight: 600 !important;
-  color: #5c4730 !important;
-  margin-bottom: 15px !important;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.role-info-content {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.role-info-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.8125rem;
-  color: #7a6a53;
-}
-
-.role-info-item span:first-child {
-  font-weight: 500;
-}
-
-.role-info-value {
-  background: #5c4730;
-  color: white;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  min-width: 40px;
-  text-align: center;
-}
-
 /* ==================== MAIN CONTENT - 65%/35% LAYOUT ==================== */
 .dashboard-main-content {
   display: flex;
@@ -278,6 +319,9 @@
   line-height: 1.1;
   position: relative;
   padding-bottom: 0.375rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .section-title::after {
@@ -290,6 +334,22 @@
   background: linear-gradient(90deg, #d4a762, #5c4730);
   border-radius: 0.125rem;
   display: block !important;
+}
+
+/* Transaction Count Badge */
+.transaction-count-badge {
+  background: #5c4730;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-left: 0;
+  vertical-align: middle;
+  line-height: 1;
+  font-family: 'Century Gothic' !important;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* View All Button - Matching Customer Page */
@@ -391,6 +451,9 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .customer-phone {
@@ -457,6 +520,43 @@
   line-height: 1.1;
 }
 
+/* Status badge styles */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Century Gothic' !important;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Primary Action Button */
+.primary-action-btn {
+  background: #5c4730;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 12px;
+  font-family: 'Century Gothic' !important;
+  line-height: 1;
+}
+
+.primary-action-btn:hover {
+  background: #3c2a1c;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(92, 71, 48, 0.2);
+}
+
 /* Status Colors */
 .status-success {
   color: #2ecc71 !important;
@@ -476,6 +576,40 @@
 
 .status-cancelled {
   color: #7f8c8d !important;
+}
+
+/* Status Colors for Transaction Status */
+.success-badge {
+  background-color: rgba(46, 204, 113, 0.1) !important;
+  color: #2ecc71 !important;
+  border: 1px solid rgba(46, 204, 113, 0.2);
+}
+
+.failed-badge {
+  background-color: rgba(231, 76, 60, 0.1) !important;
+  color: #e74c3c !important;
+  border: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+/* PENDING - ORANGE */
+.pending-badge {
+  background-color: rgba(243, 156, 18, 0.1) !important;
+  color: #f39c12 !important;
+  border: 1px solid rgba(243, 156, 18, 0.2);
+}
+
+/* EXPIRED - GREY */
+.expired-badge {
+  background-color: rgba(149, 165, 166, 0.1) !important;
+  color: #95a5a6 !important;
+  border: 1px solid rgba(149, 165, 166, 0.2);
+}
+
+/* CANCELLED - DARK GREY */
+.cancelled-badge {
+  background-color: rgba(127, 140, 141, 0.1) !important;
+  color: #7f8c8d !important;
+  border: 1px solid rgba(127, 140, 141, 0.2);
 }
 
 /* ==================== EMPTY STATE FOR TRANSACTIONS ==================== */
@@ -619,6 +753,30 @@
 }
 
 /* ==================== LOADING STATES ==================== */
+.dashboard-loading-state {
+  width: 100%;
+  padding: 1.5rem;
+  text-align: center;
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
+}
+
+.dashboard-loading-progress {
+  margin-bottom: 1rem !important;
+  border-radius: 4px !important;
+  background-color: #f5f0ea !important;
+}
+
+.dashboard-loading-progress .MuiLinearProgress-bar {
+  background-color: #5c4730 !important;
+}
+
+.dashboard-loading-text {
+  color: #666 !important;
+  text-align: center !important;
+  font-size: 0.875rem !important;
+  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
+}
+
 .dashboard-loading {
   display: flex;
   flex-direction: column;
@@ -663,8 +821,16 @@
 
 /* ==================== RESPONSIVE DESIGN ==================== */
 @media (max-width: 1200px) {
+  .performance-metrics {
+    gap: 1.5rem;
+  }
+  
+  .performance-metric {
+    min-width: 90px;
+  }
+  
   .minimal-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.625rem;
   }
   
@@ -674,6 +840,17 @@
 }
 
 @media (max-width: 992px) {
+  .performance-summary-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .performance-metrics {
+    justify-content: flex-start;
+    width: 100%;
+  }
+  
   .dashboard-main-content {
     flex-direction: column;
     gap: 1rem;
@@ -692,11 +869,6 @@
   .customers-list {
     max-height: 15rem;
   }
-  
-  .role-info-content {
-    flex-direction: column;
-    gap: 10px;
-  }
 }
 
 @media (max-width: 768px) {
@@ -712,8 +884,35 @@
     font-size: 0.625rem;
   }
   
+  .performance-summary-card {
+    padding: 0.875rem;
+  }
+  
+  .performance-title {
+    font-size: 0.75rem !important;
+    min-width: 120px;
+  }
+  
+  .performance-metrics {
+    gap: 1rem;
+  }
+  
+  .performance-metric {
+    min-width: 80px;
+  }
+  
+  .metric-label {
+    font-size: 0.625rem;
+  }
+  
+  .metric-value {
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    min-width: 70px;
+  }
+  
   .minimal-stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
   }
   
@@ -780,13 +979,41 @@
     padding: 0.3125rem 0.625rem;
     height: 26px;
   }
-  
-  .role-info-card {
-    padding: 15px;
+}
+
+@media (max-width: 600px) {
+  .minimal-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
   
-  .role-info-title {
-    font-size: 0.8125rem !important;
+  .performance-summary-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .performance-metrics {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: 100%;
+  }
+  
+  .performance-metric {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .metric-label {
+    font-size: 0.75rem;
+  }
+  
+  .metric-value {
+    font-size: 0.875rem;
+    min-width: 80px;
   }
 }
 
@@ -797,6 +1024,16 @@
   
   .dashboard-subtitle {
     font-size: 0.5625rem;
+  }
+  
+  .performance-title {
+    font-size: 0.6875rem !important;
+    min-width: 100px;
+  }
+  
+  .metric-value {
+    font-size: 0.8125rem;
+    padding: 0.25rem 0.5rem;
   }
   
   .stat-value {
@@ -855,17 +1092,9 @@
     height: 0.125rem;
   }
   
-  .role-info-card {
-    padding: 12px;
-  }
-  
-  .role-info-item {
-    font-size: 0.75rem;
-  }
-  
-  .role-info-value {
-    font-size: 0.6875rem;
-    padding: 3px 8px;
+  .status-badge {
+    font-size: 9px !important;
+    padding: 1px 6px;
   }
 }
 
@@ -904,7 +1133,8 @@
   .recent-customers-card,
   .quick-actions-card,
   .customer-row,
-  .quick-action-item {
+  .quick-action-item,
+  .performance-summary-card {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
   }
 }

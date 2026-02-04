@@ -33,6 +33,7 @@ import {
 import axios from 'axios';
 import '../styles/CustomerDetails.css';
 import LayoutWrapper from '../LayoutWrapper';
+import authService from '../services/auth.service'; // Import auth service
 
 const CustomerDetails = () => {
     const { id } = useParams();
@@ -130,6 +131,19 @@ const CustomerDetails = () => {
     useEffect(() => {
         console.log('=== CUSTOMER DETAILS MOUNTED ===');
         console.log('ID from URL:', id);
+        console.log('🔐 Auth status:', {
+            isAuthenticated: authService.isAuthenticated(),
+            token: authService.getToken() ? 'Present' : 'Missing',
+            user: authService.getCurrentUser()
+        });
+
+        // Check authentication first
+        if (!authService.isAuthenticated()) {
+            console.log('❌ Not authenticated, redirecting to login');
+            authService.logout();
+            navigate('/login');
+            return;
+        }
 
         if (!id || id === 'undefined' || id === 'null') {
             console.error('❌ Invalid ID received');
@@ -153,6 +167,12 @@ const CustomerDetails = () => {
     // Check for active transactions on component mount and when transactions change
     useEffect(() => {
         const checkActiveTransactions = () => {
+            if (!Array.isArray(transactions)) {
+                setHasActiveTransaction(false);
+                setActiveTransactionStatus(null);
+                return;
+            }
+
             const activeTx = transactions.find(tx => {
                 const status = tx.status?.toLowerCase();
                 return status === 'pending' || status === 'initiated';
@@ -171,7 +191,7 @@ const CustomerDetails = () => {
     useEffect(() => {
         let pollInterval;
 
-        if (hasActiveTransaction) {
+        if (hasActiveTransaction && Array.isArray(transactions)) {
             pollInterval = setInterval(() => {
                 fetchCustomerTransactions();
             }, 5000); // Poll every 5 seconds
@@ -184,6 +204,11 @@ const CustomerDetails = () => {
         };
     }, [hasActiveTransaction, id]);
 
+    // Get API instance with auth headers
+    const getApi = () => {
+        return authService.getApi();
+    };
+
     const fetchCustomerDetails = async () => {
         console.log('🔄 Starting fetchCustomerDetails');
 
@@ -191,23 +216,23 @@ const CustomerDetails = () => {
             setLoading(true);
             setError(null);
 
-            const token = localStorage.getItem('token');
-
-            if (!token) {
+            // Check authentication
+            if (!authService.isAuthenticated()) {
+                console.log('❌ Not authenticated');
+                authService.logout();
                 navigate('/login');
                 return;
             }
+
+            const api = getApi();
+            console.log('🔑 API headers for customer details:', api.defaults.headers);
 
             // Add a timeout for the request
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
 
             try {
-                const response = await axios.get(`http://localhost:5000/api/customers/${id}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
+                const response = await api.get(`/customers/${id}`, {
                     signal: controller.signal
                 });
 
@@ -223,7 +248,9 @@ const CustomerDetails = () => {
                         amount: customerData.arrears || '',
                         useAlternativeNumber: false
                     });
+                    console.log('✅ Customer details loaded:', customerData.name);
                 } else {
+                    console.error('❌ API returned success: false:', response.data.message);
                     setError(response.data.message || 'Failed to load customer details');
                 }
             } catch (fetchError) {
@@ -232,18 +259,31 @@ const CustomerDetails = () => {
                     console.error('Request timeout - server might be offline');
                     setServerOnline(false);
                     setError('Server is taking too long to respond. Please check if the backend is running.');
+                } else if (fetchError.response?.status === 401) {
+                    console.log('⚠️ 401 Unauthorized - logging out');
+                    authService.logout();
+                    navigate('/login');
+                    return;
                 } else {
                     throw fetchError;
                 }
             }
         } catch (error) {
             console.error('❌ Error in fetchCustomerDetails:', error);
+            console.error('Error details:', {
+                message: error.message,
+                status: error.response?.status,
+                data: error.response?.data
+            });
 
             if (error.code === 'ERR_NETWORK') {
                 setServerOnline(false);
                 setError('Cannot connect to server. Please make sure the backend is running on port 5000.');
-            } else if (error.response) {
-                // Handle other response errors...
+            } else if (error.response?.status === 401) {
+                console.log('⚠️ 401 Unauthorized - logging out');
+                authService.logout();
+                navigate('/login');
+                return;
             } else if (error.request) {
                 setServerOnline(false);
                 setError('No response from server. The backend might be offline.');
@@ -265,13 +305,20 @@ const CustomerDetails = () => {
             setTransactionsLoading(true);
             console.log('🔄 Fetching transactions for customer:', id);
 
-            const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:5000/api/transactions?customerId=${id}&limit=10&sort=-createdAt`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const api = getApi();
+            const response = await api.get(`/transactions?customerId=${id}&limit=10&sort=-createdAt`);
+
+            console.log('📊 Transactions API response:', response.data); // Debug log
 
             if (response.data.success) {
-                const newTransactions = response.data.data || [];
+                // Ensure transactions is an array
+                const newTransactions = Array.isArray(response.data.data)
+                    ? response.data.data
+                    : Array.isArray(response.data.data?.transactions)
+                        ? response.data.data.transactions
+                        : [];
+
+                console.log('✅ Processed transactions:', newTransactions.length, 'items');
                 setTransactions(newTransactions);
 
                 // Check if there are any active transactions
@@ -286,9 +333,22 @@ const CustomerDetails = () => {
                 } else {
                     setActiveTransactionStatus(null);
                 }
+            } else {
+                console.warn('⚠️ API returned success: false for transactions');
+                setTransactions([]); // Set empty array on failure
             }
         } catch (error) {
             console.error('❌ Error fetching transactions:', error.message);
+            console.error('Full error:', error);
+            
+            if (error.response?.status === 401) {
+                console.log('⚠️ 401 Unauthorized - logging out');
+                authService.logout();
+                navigate('/login');
+                return;
+            }
+            
+            setTransactions([]); // Set empty array on error
         } finally {
             setTransactionsLoading(false);
         }
@@ -299,13 +359,11 @@ const CustomerDetails = () => {
 
         try {
             setCommentsLoading(true);
-            const token = localStorage.getItem('token');
+            const api = getApi();
 
             try {
                 // Try to fetch from API first
-                const response = await axios.get(`http://localhost:5000/api/customers/${id}/comments`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const response = await api.get(`/customers/${id}/comments`);
 
                 if (response.data.success) {
                     const comments = response.data.data.comments || [];
@@ -321,6 +379,13 @@ const CustomerDetails = () => {
                 }
             } catch (apiError) {
                 console.error('Error fetching comments from API:', apiError.message);
+                
+                if (apiError.response?.status === 401) {
+                    console.log('⚠️ 401 Unauthorized - logging out');
+                    authService.logout();
+                    navigate('/login');
+                    return;
+                }
 
                 // Fallback to localStorage
                 const commentsKey = `customer_comments_${id}`;
@@ -346,20 +411,22 @@ const CustomerDetails = () => {
 
         try {
             setPromisesLoading(true);
-            const token = localStorage.getItem('token');
+            const api = getApi();
 
-            const response = await axios.get(
-                `http://localhost:5000/api/promises/customer/${id}?limit=5`,
-                {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }
-            );
+            const response = await api.get(`/promises/customer/${id}?limit=5`);
 
             if (response.data.success) {
                 setPromises(response.data.data.promises || []);
             }
         } catch (error) {
             console.error('Error fetching promises:', error.message);
+            
+            if (error.response?.status === 401) {
+                console.log('⚠️ 401 Unauthorized - logging out');
+                authService.logout();
+                navigate('/login');
+                return;
+            }
         } finally {
             setPromisesLoading(false);
         }
@@ -373,7 +440,7 @@ const CustomerDetails = () => {
         if (localComments.length === 0) return;
 
         try {
-            const token = localStorage.getItem('token');
+            const api = getApi();
 
             for (const localComment of localComments) {
                 try {
@@ -383,16 +450,7 @@ const CustomerDetails = () => {
                         customerName: localComment.customerName || customer?.name || ''
                     };
 
-                    const response = await axios.post(
-                        `http://localhost:5000/api/customers/${id}/comments`,
-                        commentData,
-                        {
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            }
-                        }
-                    );
+                    const response = await api.post(`/customers/${id}/comments`, commentData);
 
                     if (response.data.success) {
                         // Update localStorage with server data
@@ -423,9 +481,8 @@ const CustomerDetails = () => {
         try {
             setSavingComment(true);
 
-            const token = localStorage.getItem('token');
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            const currentUser = user.name || user.username || 'Agent';
+            const user = authService.getCurrentUser();
+            const currentUser = user?.name || user?.username || 'Agent';
 
             const commentData = {
                 comment: newComment.trim(),
@@ -453,16 +510,8 @@ const CustomerDetails = () => {
 
             // Try to save to backend API
             try {
-                const response = await axios.post(
-                    `http://localhost:5000/api/customers/${id}/comments`,
-                    commentData,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
+                const api = getApi();
+                const response = await api.post(`/customers/${id}/comments`, commentData);
 
                 if (response.data.success) {
                     const savedComment = response.data.data.comment || response.data.data;
@@ -493,6 +542,13 @@ const CustomerDetails = () => {
                 }
             } catch (apiError) {
                 console.error('❌ API save failed:', apiError.message);
+                
+                if (apiError.response?.status === 401) {
+                    console.log('⚠️ 401 Unauthorized - logging out');
+                    authService.logout();
+                    navigate('/login');
+                    return;
+                }
 
                 // Save to localStorage as fallback
                 const commentsKey = `customer_comments_${id}`;
@@ -700,18 +756,20 @@ const CustomerDetails = () => {
         }
     };
 
-    // Filter transactions
-    const filteredTransactions = transactions.filter(transaction => {
-        const matchesSearch = !searchTerm ||
-            transaction.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            transaction.transactionId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            getTransactionNumber(transaction).toLowerCase().includes(searchTerm.toLowerCase());
+    // Filter transactions - ADDED ARRAY CHECK
+    const filteredTransactions = Array.isArray(transactions)
+        ? transactions.filter(transaction => {
+            const matchesSearch = !searchTerm ||
+                transaction.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                transaction.transactionId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                getTransactionNumber(transaction).toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchesStatus = !statusFilter ||
-            transaction.status?.toLowerCase() === statusFilter.toLowerCase();
+            const matchesStatus = !statusFilter ||
+                transaction.status?.toLowerCase() === statusFilter.toLowerCase();
 
-        return matchesSearch && matchesStatus;
-    });
+            return matchesSearch && matchesStatus;
+        })
+        : [];
 
     const getPromiseStatusClass = (status) => {
         const statusMap = {
@@ -734,8 +792,8 @@ const CustomerDetails = () => {
         }
 
         try {
-            const token = localStorage.getItem('token');
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const user = authService.getCurrentUser();
+            const api = getApi();
 
             console.log('📤 Sending request to /api/promises with:', {
                 customerId: id,
@@ -745,22 +803,14 @@ const CustomerDetails = () => {
                 notes: promiseData.notes
             });
 
-            const response = await axios.post(
-                'http://localhost:5000/api/promises',
-                {
-                    customerId: id,
-                    promiseAmount: parseFloat(promiseData.promiseAmount),
-                    promiseDate: promiseData.promiseDate,
-                    promiseType: promiseData.promiseType,
-                    notes: promiseData.notes
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+            const response = await api.post('/promises', {
+                customerId: id,
+                promiseAmount: parseFloat(promiseData.promiseAmount),
+                promiseDate: promiseData.promiseDate,
+                promiseType: promiseData.promiseType,
+                notes: promiseData.notes
+            });
+            
             if (response.data.success) {
                 setPromiseData({
                     promiseAmount: '',
@@ -774,24 +824,23 @@ const CustomerDetails = () => {
             }
         } catch (error) {
             console.error('Error creating promise:', error);
+            
+            if (error.response?.status === 401) {
+                console.log('⚠️ 401 Unauthorized - logging out');
+                authService.logout();
+                navigate('/login');
+                return;
+            }
+            
             setError(error.response?.data?.message || 'Failed to create promise');
         }
     };
 
     const updatePromiseStatus = async (promiseId, status) => {
         try {
-            const token = localStorage.getItem('token');
+            const api = getApi();
 
-            const response = await axios.patch(
-                `http://localhost:5000/api/promises/${promiseId}/status`,
-                { status },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+            const response = await api.patch(`/promises/${promiseId}/status`, { status });
 
             if (response.data.success) {
                 fetchCustomerPromises();
@@ -799,6 +848,14 @@ const CustomerDetails = () => {
             }
         } catch (error) {
             console.error('Error updating promise:', error);
+            
+            if (error.response?.status === 401) {
+                console.log('⚠️ 401 Unauthorized - logging out');
+                authService.logout();
+                navigate('/login');
+                return;
+            }
+            
             setError(error.response?.data?.message || 'Failed to update promise');
         }
     };
@@ -834,20 +891,12 @@ const CustomerDetails = () => {
         }
 
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.post(
-                'http://localhost:5000/api/payments/manual-pin',
-                {
-                    transactionId: mpesaStatus.transactionId,
-                    pin: manualPin
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+            const api = getApi();
+            
+            const response = await api.post('/payments/manual-pin', {
+                transactionId: mpesaStatus.transactionId,
+                pin: manualPin
+            });
 
             if (response.data.success) {
                 setMpesaStatus({
@@ -870,23 +919,25 @@ const CustomerDetails = () => {
             }
         } catch (error) {
             console.error('Manual PIN error:', error);
+            
+            if (error.response?.status === 401) {
+                console.log('⚠️ 401 Unauthorized - logging out');
+                authService.logout();
+                navigate('/login');
+                return;
+            }
+            
             setError(error.response?.data?.message || 'Failed to process payment');
         }
     };
 
     const handleExportStatement = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(
-                `http://localhost:5000/api/customers/${id}/statement`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    responseType: 'blob'
-                }
-            );
+            const api = getApi();
+            
+            const response = await api.get(`/customers/${id}/statement`, {
+                responseType: 'blob'
+            });
 
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
@@ -898,6 +949,14 @@ const CustomerDetails = () => {
             window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error('Error exporting statement:', error);
+            
+            if (error.response?.status === 401) {
+                console.log('⚠️ 401 Unauthorized - logging out');
+                authService.logout();
+                navigate('/login');
+                return;
+            }
+            
             setError(error.response?.data?.message || 'Failed to export statement. Please try again.');
         }
     };
@@ -990,8 +1049,8 @@ const CustomerDetails = () => {
             setPaymentInitiated(true);
             setShowConfirmationModal(false);
 
-            const token = localStorage.getItem('token');
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const user = authService.getCurrentUser();
+            const api = getApi();
 
             // Determine which phone number to use
             const phoneToUse = paymentData.useAlternativeNumber
@@ -1004,24 +1063,15 @@ const CustomerDetails = () => {
                 customer: customer?.name
             });
 
-            const response = await axios.post(
-                'http://localhost:5000/api/payments/initiate',
-                {
-                    phoneNumber: phoneToUse,
-                    amount: parseFloat(paymentData.amount),
-                    description: `Loan repayment for ${customer?.name}`,
-                    customerId: customer?._id || id,
-                    isAlternativeNumber: paymentData.useAlternativeNumber,
-                    originalPhoneNumber: paymentData.phoneNumber,
-                    initiatedBy: user.username || 'Agent'
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+            const response = await api.post('/payments/initiate', {
+                phoneNumber: phoneToUse,
+                amount: parseFloat(paymentData.amount),
+                description: `Loan repayment for ${customer?.name}`,
+                customerId: customer?._id || id,
+                isAlternativeNumber: paymentData.useAlternativeNumber,
+                originalPhoneNumber: paymentData.phoneNumber,
+                initiatedBy: user?.username || 'Agent'
+            });
 
             console.log('Payment request response:', response.data);
 
@@ -1056,6 +1106,14 @@ const CustomerDetails = () => {
             }
         } catch (error) {
             console.error('Error sending payment request:', error);
+            
+            if (error.response?.status === 401) {
+                console.log('⚠️ 401 Unauthorized - logging out');
+                authService.logout();
+                navigate('/login');
+                return;
+            }
+            
             setMpesaStatus({
                 status: 'error',
                 message: error.response?.data?.message || 'Failed to send payment request',
@@ -1070,23 +1128,14 @@ const CustomerDetails = () => {
     // Add this function to handle PIN submission
     const handlePinSubmit = async (transactionId, pin) => {
         try {
-            const token = localStorage.getItem('token');
+            const api = getApi();
 
             console.log('Submitting PIN:', { transactionId, pin });
 
-            const response = await axios.post(
-                'http://localhost:5000/api/payments/process-pin',  // Changed from /manual-pin
-                {
-                    transactionId: transactionId,
-                    pin: pin
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+            const response = await api.post('/payments/process-pin', {
+                transactionId: transactionId,
+                pin: pin
+            });
 
             console.log('PIN Response:', response.data);
 
@@ -1105,6 +1154,14 @@ const CustomerDetails = () => {
 
         } catch (error) {
             console.error('PIN submission error:', error);
+            
+            if (error.response?.status === 401) {
+                console.log('⚠️ 401 Unauthorized - logging out');
+                authService.logout();
+                navigate('/login');
+                return;
+            }
+            
             alert('Error: ' + (error.response?.data?.message || error.message));
         }
     };
@@ -1112,15 +1169,10 @@ const CustomerDetails = () => {
     const startStatusPolling = (transactionId) => {
         const pollInterval = setInterval(async () => {
             try {
-                const token = localStorage.getItem('token');
+                const api = getApi();
 
                 // CORRECT ENDPOINT:
-                const response = await axios.get(
-                    `http://localhost:5000/api/payments/status/${transactionId}`,
-                    {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }
-                );
+                const response = await api.get(`/payments/status/${transactionId}`);
 
                 console.log('Polling status response:', response.data);
 
@@ -1144,7 +1196,7 @@ const CustomerDetails = () => {
                             }));
 
                             // Show success notification
-                            alert('Payment completed successfully.');
+                            alert('Payment completed successfully!');
 
                         } else if (status === 'FAILED') {
                             setMpesaStatus(prev => ({
@@ -1206,11 +1258,9 @@ const CustomerDetails = () => {
         // Fetch customer details for the transaction
         if (transaction.customerId?._id || transaction.customerId) {
             try {
-                const token = localStorage.getItem('token');
+                const api = getApi();
                 const customerId = transaction.customerId._id || transaction.customerId;
-                const response = await axios.get(`http://localhost:5000/api/customers/${customerId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const response = await api.get(`/customers/${customerId}`);
 
                 if (response.data.success) {
                     setTransactionCustomerDetails(response.data.data.customer);
@@ -1350,31 +1400,6 @@ const CustomerDetails = () => {
         <LayoutWrapper>
             <Box className="customer-details-wrapper">
                 {/* Header */}
-                {!serverOnline && (
-                    <Alert severity="error" sx={{
-                        mb: 2,
-                        borderRadius: '8px',
-                        backgroundColor: '#fef2f2',
-                        color: '#dc2626',
-                        border: '1px solid #fecaca',
-                        fontSize: '0.875rem'
-                    }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body2" fontWeight="bold">
-                                ⚠️ Server Offline
-                            </Typography>
-                            <Typography variant="body2">
-                                Backend server is not running. Please start the server:
-                            </Typography>
-                        </Box>
-                        <Box sx={{ mt: 1, pl: 2 }}>
-                            <Typography variant="body2" sx={{ fontFamily: 'monospace', bgcolor: '#f5f5f5', p: 1, borderRadius: 1 }}>
-                                1. Open terminal in /backend directory<br />
-                                2. Run: npm run dev
-                            </Typography>
-                        </Box>
-                    </Alert>
-                )}
 
                 {/* Fixed Header - Won't Scroll */}
                 <Box className="customer-details-fixed-header">
@@ -1423,7 +1448,7 @@ const CustomerDetails = () => {
                                     Promise
                                 </button>
 
-                                  <button
+                                <button
                                     className="customer-details-action-btn"
                                     onClick={handleExportStatement}
                                 >
@@ -1497,7 +1522,16 @@ const CustomerDetails = () => {
                                             <div className="info-value">{customer?.customerId || 'N/A'}</div>
                                         </div>
 
-                                        <div className="customer-info-item email-item full-width">
+                                        <div className="customer-info-item half-width">
+                                            <div className="info-label">Loan Type</div>
+                                            <div className="info-value">
+                                                <span className="loan-type-badge">
+                                                    {customer?.loanType || 'Standard Loan'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="customer-info-item email-item half-width">
                                             <div className="info-label">Email Address</div>
                                             <div className="info-value">{customer?.email || 'N/A'}</div>
                                         </div>

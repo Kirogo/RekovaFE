@@ -49,12 +49,12 @@ const Sidebar = ({ onMenuToggle }) => {
       icon: <BarChartIcon fontSize="small" />,
       path: '/reports'
     },
-    {
+    {/*{
       id: 'settings',
       label: 'Settings',
       icon: <SettingsIcon fontSize="small" />,
       path: '/settings'
-    }
+    }*/}
   ];
 
   const handleCollapse = () => {

@@ -1,3 +1,4 @@
+// src/pages/CustomerPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -37,6 +38,7 @@ import {
 import CustomerTable from '../components/common/CustomerTable';
 import axios from 'axios';
 import LayoutWrapper from '../LayoutWrapper';
+import authService from '../services/auth.service'; // Import auth service
 import '../styles/customerpage.css';
 
 const CustomerPage = () => {
@@ -61,9 +63,8 @@ const CustomerPage = () => {
   const [transactionModalOpen, setTransactionModalOpen] = useState(false);
   const [customerDetails, setCustomerDetails] = useState(null);
   
-  // Recent transactions state
-  const [recentTransactions, setRecentTransactions] = useState([]);
-  const [transactionsLoading, setTransactionsLoading] = useState(false);
+  // User role state
+  const [userRole, setUserRole] = useState('officer');
   
   const [newCustomer, setNewCustomer] = useState({
     name: '',
@@ -75,9 +76,33 @@ const CustomerPage = () => {
     accountNumber: ''
   });
 
+  // Get user role from auth service
+  const getUserRole = () => {
+    const user = authService.getCurrentUser();
+    return user?.role || 'officer';
+  };
+
   useEffect(() => {
+    // Add auth debugging
+    console.log('🔐 CustomerPage mounted - Auth status:', {
+      isAuthenticated: authService.isAuthenticated(),
+      token: authService.getToken() ? 'Present' : 'Missing',
+      user: authService.getCurrentUser(),
+      localStorageKeys: Object.keys(localStorage)
+    });
+
+    if (!authService.isAuthenticated()) {
+      console.log('❌ Not authenticated, redirecting to login');
+      authService.logout();
+      navigate('/login');
+      return;
+    }
+
+    const role = getUserRole();
+    setUserRole(role);
+    console.log('👤 User role:', role);
+    
     fetchData();
-    fetchRecentTransactions();
   }, []);
 
   useEffect(() => {
@@ -91,7 +116,9 @@ const CustomerPage = () => {
         customer.email?.toLowerCase().includes(term) ||
         customer.phoneNumber?.includes(term) ||
         customer.customerId?.toLowerCase().includes(term) ||
-        customer.nationalId?.includes(term)
+        customer.nationalId?.includes(term) ||
+        (customer.assignedTo?.fullName?.toLowerCase().includes(term)) ||
+        (customer.assignedTo?.username?.toLowerCase().includes(term))
       );
     }
     
@@ -104,6 +131,10 @@ const CustomerPage = () => {
         result = result.filter(customer => parseFloat(customer.arrears || 0) > 0);
       } else if (statusFilter === 'current') {
         result = result.filter(customer => parseFloat(customer.arrears || 0) === 0);
+      } else if (statusFilter === 'assigned') {
+        result = result.filter(customer => customer.assignedTo);
+      } else if (statusFilter === 'unassigned') {
+        result = result.filter(customer => !customer.assignedTo);
       }
     }
     
@@ -117,39 +148,121 @@ const CustomerPage = () => {
       setLoading(true);
       setError(null);
 
-      const token = localStorage.getItem('token');
-      if (!token) {
+      console.log('🔍 CustomerPage: Starting data fetch...');
+      
+      // Check authentication first
+      if (!authService.isAuthenticated()) {
+        console.log('❌ Not authenticated, redirecting to login');
+        authService.logout();
         navigate('/login');
         return;
       }
 
-      const authAxios = axios.create({
-        baseURL: 'http://localhost:5000/api',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      // Use authService.getApi() instead of creating new axios instance
+      const api = authService.getApi();
+      console.log('🔑 API headers:', api.defaults.headers);
 
-      // Fetch customers
-      const customersResponse = await authAxios.get('/customers?limit=100');
+      let customersData = [];
+      const currentRole = getUserRole();
       
-      if (customersResponse.data.success) {
-        const customersData = customersResponse.data.data.customers || [];
-        const sortedCustomers = customersData.sort((a, b) => {
-          const dateA = new Date(a.createdAt || 0);
-          const dateB = new Date(b.createdAt || 0);
-          return dateB - dateA;
-        });
-        setCustomers(sortedCustomers);
-        setFilteredCustomers(sortedCustomers);
+      console.log(`👤 Fetching customers for ${currentRole}...`);
+
+      // Fetch customers based on role
+      if (currentRole === 'officer') {
+        // For officers: fetch only their assigned customers
+        try {
+          const response = await api.get('/customers/assigned-to-me');
+          console.log('📋 Officer assigned customers response:', response.data);
+          
+          if (response.data.success) {
+            customersData = response.data.data?.customers || response.data.customers || [];
+            console.log(`✅ Found ${customersData.length} assigned customers for officer`);
+          } else {
+            // Fallback: try to get all customers and filter
+            console.log('⚠️ Using fallback method for officer customers');
+            const allResponse = await api.get('/customers?limit=1000');
+            const allCustomers = allResponse.data.data?.customers || [];
+            
+            // Get current user ID
+            const user = authService.getCurrentUser();
+            const userId = user?.id;
+            
+            if (userId) {
+              customersData = allCustomers.filter(customer => 
+                customer.assignedTo?._id === userId ||
+                customer.assignedTo?._id?.toString() === userId ||
+                customer.assignedTo === userId ||
+                customer.assignedTo?.toString() === userId
+              );
+            } else {
+              customersData = allCustomers;
+            }
+          }
+        } catch (officerError) {
+          console.error('❌ Error fetching assigned customers:', officerError);
+          console.error('Error details:', {
+            status: officerError.response?.status,
+            message: officerError.response?.data?.message
+          });
+          
+          // Check if it's a 401 error
+          if (officerError.response?.status === 401) {
+            console.log('⚠️ 401 Unauthorized - logging out');
+            authService.logout();
+            navigate('/login');
+            return;
+          }
+          
+          // Fallback to all customers
+          try {
+            const response = await api.get('/customers?limit=100');
+            customersData = response.data.data?.customers || response.data.customers || [];
+          } catch (fallbackError) {
+            console.error('❌ Fallback also failed:', fallbackError);
+            throw fallbackError;
+          }
+        }
+      } else {
+        // For admins/supervisors: fetch all customers
+        try {
+          const response = await api.get('/customers?limit=1000');
+          customersData = response.data.data?.customers || response.data.customers || [];
+          console.log(`✅ Found ${customersData.length} customers for ${currentRole}`);
+        } catch (error) {
+          console.error('❌ Error fetching all customers:', error);
+          if (error.response?.status === 401) {
+            console.log('⚠️ 401 Unauthorized - logging out');
+            authService.logout();
+            navigate('/login');
+            return;
+          }
+          throw error;
+        }
       }
 
+      // Sort by created date (newest first)
+      const sortedCustomers = customersData.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0);
+        const dateB = new Date(b.createdAt || 0);
+        return dateB - dateA;
+      });
+      
+      setCustomers(sortedCustomers);
+      setFilteredCustomers(sortedCustomers);
+      
+      console.log(`📊 Displaying ${sortedCustomers.length} customers for ${currentRole}`);
+
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('❌ Error fetching data:', error);
+      console.error('Error details:', {
+        status: error.response?.status,
+        message: error.response?.data?.message,
+        data: error.response?.data
+      });
 
       if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        console.log('⚠️ 401 Unauthorized - logging out');
+        authService.logout();
         navigate('/login');
         return;
       }
@@ -157,53 +270,6 @@ const CustomerPage = () => {
       setError(error.response?.data?.message || 'Failed to load customer data. Please try again.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchRecentTransactions = async () => {
-    try {
-      setTransactionsLoading(true);
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-
-      const response = await axios.get('http://localhost:5000/api/payments/transactions?limit=5', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.data.success) {
-        const transactionsData = response.data.data?.transactions || [];
-        setRecentTransactions(Array.isArray(transactionsData) ? transactionsData : []);
-      }
-    } catch (error) {
-      console.error('Error fetching recent transactions:', error);
-    } finally {
-      setTransactionsLoading(false);
-    }
-  };
-
-  const fetchCustomerDetails = async (customerId) => {
-    if (!customerId) return null;
-
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/customers/${customerId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.data.success) {
-        return response.data.data.customer;
-      }
-      return null;
-    } catch (error) {
-      console.error('Error fetching customer details:', error);
-      return null;
     }
   };
 
@@ -217,23 +283,26 @@ const CustomerPage = () => {
 
   const handleSubmit = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://localhost:5000/api/customers',
-        {
-          ...newCustomer,
-          loanBalance: parseFloat(newCustomer.loanBalance) || 0,
-          arrears: parseFloat(newCustomer.arrears) || 0
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      console.log('➕ Creating new customer...');
+      
+      // Check authentication
+      if (!authService.isAuthenticated()) {
+        console.log('❌ Not authenticated');
+        authService.logout();
+        navigate('/login');
+        return;
+      }
+
+      const api = authService.getApi();
+      
+      const response = await api.post('/customers', {
+        ...newCustomer,
+        loanBalance: parseFloat(newCustomer.loanBalance) || 0,
+        arrears: parseFloat(newCustomer.arrears) || 0
+      });
 
       if (response.data.success) {
+        console.log('✅ Customer created successfully');
         setOpenDialog(false);
         setNewCustomer({
           name: '',
@@ -246,10 +315,23 @@ const CustomerPage = () => {
         });
         fetchData(); // Refresh the list
       } else {
+        console.error('❌ Customer creation failed:', response.data.message);
         setError(response.data.message || 'Failed to create customer');
       }
     } catch (error) {
-      console.error('Error creating customer:', error);
+      console.error('❌ Error creating customer:', error);
+      console.error('Error details:', {
+        status: error.response?.status,
+        message: error.response?.data?.message
+      });
+
+      if (error.response?.status === 401) {
+        console.log('⚠️ 401 Unauthorized - logging out');
+        authService.logout();
+        navigate('/login');
+        return;
+      }
+
       setError(error.response?.data?.message || 'Failed to create customer. Please try again.');
     }
   };
@@ -265,8 +347,8 @@ const CustomerPage = () => {
   };
 
   const handleRefresh = () => {
+    console.log('🔄 Refreshing customer data...');
     fetchData();
-    fetchRecentTransactions();
     setSearchTerm('');
     setStatusFilter('');
     setPage(0); // Reset to first page
@@ -320,129 +402,30 @@ const CustomerPage = () => {
     }
   };
 
-  // Get status props for transactions
-  const getTransactionStatusProps = (status) => {
-    const statusUpper = status?.toUpperCase();
-    switch (statusUpper) {
-      case 'SUCCESS':
-        return {
-          text: 'Success',
-          class: 'success',
-          icon: <CheckCircle sx={{ fontSize: 14 }} />
-        };
-      case 'FAILED':
-        return {
-          text: 'Failed',
-          class: 'failed',
-          icon: <Cancel sx={{ fontSize: 14 }} />
-        };
-      case 'PENDING':
-        return {
-          text: 'Pending',
-          class: 'pending',
-          icon: <AccessTime sx={{ fontSize: 14 }} />
-        };
-      case 'EXPIRED':
-        return {
-          text: 'Expired',
-          class: 'expired',
-          icon: <HourglassEmpty sx={{ fontSize: 14 }} />
-        };
-      case 'CANCELLED':
-        return {
-          text: 'Cancelled',
-          class: 'cancelled',
-          icon: <Cancel sx={{ fontSize: 14, color: '#6b7280' }} />
-        };
-      default:
-        return {
-          text: status || 'Unknown',
-          class: 'pending',
-          icon: <AccessTime sx={{ fontSize: 14 }} />
-        };
-    }
+  // Calculate stats
+  const calculateStats = () => {
+    const totalCustomers = customers.length;
+    const totalLoanPortfolio = customers.reduce((sum, customer) => 
+      sum + parseFloat(customer.loanBalance || 0), 0);
+    const totalArrears = customers.reduce((sum, customer) => 
+      sum + parseFloat(customer.arrears || 0), 0);
+    
+    return { totalCustomers, totalLoanPortfolio, totalArrears };
   };
 
-  // Handle transaction click
-  const handleTransactionClick = async (transaction) => {
-    setSelectedTransaction(transaction);
-
-    if (transaction.customerId?._id || transaction.customerId) {
-      const customerId = transaction.customerId._id || transaction.customerId;
-      const details = await fetchCustomerDetails(customerId);
-      setCustomerDetails(details);
-    } else {
-      setCustomerDetails(null);
-    }
-
-    setTransactionModalOpen(true);
-  };
-
-  // Close transaction modal
-  const handleCloseTransactionModal = () => {
-    setTransactionModalOpen(false);
-    setSelectedTransaction(null);
-    setCustomerDetails(null);
-  };
-
-  // Calculate loan details based on actual customer data
-  const calculateLoanDetails = (transaction) => {
-    const currentCustomerData = customerDetails || transaction.customerId;
-
-    const transactionAmount = parseFloat(transaction.amount || 0);
-    const totalLoanBalance = parseFloat(currentCustomerData?.loanBalance || 0);
-    const arrearsAmount = parseFloat(currentCustomerData?.arrears || currentCustomerData?.arrearsBalance || 0);
-    const totalRepayments = parseFloat(currentCustomerData?.totalRepayments || 0);
-
-    if (transaction.status?.toUpperCase() === 'SUCCESS') {
-      const arrearsCleared = Math.min(transactionAmount, arrearsAmount);
-      const principalPaid = Math.max(0, transactionAmount - arrearsCleared);
-      const remainingArrears = Math.max(0, arrearsAmount - arrearsCleared);
-      const remainingPrincipal = Math.max(0, totalLoanBalance - arrearsAmount - principalPaid);
-      const newLoanBalance = remainingArrears + remainingPrincipal;
-      const totalCleared = arrearsCleared + principalPaid;
-
-      return {
-        transactionAmount,
-        totalLoanBalance,
-        arrearsAmount,
-        arrearsCleared,
-        principalPaid,
-        remainingArrears,
-        remainingPrincipal,
-        newLoanBalance,
-        totalCleared,
-        totalRepayments,
-        isPaidOff: newLoanBalance <= 0,
-        hasArrears: remainingArrears > 0
-      };
-    } else {
-      return {
-        transactionAmount,
-        totalLoanBalance,
-        arrearsAmount,
-        arrearsCleared: 0,
-        principalPaid: 0,
-        remainingArrears: arrearsAmount,
-        remainingPrincipal: Math.max(0, totalLoanBalance - arrearsAmount),
-        newLoanBalance: totalLoanBalance,
-        totalCleared: 0,
-        totalRepayments,
-        isPaidOff: false,
-        hasArrears: arrearsAmount > 0
-      };
-    }
-  };
+  const stats = calculateStats();
 
   return (
     <LayoutWrapper>
       <Box className="customer-page-wrapper page-wrapper-base">
-        {/* Header Section - Matching Dashboard Styling */}
+        {/* Header Section */}
         <Box className="page-header-section">
           <Box className="customer-header-content">
             <Box>
               <Typography className="page-subtitle">
-                Manage all customer accounts and loan information
+                {userRole === 'officer' 
+                  ? 'My Assigned Customers' 
+                  : 'Manage All Customer Accounts'}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -458,65 +441,67 @@ const CustomerPage = () => {
           </Box>
         </Box>
 
-        {/* Stats and Recent Transactions Section */}
+        {/* Stats Section - Similar to Dashboard */}
         <div className="customer-stats-grid">
-          {/* Stats Cards (3 cards) */}
           <div className="customer-stat-card">
             <div className="customer-stat-header">
-              <div className="customer-stat-label">Total Customers</div>
-              <div
-                className="customer-stat-icon-wrapper"
-                style={{ background: 'linear-gradient(135deg, #d4a762, #5c4730)' }}
-              >
+              <div className="customer-stat-label">
+                {userRole === 'officer' ? 'My Customers' : 'Total Customers'}
+              </div>
+              <div className="customer-stat-icon-wrapper">
                 <Person sx={{ fontSize: 16 }} />
               </div>
             </div>
             <div>
               <div className="customer-stat-value">
-                {customers.length}
+                {stats.totalCustomers}
               </div>
               <div className="customer-stat-meta">
-                Active accounts in system
+                {userRole === 'officer' 
+                  ? 'Customers assigned to me' 
+                  : 'Active accounts in system'}
               </div>
             </div>
           </div>
 
           <div className="customer-stat-card">
             <div className="customer-stat-header">
-              <div className="customer-stat-label">Total Loan Portfolio</div>
-              <div
-                className="customer-stat-icon-wrapper"
-                style={{ background: 'linear-gradient(135deg, #d4a762, #5c4730)' }}
-              >
+              <div className="customer-stat-label">
+                {userRole === 'officer' ? 'My Portfolio' : 'Total Loan Portfolio'}
+              </div>
+              <div className="customer-stat-icon-wrapper">
                 <AccountBalance sx={{ fontSize: 16 }} />
               </div>
             </div>
             <div>
               <div className="customer-stat-value">
-                {formatCurrency(customers.reduce((sum, customer) => sum + parseFloat(customer.loanBalance || 0), 0))}
+                {formatCurrency(stats.totalLoanPortfolio)}
               </div>
               <div className="customer-stat-meta">
-                Combined loan balances
+                {userRole === 'officer' 
+                  ? 'Total loan balance assigned' 
+                  : 'Combined loan balances'}
               </div>
             </div>
           </div>
 
           <div className="customer-stat-card">
             <div className="customer-stat-header">
-              <div className="customer-stat-label">In Arrears</div>
-              <div
-                className="customer-stat-icon-wrapper"
-                style={{ background: 'linear-gradient(135deg, #d4a762, #5c4730)' }}
-              >
+              <div className="customer-stat-label">
+                {userRole === 'officer' ? 'My Arrears' : 'In Arrears'}
+              </div>
+              <div className="customer-stat-icon-wrapper">
                 <Receipt sx={{ fontSize: 16 }} />
               </div>
             </div>
             <div>
               <div className="customer-stat-value">
-                {formatCurrency(customers.reduce((sum, customer) => sum + parseFloat(customer.arrears || 0), 0))}
+                {formatCurrency(stats.totalArrears)}
               </div>
               <div className="customer-stat-meta">
-                Total overdue amounts
+                {userRole === 'officer' 
+                  ? 'Total arrears assigned' 
+                  : 'Total overdue amounts'}
               </div>
             </div>
           </div>
@@ -528,7 +513,9 @@ const CustomerPage = () => {
             <div className="customer-section-header">
               <Box>
                 <Typography className="customer-section-title">
-                  ALL CUSTOMERS ({filteredCustomers.length})
+                  {userRole === 'officer' 
+                    ? `MY ASSIGNED CUSTOMERS (${filteredCustomers.length})` 
+                    : `ALL CUSTOMERS (${filteredCustomers.length})`}
                 </Typography>
               </Box>
 
@@ -536,7 +523,7 @@ const CustomerPage = () => {
               <div className="customer-search-container">
                 <input
                   type="text"
-                  placeholder="Search by name, phone, email, or ID..."
+                  placeholder="Search by name, phone, email, ID, or assigned officer..."
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -558,6 +545,12 @@ const CustomerPage = () => {
                   <option value="inactive">Inactive</option>
                   <option value="arrears">In Arrears</option>
                   <option value="current">Current</option>
+                  {(userRole === 'admin' || userRole === 'supervisor') && (
+                    <>
+                      <option value="assigned">Assigned</option>
+                      <option value="unassigned">Unassigned</option>
+                    </>
+                  )}
                 </select>
               </div>
             </div>
@@ -572,7 +565,9 @@ const CustomerPage = () => {
               <Box className="customer-loading">
                 <LinearProgress />
                 <Typography className="customer-loading-text">
-                  Loading customers...
+                  {userRole === 'officer' 
+                    ? 'Loading your assigned customers...' 
+                    : 'Loading customers...'}
                 </Typography>
               </Box>
             ) : filteredCustomers.length === 0 ? (
@@ -581,13 +576,27 @@ const CustomerPage = () => {
                   <Search sx={{ fontSize: 48, color: '#d4a762' }} />
                 </div>
                 <Typography className="empty-title">
-                  {searchTerm || statusFilter ? 'No Matching Customers' : 'No Customers Found'}
+                  {userRole === 'officer' 
+                    ? 'No Assigned Customers Found' 
+                    : 'No Customers Found'}
                 </Typography>
                 <Typography className="empty-subtitle">
-                  {searchTerm || statusFilter 
-                    ? 'Try adjusting your search or filter criteria.'
-                    : 'No customers have been added yet. Click "Add Customer" to get started.'}
+                  {userRole === 'officer' 
+                    ? 'No customers have been assigned to you yet.' 
+                    : searchTerm || statusFilter 
+                      ? 'Try adjusting your search or filter criteria.'
+                      : 'No customers have been added yet. Click "Add Customer" to get started.'}
                 </Typography>
+                {userRole !== 'officer' && !searchTerm && !statusFilter && (
+                  <button
+                    className="customer-primary-btn"
+                    onClick={() => setOpenDialog(true)}
+                    style={{ marginTop: '1rem' }}
+                  >
+                    <AddIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                    Add First Customer
+                  </button>
+                )}
               </div>
             ) : (
               <>
@@ -667,326 +676,109 @@ const CustomerPage = () => {
           </div>
         </Box>
 
-        {/* Add Customer Dialog */}
-        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>
-            <Typography variant="h6" sx={{ color: '#3c2a1c', fontWeight: 700, fontSize: '0.8125rem', textTransform: 'uppercase' }}>
-              Add New Customer
-            </Typography>
-          </DialogTitle>
-          <DialogContent>
-            <Box sx={{ mt: 2 }}>
-              <TextField
-                fullWidth
-                label="Full Name *"
-                name="name"
-                value={newCustomer.name}
-                onChange={handleInputChange}
-                margin="normal"
-                required
-                error={!newCustomer.name}
-                helperText={!newCustomer.name ? "Required field" : ""}
-                size="small"
-              />
-              <TextField
-                fullWidth
-                label="Phone Number *"
-                name="phoneNumber"
-                value={newCustomer.phoneNumber}
-                onChange={handleInputChange}
-                margin="normal"
-                required
-                error={!newCustomer.phoneNumber}
-                helperText={!newCustomer.phoneNumber ? "Required field (254XXXXXXXXX)" : ""}
-                placeholder="254712345678"
-                size="small"
-              />
-              <TextField
-                fullWidth
-                label="Email"
-                name="email"
-                value={newCustomer.email}
-                onChange={handleInputChange}
-                margin="normal"
-                size="small"
-              />
-              <TextField
-                fullWidth
-                label="National ID"
-                name="nationalId"
-                value={newCustomer.nationalId}
-                onChange={handleInputChange}
-                margin="normal"
-                size="small"
-              />
-              <TextField
-                fullWidth
-                label="Account Number"
-                name="accountNumber"
-                value={newCustomer.accountNumber}
-                onChange={handleInputChange}
-                margin="normal"
-                size="small"
-              />
-              <TextField
-                fullWidth
-                label="Loan Balance"
-                name="loanBalance"
-                value={newCustomer.loanBalance}
-                onChange={handleInputChange}
-                margin="normal"
-                type="number"
-                InputProps={{ inputProps: { min: 0 } }}
-                size="small"
-              />
-              <TextField
-                fullWidth
-                label="Arrears"
-                name="arrears"
-                value={newCustomer.arrears}
-                onChange={handleInputChange}
-                margin="normal"
-                type="number"
-                InputProps={{ inputProps: { min: 0 } }}
-                size="small"
-              />
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <button
-              className="customer-secondary-dialog-btn"
-              onClick={() => setOpenDialog(false)}
-            >
-              Cancel
-            </button>
-            <button
-              className="customer-primary-dialog-btn"
-              onClick={handleSubmit}
-              disabled={!newCustomer.name || !newCustomer.phoneNumber}
-            >
-              Save Customer
-            </button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Transaction Details Modal */}
-        <Modal
-          open={transactionModalOpen}
-          onClose={handleCloseTransactionModal}
-          aria-labelledby="transaction-details-modal"
-          aria-describedby="transaction-details-description"
-        >
-          <Box className="transaction-modal-container">
-            {selectedTransaction && (
-              <div className="transaction-modal-content">
-                {/* Modal Header */}
-                <div className="transaction-modal-header">
-                  <div className="transaction-modal-header-content">
-                    <ReceiptLong sx={{ fontSize: 20, color: '#5c4730' }} />
-                    <div>
-                      <Typography className="transaction-modal-title">
-                        Transaction Details
-                      </Typography>
-                      <Typography className="transaction-modal-subtitle">
-                        {selectedTransaction.transactionId || selectedTransaction._id}
-                      </Typography>
-                    </div>
-                  </div>
-                  <IconButton
-                    onClick={handleCloseTransactionModal}
-                    className="transaction-modal-close-btn"
-                    size="small"
-                  >
-                    <Close />
-                  </IconButton>
-                </div>
-
-                {/* Modal Body */}
-                <div className="transaction-modal-body">
-                  <div className="transaction-details-grid-compact">
-                    {/* Left Column */}
-                    <div className="transaction-column-compact">
-                      {/* Customer Information Card */}
-                      <div className="transaction-card-compact">
-                        <div className="transaction-card-header-compact">
-                          <Person sx={{ fontSize: 14, color: '#5c4730' }} />
-                          <span>Customer Information</span>
-                        </div>
-                        <div className="transaction-card-content-compact">
-                          <div className="transaction-detail-item-compact">
-                            <span className="transaction-detail-label-compact">Name</span>
-                            <span className="transaction-detail-value-compact">
-                              {selectedTransaction.customerId?.name || selectedTransaction.customerName || 'N/A'}
-                            </span>
-                          </div>
-                          <div className="transaction-detail-item-compact">
-                            <span className="transaction-detail-label-compact">Phone</span>
-                            <span className="transaction-detail-value-compact">
-                              {selectedTransaction.phoneNumber || 'N/A'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Transaction Information Card */}
-                      <div className="transaction-card-compact">
-                        <div className="transaction-card-header-compact">
-                          <Payment sx={{ fontSize: 14, color: '#5c4730' }} />
-                          <span>Transaction Information</span>
-                        </div>
-                        <div className="transaction-card-content-compact">
-                          <div className="transaction-detail-item-compact">
-                            <span className="transaction-detail-label-compact">Date & Time</span>
-                            <span className="transaction-detail-value-compact">
-                              {formatDate(selectedTransaction.createdAt)}
-                            </span>
-                          </div>
-                          <div className="transaction-detail-item-compact">
-                            <span className="transaction-detail-label-compact">Payment Method</span>
-                            <span className="transaction-detail-value-compact">
-                              {selectedTransaction.paymentMethod || 'MPesa'}
-                            </span>
-                          </div>
-                          <div className="transaction-detail-item-compact">
-                            <span className="transaction-detail-label-compact">Amount</span>
-                            <span className="transaction-detail-value-compact amount-highlight">
-                              {formatCurrency(selectedTransaction.amount)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right Column */}
-                    <div className="transaction-column-compact">
-                      {/* Loan Balance Summary Card */}
-                      <div className="transaction-card-compact loan-card-compact">
-                        <div className="transaction-card-header-compact">
-                          <AccountBalance sx={{ fontSize: 14, color: '#5c4730' }} />
-                          <span>Loan Balance Summary</span>
-                        </div>
-                        <div className="transaction-card-content-compact">
-                          {(() => {
-                            const loanDetails = calculateLoanDetails(selectedTransaction);
-                            return (
-                              <>
-                                <div className="transaction-detail-item-compact highlighted-compact">
-                                  <span className="transaction-detail-label-compact">
-                                    Current Loan Balance
-                                  </span>
-                                  <span className="transaction-detail-value-compact balance-amount">
-                                    {formatCurrency(loanDetails.totalLoanBalance)}
-                                  </span>
-                                </div>
-
-                                {loanDetails.arrearsAmount > 0 && (
-                                  <div className="transaction-detail-item-compact arrears-info-compact">
-                                    <span className="transaction-detail-label-compact">
-                                      Arrears Balance
-                                    </span>
-                                    <span className="transaction-detail-value-compact arrears-amount">
-                                      {formatCurrency(loanDetails.arrearsAmount)}
-                                    </span>
-                                  </div>
-                                )}
-
-                                <div className="transaction-detail-item-compact success-compact">
-                                  <span className="transaction-detail-label-compact">
-                                    Total Repayments Made
-                                  </span>
-                                  <span className="transaction-detail-value-compact success-amount">
-                                    {formatCurrency(loanDetails.totalRepayments)}
-                                  </span>
-                                </div>
-
-                                {selectedTransaction.status?.toUpperCase() === 'SUCCESS' ? (
-                                  <>
-                                    <div className="transaction-detail-item-compact total-cleared-compact">
-                                      <span className="transaction-detail-label-compact">
-                                        Total Cleared Now
-                                      </span>
-                                      <span className="transaction-detail-value-compact total-success-amount">
-                                        {formatCurrency(loanDetails.totalCleared)}
-                                      </span>
-                                    </div>
-
-                                    <div className="transaction-detail-item-compact new-balance-compact">
-                                      <span className="transaction-detail-label-compact">
-                                        New Loan Balance
-                                      </span>
-                                      <span className={`transaction-detail-value-compact ${loanDetails.isPaidOff ? 'paid-off-amount' : 'new-balance-amount'}`}>
-                                        {formatCurrency(loanDetails.newLoanBalance)}
-                                        {loanDetails.isPaidOff && (
-                                          <span className="paid-off-badge-compact">
-                                            <DoneAll sx={{ fontSize: 10, marginLeft: '0.25rem' }} />
-                                            PAID OFF
-                                          </span>
-                                        )}
-                                      </span>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div className="transaction-detail-item-compact">
-                                    <span className="transaction-detail-label-compact">
-                                      Status Note
-                                    </span>
-                                    <span className="transaction-detail-value-compact pending-note-compact">
-                                      Payment not processed. Loan balance remains unchanged.
-                                    </span>
-                                  </div>
-                                )}
-                              </>
-                            );
-                          })()}
-                        </div>
-                      </div>
-
-                      {/* Transaction Status Card */}
-                      <div className="transaction-card-compact status-card-compact">
-                        <div className="transaction-card-header-compact">
-                          <ReceiptLong sx={{ fontSize: 14, color: '#5c4730' }} />
-                          <span>Transaction Status</span>
-                        </div>
-                        <div className="transaction-status-wrapper-compact">
-                          {(() => {
-                            const statusProps = getTransactionStatusProps(selectedTransaction.status);
-                            return (
-                              <div className={`transaction-status-display-compact ${statusProps.class}`}>
-                                <div className="status-icon-compact">
-                                  {statusProps.icon}
-                                </div>
-                                <div>
-                                  <div className="transaction-status-text-compact">{statusProps.text}</div>
-                                  <div className="transaction-status-message-compact">
-                                    {selectedTransaction.status?.toUpperCase() === 'SUCCESS'
-                                      ? 'Payment successfully processed and applied to loan balance'
-                                      : selectedTransaction.status?.toUpperCase() === 'PENDING'
-                                        ? 'Payment is being processed. Loan balance will update upon completion.'
-                                        : 'Transaction not completed. No changes to loan balance.'}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Modal Footer */}
-                <div className="transaction-modal-footer">
-                  <button
-                    className="transaction-modal-secondary-btn"
-                    onClick={handleCloseTransactionModal}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            )}
-          </Box>
-        </Modal>
+        {/* Add Customer Dialog - Only for non-officers */}
+        {(userRole === 'admin' || userRole === 'supervisor') && (
+          <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
+            <DialogTitle>
+              <Typography variant="h6" sx={{ color: '#3c2a1c', fontWeight: 700, fontSize: '0.8125rem', textTransform: 'uppercase' }}>
+                Add New Customer
+              </Typography>
+            </DialogTitle>
+            <DialogContent>
+              <Box sx={{ mt: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Full Name *"
+                  name="name"
+                  value={newCustomer.name}
+                  onChange={handleInputChange}
+                  margin="normal"
+                  required
+                  error={!newCustomer.name}
+                  helperText={!newCustomer.name ? "Required field" : ""}
+                  size="small"
+                />
+                <TextField
+                  fullWidth
+                  label="Phone Number *"
+                  name="phoneNumber"
+                  value={newCustomer.phoneNumber}
+                  onChange={handleInputChange}
+                  margin="normal"
+                  required
+                  error={!newCustomer.phoneNumber}
+                  helperText={!newCustomer.phoneNumber ? "Required field (254XXXXXXXXX)" : ""}
+                  placeholder="254712345678"
+                  size="small"
+                />
+                <TextField
+                  fullWidth
+                  label="Email"
+                  name="email"
+                  value={newCustomer.email}
+                  onChange={handleInputChange}
+                  margin="normal"
+                  size="small"
+                />
+                <TextField
+                  fullWidth
+                  label="National ID"
+                  name="nationalId"
+                  value={newCustomer.nationalId}
+                  onChange={handleInputChange}
+                  margin="normal"
+                  size="small"
+                />
+                <TextField
+                  fullWidth
+                  label="Account Number"
+                  name="accountNumber"
+                  value={newCustomer.accountNumber}
+                  onChange={handleInputChange}
+                  margin="normal"
+                  size="small"
+                />
+                <TextField
+                  fullWidth
+                  label="Loan Balance"
+                  name="loanBalance"
+                  value={newCustomer.loanBalance}
+                  onChange={handleInputChange}
+                  margin="normal"
+                  type="number"
+                  InputProps={{ inputProps: { min: 0 } }}
+                  size="small"
+                />
+                <TextField
+                  fullWidth
+                  label="Arrears"
+                  name="arrears"
+                  value={newCustomer.arrears}
+                  onChange={handleInputChange}
+                  margin="normal"
+                  type="number"
+                  InputProps={{ inputProps: { min: 0 } }}
+                  size="small"
+                />
+              </Box>
+            </DialogContent>
+            <DialogActions>
+              <button
+                className="customer-secondary-dialog-btn"
+                onClick={() => setOpenDialog(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="customer-primary-dialog-btn"
+                onClick={handleSubmit}
+                disabled={!newCustomer.name || !newCustomer.phoneNumber}
+              >
+                Save Customer
+              </button>
+            </DialogActions>
+          </Dialog>
+        )}
       </Box>
     </LayoutWrapper>
   );

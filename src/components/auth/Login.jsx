@@ -15,8 +15,8 @@ const Login = ({ onLogin, loading, error, backendStatus = 'connected' }) => {
   };
 
   const useTestCredentials = () => {
-    setUsername('samuel.kirogo');
-    setPassword('samuel.kirogo123');
+    setUsername('chris.paul');
+    setPassword('chris.paul123');
   };
 
   return (
@@ -142,9 +142,9 @@ const Login = ({ onLogin, loading, error, backendStatus = 'connected' }) => {
 
               <div className="kollect-century-footer">
                 <div className="kollect-century-footer-content">
-                  <span className="kollect-century-footer-text">Rekova v1.0</span>
+                  <span className="kollect-century-footer-text">@2025 all rights reserved</span>
                   <span className="kollect-century-footer-separator">•</span>
-                  <span className="kollect-century-footer-text">Secure Banking</span>
+                  <span className="kollect-century-footer-text"> Powered by NCBA Group</span>
                 </div>
               </div>
             </form>
