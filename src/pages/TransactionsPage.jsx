@@ -1,3 +1,4 @@
+// src/pages/TransactionsPage.jsx - UPDATED WITH PROFESSIONAL SUBTLE COLOR THEMING
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -23,7 +24,9 @@ import {
   AccountBalance,
   DoneAll,
   Search,
-  FilterList
+  AssignmentInd,
+  SupervisorAccount,
+  Groups
 } from '@mui/icons-material';
 import axios from 'axios';
 import authService from '../services/auth.service';
@@ -44,6 +47,37 @@ const TransactionsPage = () => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [customerDetails, setCustomerDetails] = useState(null);
+  
+  // User role state
+  const [userRole, setUserRole] = useState('officer');
+  const [isSupervisor, setIsSupervisor] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Get user role from auth service
+  const getUserInfo = () => {
+    const user = authService.getCurrentUser();
+    if (!user) return { role: 'officer', isSupervisor: false, isAdmin: false };
+    
+    const role = user.role?.toLowerCase() || 'officer';
+    const isSupervisorUser = role === 'supervisor';
+    const isAdminUser = role === 'admin';
+    
+    console.log('👤 User Info:', { 
+      username: user.username, 
+      role: role, 
+      isSupervisor: isSupervisorUser,
+      isAdmin: isAdminUser,
+      userId: user.id || user._id
+    });
+    
+    return { 
+      role, 
+      isSupervisor: isSupervisorUser, 
+      isAdmin: isAdminUser,
+      userId: user.id || user._id,
+      username: user.username 
+    };
+  };
 
   // Get API instance with auth token
   const getApi = () => {
@@ -63,15 +97,15 @@ const TransactionsPage = () => {
       setError(null);
 
       const api = getApi();
-      const userRole = authService.getUserRole();
+      const userInfo = getUserInfo();
 
-      console.log(`📡 Fetching transactions for ${userRole}...`);
+      console.log(`📡 Fetching transactions for ${userInfo.role}...`);
 
       let response;
-      let transactionsData = []; // DECLARE HERE AT FUNCTION SCOPE
+      let transactionsData = [];
 
-      // FIXED: Use different endpoints based on user role
-      if (userRole === 'officer') {
+      // Use different endpoints based on user role
+      if (userInfo.role === 'officer') {
         // For officers: fetch only their transactions
         console.log('👤 Fetching officer transactions from /api/transactions/my-transactions...');
         response = await api.get('/transactions/my-transactions?limit=100');
@@ -192,6 +226,31 @@ const TransactionsPage = () => {
   };
 
   useEffect(() => {
+    // Add auth debugging
+    console.log('🔐 TransactionsPage mounted - Auth status:', {
+      isAuthenticated: authService.isAuthenticated(),
+      token: authService.getToken() ? 'Present' : 'Missing',
+      user: authService.getCurrentUser()
+    });
+
+    if (!authService.isAuthenticated()) {
+      console.log('❌ Not authenticated, redirecting to login');
+      authService.logout();
+      navigate('/login');
+      return;
+    }
+
+    const userInfo = getUserInfo();
+    setUserRole(userInfo.role);
+    setIsSupervisor(userInfo.isSupervisor);
+    setIsAdmin(userInfo.isAdmin);
+    
+    console.log('👤 TransactionsPage - Setting user role:', {
+      role: userInfo.role,
+      isSupervisor: userInfo.isSupervisor,
+      isAdmin: userInfo.isAdmin
+    });
+    
     fetchTransactions();
   }, []);
 
@@ -406,27 +465,100 @@ const TransactionsPage = () => {
     }
   };
 
-  // Stats data - Update the meta descriptions
-  const statsData = [
-    {
-      label: authService.getUserRole() === 'officer' ? 'My Collections' : 'Total Amount',
-      value: formatCurrency(stats?.totalAmount || 0),
-      icon: <AccountBalanceWallet />,
-      meta: authService.getUserRole() === 'officer' ? 'Total amount collected' : 'Total value processed'
-    },
-    {
-      label: 'Successful',
-      value: stats?.successfulTransactions || 0,
-      icon: <CheckCircle />,
-      meta: authService.getUserRole() === 'officer' ? 'Your successful payments' : 'Completed payments'
-    },
-    {
-      label: 'Pending',
-      value: stats?.pendingTransactions || 0,
-      icon: <HourglassEmpty />,
-      meta: 'Awaiting completion'
+  // Get role-based icon
+  const getRoleIcon = () => {
+    if (isSupervisor) return <SupervisorAccount sx={{ fontSize: 16 }} />;
+    if (isAdmin) return <Groups sx={{ fontSize: 16 }} />;
+    return <AssignmentInd sx={{ fontSize: 16 }} />;
+  };
+
+  // Get role-based subtitle
+  const getRoleSubtitle = () => {
+    if (isSupervisor) return 'Supervisor - View All System Transactions';
+    if (isAdmin) return 'Administrator - Full Transaction History';
+    return 'My Initiated Transactions';
+  };
+
+  // Get role-based color classes - SUBTLE TEXT COLORS ONLY
+  const getRoleTextColor = () => {
+    if (isSupervisor) return 'supervisor-text';
+    if (isAdmin) return 'admin-text';
+    return 'officer-text';
+  };
+
+  // Get role-based accent color for borders/underlines
+  const getRoleAccentClass = () => {
+    if (isSupervisor) return 'supervisor-accent';
+    if (isAdmin) return 'admin-accent';
+    return 'officer-accent';
+  };
+
+  // Get role-based primary color for buttons
+  const getRolePrimaryClass = () => {
+    if (isSupervisor) return 'supervisor-primary';
+    if (isAdmin) return 'admin-primary';
+    return 'officer-primary';
+  };
+
+  // Get role-specific stats
+  const getStatsData = () => {
+    const baseStats = [
+      {
+        label: isSupervisor || isAdmin ? 'Total Amount' : 'My Collections',
+        value: formatCurrency(stats?.totalAmount || 0),
+        icon: <AccountBalanceWallet />,
+        meta: isSupervisor || isAdmin ? 'Total value processed' : 'Total amount collected'
+      },
+      {
+        label: 'Successful',
+        value: stats?.successfulTransactions || 0,
+        icon: <CheckCircle />,
+        meta: isSupervisor || isAdmin ? 'Completed payments' : 'Your successful payments'
+      },
+      {
+        label: 'Pending',
+        value: stats?.pendingTransactions || 0,
+        icon: <HourglassEmpty />,
+        meta: 'Awaiting completion'
+      }
+    ];
+
+    // Additional stats for supervisors/admins
+    if (isSupervisor || isAdmin) {
+      return [
+        ...baseStats,
+        {
+          label: 'Failed',
+          value: stats?.failedTransactions || 0,
+          icon: <Cancel />,
+          meta: 'Unsuccessful attempts'
+        },
+        {
+          label: 'System Role',
+          value: isSupervisor ? 'Supervisor' : isAdmin ? 'Admin' : 'Officer',
+          icon: getRoleIcon(),
+          meta: 'Current user role'
+        },
+        {
+          label: 'Total Transactions',
+          value: stats?.totalTransactions || 0,
+          icon: <Receipt />,
+          meta: 'All recorded transactions'
+        }
+      ];
     }
-  ];
+
+    return baseStats;
+  };
+
+  // Handle refresh
+  const handleRefresh = () => {
+    console.log('🔄 Refreshing transaction data...');
+    fetchTransactions();
+    setSearchTerm('');
+    setStatusFilter('');
+    setPage(0);
+  };
 
   return (
     <LayoutWrapper>
@@ -435,27 +567,22 @@ const TransactionsPage = () => {
         <Box className="transactions-header">
           <div className="transactions-header-content">
             <Box>
-              <Typography className="transactions-title">
-                Transactions
-              </Typography>
-              <Typography className="transactions-subtitle">
-                {authService.getUserRole() === 'officer'
-                  ? 'My Initiated transactions'
-                  : 'View and manage all payment transactions'}
+              <Typography className={`page-subtitle ${getRoleTextColor()}`}>
+                {getRoleSubtitle()}
               </Typography>
             </Box>
 
             <Box sx={{ display: 'flex', gap: 1 }}>
               <button
-                className="transactions-action-btn"
-                onClick={fetchTransactions}
+                className="customer-action-btn"
+                onClick={handleRefresh}
                 disabled={loading}
               >
                 <Refresh sx={{ fontSize: 16 }} />
                 Refresh
               </button>
               <button
-                className="transactions-primary-btn"
+                className={`customer-primary-btn ${getRolePrimaryClass()}`}
                 onClick={handleExportData}
                 disabled={exportLoading}
               >
@@ -466,24 +593,24 @@ const TransactionsPage = () => {
           </div>
         </Box>
 
-        {/* Stats Grid - 3 cards */}
-        <div className="transactions-stats-grid">
-          {statsData.map((stat, index) => (
-            <div key={index} className="transactions-stat-card">
-              <div className="transactions-stat-header">
-                <div className="transactions-stat-label">{stat.label}</div>
-                <div
-                  className="transactions-stat-icon-wrapper"
-                  style={{ background: 'linear-gradient(135deg, #5c4730, #3c2a1c)' }}
-                >
+        {/* Stats Grid - Dynamic based on role */}
+        <div className="customer-stats-grid">
+          {getStatsData().map((stat, index) => (
+            <div key={index} className="customer-stat-card">
+              <div className={`stat-top-border ${getRoleAccentClass()}`}></div>
+              <div className="customer-stat-header">
+                <div className={`customer-stat-label ${getRoleTextColor()}`}>
+                  {stat.label}
+                </div>
+                <div className={`customer-stat-icon-wrapper ${getRoleAccentClass()}`}>
                   {stat.icon}
                 </div>
               </div>
               <div>
-                <div className="transactions-stat-value">
+                <div className={`customer-stat-value ${getRoleTextColor()}`}>
                   {stat.value}
                 </div>
-                <div className="transactions-stat-meta">
+                <div className="customer-stat-meta">
                   {stat.meta}
                 </div>
               </div>
@@ -492,28 +619,31 @@ const TransactionsPage = () => {
         </div>
 
         {/* Main Content */}
-        <Box className="transactions-main-content">
-          <div className="transactions-content-card">
-            <div className="transactions-section-header">
+        <Box className="customer-main-content">
+          <div className="customer-content-card">
+            <div className="customer-section-header">
               <Box>
-                <Typography className="transactions-section-title">
-                  {authService.getUserRole() === 'officer'
-                    ? `MY TRANSACTIONS (${transactions.length})`
-                    : `ALL TRANSACTIONS (${transactions.length})`}
+                <Typography className={`customer-section-title ${getRoleTextColor()}`}>
+                  {isSupervisor || isAdmin 
+                    ? `ALL TRANSACTIONS (${filteredTransactions.length})` 
+                    : `MY TRANSACTIONS (${filteredTransactions.length})`}
+                  <div className={`section-title-underline ${getRoleAccentClass()}`}></div>
                 </Typography>
               </Box>
 
               {/* Search and Filter Section */}
-              <div className="transactions-search-container">
+              <div className="customer-search-container">
                 <input
                   type="text"
-                  placeholder="Search by customer, phone, or ID..."
+                  placeholder={isSupervisor || isAdmin 
+                    ? "Search by customer, phone, transaction ID..." 
+                    : "Search your transactions by customer or ID..."}
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
                     setPage(0);
                   }}
-                  className="transactions-search-input"
+                  className="customer-search-input"
                 />
 
                 <select
@@ -522,7 +652,7 @@ const TransactionsPage = () => {
                     setStatusFilter(e.target.value);
                     setPage(0);
                   }}
-                  className="transactions-status-filter"
+                  className="customer-status-filter"
                 >
                   <option value="">All Status</option>
                   <option value="SUCCESS">Success</option>
@@ -535,45 +665,49 @@ const TransactionsPage = () => {
             </div>
 
             {error && (
-              <div className="transactions-error-message">
+              <div className="customer-alert" style={{ margin: '1rem', padding: '0.5rem 1rem' }}>
                 {error}
               </div>
             )}
 
             {loading ? (
-              <Box className="transactions-loading">
-                <LinearProgress />
-                <Typography className="transactions-loading-text">
-                  Loading transactions...
+              <Box className="customer-loading">
+                <LinearProgress className={`loading-bar ${getRoleAccentClass()}`} />
+                <Typography className="customer-loading-text">
+                  {isSupervisor || isAdmin 
+                    ? 'Loading all transactions...' 
+                    : 'Loading your transactions...'}
                 </Typography>
               </Box>
             ) : !transactions || transactions.length === 0 ? (
-              <div className="transactions-empty-state">
-                <div className="transactions-empty-icon">
-                  <Receipt sx={{ fontSize: 48, color: '#d4a762' }} />
+              <div className="table-empty-state">
+                <div className="empty-icon">
+                  <Receipt sx={{ fontSize: 48 }} />
                 </div>
-                <Typography className="transactions-empty-title">
+                <Typography className={`empty-title ${getRoleTextColor()}`}>
                   No Transactions Found
                 </Typography>
-                <Typography className="transactions-empty-subtitle">
-                  No transactions have been recorded yet.
+                <Typography className="empty-subtitle">
+                  {isSupervisor || isAdmin 
+                    ? 'No transactions have been recorded yet.' 
+                    : 'No transactions have been initiated by you yet.'}
                 </Typography>
               </div>
             ) : filteredTransactions.length === 0 ? (
-              <div className="transactions-empty-state">
-                <div className="transactions-empty-icon">
-                  <Search sx={{ fontSize: 48, color: '#d4a762' }} />
+              <div className="table-empty-state">
+                <div className="empty-icon">
+                  <Search sx={{ fontSize: 48 }} />
                 </div>
-                <Typography className="transactions-empty-title">
+                <Typography className={`empty-title ${getRoleTextColor()}`}>
                   No Matching Transactions
                 </Typography>
-                <Typography className="transactions-empty-subtitle">
+                <Typography className="empty-subtitle">
                   Try adjusting your search or filter criteria.
                 </Typography>
               </div>
             ) : (
               <>
-                <div className="transactionspage-table-container">
+                <div className="table-container-wrapper">
                   <table className="transactionspage-table">
                     <thead>
                       <tr>
@@ -589,7 +723,7 @@ const TransactionsPage = () => {
                       {paginatedTransactions.map((transaction, index) => {
                         const statusProps = getStatusProps(transaction.status);
 
-                        // FIXED: Handle customer data correctly
+                        // Handle customer data correctly
                         const customerName = transaction.customerId?.name ||
                           transaction.customerName ||
                           'Unknown Customer';
@@ -600,7 +734,7 @@ const TransactionsPage = () => {
                         return (
                           <tr
                             key={transaction._id || transaction.transactionId || `transaction-${index}`}
-                            className="transactions-table-row"
+                            className="customer-table-row"
                             onClick={() => handleTransactionClick(transaction)}
                           >
                             <td>
@@ -642,37 +776,64 @@ const TransactionsPage = () => {
 
                 {/* Pagination */}
                 {filteredTransactions.length > 0 && (
-                  <div className="transactions-pagination">
-                    <div className="transactions-pagination-info">
+                  <div className="customer-pagination">
+                    <div className="pagination-info">
                       Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, filteredTransactions.length)} of {filteredTransactions.length} transactions
                     </div>
-
-                    <div className="transactions-pagination-controls">
+                    
+                    <div className="pagination-controls">
                       <button
-                        className="transactions-pagination-btn"
+                        className="pagination-btn first-page"
+                        onClick={() => handleChangePage(0)}
+                        disabled={page === 0}
+                        title="First Page"
+                      >
+                        &laquo;
+                      </button>
+                      
+                      <button
+                        className="pagination-btn prev-page"
                         onClick={() => handleChangePage(page - 1)}
                         disabled={page === 0}
+                        title="Previous Page"
                       >
-                        Previous
+                        &lsaquo;
                       </button>
-
+                      
+                      <div className="page-indicator">
+                        Page {page + 1} of {Math.ceil(filteredTransactions.length / rowsPerPage)}
+                      </div>
+                      
+                      <button
+                        className="pagination-btn next-page"
+                        onClick={() => handleChangePage(page + 1)}
+                        disabled={page >= Math.ceil(filteredTransactions.length / rowsPerPage) - 1}
+                        title="Next Page"
+                      >
+                        &rsaquo;
+                      </button>
+                      
+                      <button
+                        className="pagination-btn last-page"
+                        onClick={() => handleChangePage(Math.ceil(filteredTransactions.length / rowsPerPage) - 1)}
+                        disabled={page >= Math.ceil(filteredTransactions.length / rowsPerPage) - 1}
+                        title="Last Page"
+                      >
+                        &raquo;
+                      </button>
+                    </div>
+                    
+                    <div className="rows-per-page">
                       <select
                         value={rowsPerPage}
                         onChange={handleChangeRowsPerPage}
-                        className="transactions-rows-select"
+                        className="rows-select"
                       >
                         <option value="5">5 per page</option>
                         <option value="10">10 per page</option>
                         <option value="25">25 per page</option>
+                        <option value="50">50 per page</option>
                       </select>
-
-                      <button
-                        className="transactions-pagination-btn"
-                        onClick={() => handleChangePage(page + 1)}
-                        disabled={(page + 1) * rowsPerPage >= filteredTransactions.length}
-                      >
-                        Next
-                      </button>
                     </div>
                   </div>
                 )}
@@ -696,7 +857,7 @@ const TransactionsPage = () => {
                   <div className="transaction-modal-header-content">
                     <ReceiptLong sx={{ fontSize: 20, color: '#5c4730' }} />
                     <div>
-                      <Typography className="transaction-modal-title">
+                      <Typography className={`transaction-modal-title ${getRoleTextColor()}`}>
                         Transaction Details
                       </Typography>
                       <Typography className="transaction-modal-subtitle">
@@ -889,7 +1050,7 @@ const TransactionsPage = () => {
                 {/* Modal Footer */}
                 <div className="transaction-modal-footer">
                   <button
-                    className="transaction-modal-secondary-btn"
+                    className="customer-secondary-dialog-btn"
                     onClick={handleCloseModal}
                   >
                     Close

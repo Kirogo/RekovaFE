@@ -1,4 +1,4 @@
-// src/pages/CustomerPage.jsx
+// src/pages/CustomerPage.jsx - UPDATED WITH PROFESSIONAL SUBTLE COLOR THEMING
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -10,35 +10,23 @@ import {
   DialogActions,
   TextField,
   LinearProgress,
-  Alert,
-  Modal,
-  IconButton
+  Alert
 } from '@mui/material';
 import {
   Add as AddIcon,
   Refresh,
   Search,
-  FilterList,
-  KeyboardArrowLeft,
-  KeyboardArrowRight,
-  FirstPage,
-  LastPage,
-  Close,
   Person,
-  Payment,
-  ReceiptLong,
   AccountBalance,
-  DoneAll,
-  CheckCircle,
-  Cancel,
-  AccessTime,
-  HourglassEmpty,
-  Receipt
+  Receipt,
+  SupervisorAccount,
+  Groups,
+  AssignmentInd
 } from '@mui/icons-material';
 import CustomerTable from '../components/common/CustomerTable';
 import axios from 'axios';
 import LayoutWrapper from '../LayoutWrapper';
-import authService from '../services/auth.service'; // Import auth service
+import authService from '../services/auth.service';
 import '../styles/customerpage.css';
 
 const CustomerPage = () => {
@@ -48,24 +36,21 @@ const CustomerPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
-  
+
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  
+
   // Pagination states
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
-  
-  // Transaction modal states
-  const [selectedTransaction, setSelectedTransaction] = useState(null);
-  const [transactionModalOpen, setTransactionModalOpen] = useState(false);
-  const [customerDetails, setCustomerDetails] = useState(null);
-  
+
   // User role state
   const [userRole, setUserRole] = useState('officer');
-  
+  const [isSupervisor, setIsSupervisor] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const [newCustomer, setNewCustomer] = useState({
     name: '',
     phoneNumber: '',
@@ -77,9 +62,29 @@ const CustomerPage = () => {
   });
 
   // Get user role from auth service
-  const getUserRole = () => {
+  const getUserInfo = () => {
     const user = authService.getCurrentUser();
-    return user?.role || 'officer';
+    if (!user) return { role: 'officer', isSupervisor: false, isAdmin: false };
+
+    const role = user.role?.toLowerCase() || 'officer';
+    const isSupervisorUser = role === 'supervisor';
+    const isAdminUser = role === 'admin';
+
+    console.log('👤 User Info:', {
+      username: user.username,
+      role: role,
+      isSupervisor: isSupervisorUser,
+      isAdmin: isAdminUser,
+      userId: user.id || user._id
+    });
+
+    return {
+      role,
+      isSupervisor: isSupervisorUser,
+      isAdmin: isAdminUser,
+      userId: user.id || user._id,
+      username: user.username
+    };
   };
 
   useEffect(() => {
@@ -98,17 +103,24 @@ const CustomerPage = () => {
       return;
     }
 
-    const role = getUserRole();
-    setUserRole(role);
-    console.log('👤 User role:', role);
-    
+    const userInfo = getUserInfo();
+    setUserRole(userInfo.role);
+    setIsSupervisor(userInfo.isSupervisor);
+    setIsAdmin(userInfo.isAdmin);
+
+    console.log('👤 CustomerPage - Setting user role:', {
+      role: userInfo.role,
+      isSupervisor: userInfo.isSupervisor,
+      isAdmin: userInfo.isAdmin
+    });
+
     fetchData();
   }, []);
 
   useEffect(() => {
     // Filter customers based on search term and status
     let result = customers;
-    
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(customer =>
@@ -121,7 +133,7 @@ const CustomerPage = () => {
         (customer.assignedTo?.username?.toLowerCase().includes(term))
       );
     }
-    
+
     if (statusFilter) {
       if (statusFilter === 'active') {
         result = result.filter(customer => customer.isActive === true);
@@ -137,7 +149,7 @@ const CustomerPage = () => {
         result = result.filter(customer => !customer.assignedTo);
       }
     }
-    
+
     setFilteredCustomers(result);
     // Calculate total pages
     setTotalPages(Math.ceil(result.length / rowsPerPage));
@@ -149,7 +161,7 @@ const CustomerPage = () => {
       setError(null);
 
       console.log('🔍 CustomerPage: Starting data fetch...');
-      
+
       // Check authentication first
       if (!authService.isAuthenticated()) {
         console.log('❌ Not authenticated, redirecting to login');
@@ -163,80 +175,68 @@ const CustomerPage = () => {
       console.log('🔑 API headers:', api.defaults.headers);
 
       let customersData = [];
-      const currentRole = getUserRole();
-      
-      console.log(`👤 Fetching customers for ${currentRole}...`);
+      const userInfo = getUserInfo();
 
-      // Fetch customers based on role
-      if (currentRole === 'officer') {
-        // For officers: fetch only their assigned customers
-        try {
-          const response = await api.get('/customers/assigned-to-me');
-          console.log('📋 Officer assigned customers response:', response.data);
-          
-          if (response.data.success) {
-            customersData = response.data.data?.customers || response.data.customers || [];
-            console.log(`✅ Found ${customersData.length} assigned customers for officer`);
+      console.log(`👤 Fetching customers for ${userInfo.role} (${userInfo.username})...`);
+
+      // Determine the correct route based on role
+      const route = userInfo.isSupervisor || userInfo.isAdmin ? '/customers' : '/customers/assigned-to-me';
+
+      try {
+        const response = await api.get(route);
+        console.log(`📋 ${userInfo.role} customers response:`, response.data);
+
+        if (response.data.success) {
+          customersData = response.data.data?.customers || response.data.customers || [];
+          console.log(`✅ Found ${customersData.length} customers for ${userInfo.role}`);
+        } else {
+          console.log('⚠️ Using fallback method for customers');
+          const allResponse = await api.get('/customers?limit=1000');
+          const allCustomers = allResponse.data.data?.customers || [];
+
+          // For officers, filter by assignedTo field
+          if (userInfo.role === 'officer' && userInfo.userId) {
+            customersData = allCustomers.filter(customer => {
+              const assignedTo = customer.assignedTo;
+              if (!assignedTo) return false;
+
+              // Check if assignedTo is an object with _id
+              if (assignedTo._id) {
+                return assignedTo._id === userInfo.userId ||
+                  assignedTo._id.toString() === userInfo.userId;
+              }
+
+              // Check if assignedTo is a string ID
+              return assignedTo === userInfo.userId ||
+                assignedTo.toString() === userInfo.userId;
+            });
+            console.log(`🔍 Filtered ${customersData.length} customers assigned to officer ${userInfo.userId}`);
           } else {
-            // Fallback: try to get all customers and filter
-            console.log('⚠️ Using fallback method for officer customers');
-            const allResponse = await api.get('/customers?limit=1000');
-            const allCustomers = allResponse.data.data?.customers || [];
-            
-            // Get current user ID
-            const user = authService.getCurrentUser();
-            const userId = user?.id;
-            
-            if (userId) {
-              customersData = allCustomers.filter(customer => 
-                customer.assignedTo?._id === userId ||
-                customer.assignedTo?._id?.toString() === userId ||
-                customer.assignedTo === userId ||
-                customer.assignedTo?.toString() === userId
-              );
-            } else {
-              customersData = allCustomers;
-            }
-          }
-        } catch (officerError) {
-          console.error('❌ Error fetching assigned customers:', officerError);
-          console.error('Error details:', {
-            status: officerError.response?.status,
-            message: officerError.response?.data?.message
-          });
-          
-          // Check if it's a 401 error
-          if (officerError.response?.status === 401) {
-            console.log('⚠️ 401 Unauthorized - logging out');
-            authService.logout();
-            navigate('/login');
-            return;
-          }
-          
-          // Fallback to all customers
-          try {
-            const response = await api.get('/customers?limit=100');
-            customersData = response.data.data?.customers || response.data.customers || [];
-          } catch (fallbackError) {
-            console.error('❌ Fallback also failed:', fallbackError);
-            throw fallbackError;
+            customersData = allCustomers;
           }
         }
-      } else {
-        // For admins/supervisors: fetch all customers
+      } catch (fetchError) {
+        console.error(`❌ Error fetching ${userInfo.role} customers:`, fetchError);
+        console.error('Error details:', {
+          status: fetchError.response?.status,
+          message: fetchError.response?.data?.message
+        });
+
+        // Check if it's a 401 error
+        if (fetchError.response?.status === 401) {
+          console.log('⚠️ 401 Unauthorized - logging out');
+          authService.logout();
+          navigate('/login');
+          return;
+        }
+
+        // Fallback to all customers
         try {
-          const response = await api.get('/customers?limit=1000');
+          const response = await api.get('/customers?limit=100');
           customersData = response.data.data?.customers || response.data.customers || [];
-          console.log(`✅ Found ${customersData.length} customers for ${currentRole}`);
-        } catch (error) {
-          console.error('❌ Error fetching all customers:', error);
-          if (error.response?.status === 401) {
-            console.log('⚠️ 401 Unauthorized - logging out');
-            authService.logout();
-            navigate('/login');
-            return;
-          }
-          throw error;
+        } catch (fallbackError) {
+          console.error('❌ Fallback also failed:', fallbackError);
+          throw fallbackError;
         }
       }
 
@@ -246,11 +246,11 @@ const CustomerPage = () => {
         const dateB = new Date(b.createdAt || 0);
         return dateB - dateA;
       });
-      
+
       setCustomers(sortedCustomers);
       setFilteredCustomers(sortedCustomers);
-      
-      console.log(`📊 Displaying ${sortedCustomers.length} customers for ${currentRole}`);
+
+      console.log(`📊 Displaying ${sortedCustomers.length} customers for ${userInfo.role}`);
 
     } catch (error) {
       console.error('❌ Error fetching data:', error);
@@ -284,7 +284,7 @@ const CustomerPage = () => {
   const handleSubmit = async () => {
     try {
       console.log('➕ Creating new customer...');
-      
+
       // Check authentication
       if (!authService.isAuthenticated()) {
         console.log('❌ Not authenticated');
@@ -294,7 +294,7 @@ const CustomerPage = () => {
       }
 
       const api = authService.getApi();
-      
+
       const response = await api.post('/customers', {
         ...newCustomer,
         loanBalance: parseFloat(newCustomer.loanBalance) || 0,
@@ -386,46 +386,86 @@ const CustomerPage = () => {
     page * rowsPerPage + rowsPerPage
   );
 
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-KE', {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return 'N/A';
-    }
-  };
-
   // Calculate stats
   const calculateStats = () => {
     const totalCustomers = customers.length;
-    const totalLoanPortfolio = customers.reduce((sum, customer) => 
+    const totalLoanPortfolio = customers.reduce((sum, customer) =>
       sum + parseFloat(customer.loanBalance || 0), 0);
-    const totalArrears = customers.reduce((sum, customer) => 
+    const totalArrears = customers.reduce((sum, customer) =>
       sum + parseFloat(customer.arrears || 0), 0);
-    
-    return { totalCustomers, totalLoanPortfolio, totalArrears };
+
+    // For supervisors/admins, also calculate assigned vs unassigned
+    let assignedCustomers = 0;
+    let unassignedCustomers = 0;
+
+    if (isSupervisor || isAdmin) {
+      customers.forEach(customer => {
+        if (customer.assignedTo) {
+          assignedCustomers++;
+        } else {
+          unassignedCustomers++;
+        }
+      });
+    }
+
+    return {
+      totalCustomers,
+      totalLoanPortfolio,
+      totalArrears,
+      assignedCustomers,
+      unassignedCustomers
+    };
   };
 
   const stats = calculateStats();
 
+  // Get role-based icon
+  const getRoleIcon = () => {
+    if (isSupervisor) return <SupervisorAccount sx={{ fontSize: 16 }} />;
+    if (isAdmin) return <Groups sx={{ fontSize: 16 }} />;
+    return <AssignmentInd sx={{ fontSize: 16 }} />;
+  };
+
+  // Get role-based subtitle
+  const getRoleSubtitle = () => {
+    if (isSupervisor) return 'Supervisor - Manage All Customer Accounts';
+    if (isAdmin) return 'Administrator - Full System Access';
+    return 'Officer - My Assigned Customers';
+  };
+
+  // Get role-based color classes - SUBTLE TEXT COLORS ONLY
+  const getRoleTextColor = () => {
+    if (isSupervisor) return 'supervisor-text';
+    if (isAdmin) return 'admin-text';
+    return 'officer-text';
+  };
+
+  // Get role-based accent color for borders/underlines
+  const getRoleAccentClass = () => {
+    if (isSupervisor) return 'supervisor-accent';
+    if (isAdmin) return 'admin-accent';
+    return 'officer-accent';
+  };
+
+  // Get role-based primary color for buttons
+  const getRolePrimaryClass = () => {
+    if (isSupervisor) return 'supervisor-primary';
+    if (isAdmin) return 'admin-primary';
+    return 'officer-primary';
+  };
+
   return (
     <LayoutWrapper>
-      <Box className="customer-page-wrapper page-wrapper-base">
+      <Box className="customer-page-wrapper">
         {/* Header Section */}
         <Box className="page-header-section">
           <Box className="customer-header-content">
             <Box>
-              <Typography className="page-subtitle">
-                {userRole === 'officer' 
-                  ? 'My Assigned Customers' 
-                  : 'Manage All Customer Accounts'}
+              {/*<Typography className={`page-subtitle ${getRoleTextColor()}`}>
+                {getRoleSubtitle()}
+              </Typography>*/}
+              <Typography className={`page-title ${getRoleTextColor()}`}>
+                {isSupervisor || isAdmin ? 'Customer Management' : 'My Customers'}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -437,74 +477,81 @@ const CustomerPage = () => {
                 <Refresh sx={{ fontSize: 16 }} />
                 Refresh
               </button>
+              {(isSupervisor || isAdmin) && (
+                <button
+                  className={`customer-primary-btn ${getRolePrimaryClass()}`}
+                  onClick={() => setOpenDialog(true)}
+                >
+                  <AddIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                  Add Customer
+                </button>
+              )}
             </Box>
           </Box>
         </Box>
 
-        {/* Stats Section - Similar to Dashboard */}
+        {/* Stats Section - Role-based styling */}
         <div className="customer-stats-grid">
-          <div className="customer-stat-card">
-            <div className="customer-stat-header">
-              <div className="customer-stat-label">
-                {userRole === 'officer' ? 'My Customers' : 'Total Customers'}
+          {[
+            {
+              title: isSupervisor || isAdmin ? 'Total Customers' : 'My Customers',
+              value: stats.totalCustomers,
+              icon: <Person sx={{ fontSize: 16 }} />,
+              meta: isSupervisor || isAdmin ? 'Active accounts in system' : 'Customers assigned to me'
+            },
+            {
+              title: isSupervisor || isAdmin ? 'Total Loan Portfolio' : 'My Portfolio',
+              value: formatCurrency(stats.totalLoanPortfolio),
+              icon: <AccountBalance sx={{ fontSize: 16 }} />,
+              meta: isSupervisor || isAdmin ? 'Combined loan balances' : 'Total loan balance assigned'
+            },
+            {
+              title: isSupervisor || isAdmin ? 'In Arrears' : 'My Arrears',
+              value: formatCurrency(stats.totalArrears),
+              icon: <Receipt sx={{ fontSize: 16 }} />,
+              meta: isSupervisor || isAdmin ? 'Total overdue amounts' : 'Total arrears assigned'
+            },
+            ...(isSupervisor || isAdmin ? [
+              {
+                title: 'Assigned Customers',
+                value: stats.assignedCustomers,
+                icon: <AssignmentInd sx={{ fontSize: 16 }} />,
+                meta: 'Customers with assigned officers'
+              },
+              {
+                title: 'Unassigned Customers',
+                value: stats.unassignedCustomers,
+                icon: <Groups sx={{ fontSize: 16 }} />,
+                meta: 'Customers needing assignment'
+              },
+              {
+                title: 'System Role',
+                value: isSupervisor ? 'Supervisor' : isAdmin ? 'Admin' : 'Officer',
+                icon: getRoleIcon(),
+                meta: 'Current user role'
+              }
+            ] : [])
+          ].map((stat, index) => (
+            <div key={index} className="customer-stat-card">
+              <div className={`stat-top-border ${getRoleAccentClass()}`}></div>
+              <div className="customer-stat-header">
+                <div className={`customer-stat-label ${getRoleTextColor()}`}>
+                  {stat.title}
+                </div>
+                <div className={`customer-stat-icon-wrapper ${getRoleAccentClass()}`}>
+                  {stat.icon}
+                </div>
               </div>
-              <div className="customer-stat-icon-wrapper">
-                <Person sx={{ fontSize: 16 }} />
-              </div>
-            </div>
-            <div>
-              <div className="customer-stat-value">
-                {stats.totalCustomers}
-              </div>
-              <div className="customer-stat-meta">
-                {userRole === 'officer' 
-                  ? 'Customers assigned to me' 
-                  : 'Active accounts in system'}
-              </div>
-            </div>
-          </div>
-
-          <div className="customer-stat-card">
-            <div className="customer-stat-header">
-              <div className="customer-stat-label">
-                {userRole === 'officer' ? 'My Portfolio' : 'Total Loan Portfolio'}
-              </div>
-              <div className="customer-stat-icon-wrapper">
-                <AccountBalance sx={{ fontSize: 16 }} />
-              </div>
-            </div>
-            <div>
-              <div className="customer-stat-value">
-                {formatCurrency(stats.totalLoanPortfolio)}
-              </div>
-              <div className="customer-stat-meta">
-                {userRole === 'officer' 
-                  ? 'Total loan balance assigned' 
-                  : 'Combined loan balances'}
-              </div>
-            </div>
-          </div>
-
-          <div className="customer-stat-card">
-            <div className="customer-stat-header">
-              <div className="customer-stat-label">
-                {userRole === 'officer' ? 'My Arrears' : 'In Arrears'}
-              </div>
-              <div className="customer-stat-icon-wrapper">
-                <Receipt sx={{ fontSize: 16 }} />
-              </div>
-            </div>
-            <div>
-              <div className="customer-stat-value">
-                {formatCurrency(stats.totalArrears)}
-              </div>
-              <div className="customer-stat-meta">
-                {userRole === 'officer' 
-                  ? 'Total arrears assigned' 
-                  : 'Total overdue amounts'}
+              <div>
+                <div className={`customer-stat-value ${getRoleTextColor()}`}>
+                  {stat.value}
+                </div>
+                <div className="customer-stat-meta">
+                  {stat.meta}
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
 
         {/* Main Table Section */}
@@ -512,10 +559,11 @@ const CustomerPage = () => {
           <div className="customer-content-card">
             <div className="customer-section-header">
               <Box>
-                <Typography className="customer-section-title">
-                  {userRole === 'officer' 
-                    ? `MY ASSIGNED CUSTOMERS (${filteredCustomers.length})` 
-                    : `ALL CUSTOMERS (${filteredCustomers.length})`}
+                <Typography className={`customer-section-title ${getRoleTextColor()}`}>
+                  {isSupervisor || isAdmin
+                    ? `ALL CUSTOMERS (${filteredCustomers.length})`
+                    : `MY ASSIGNED CUSTOMERS (${filteredCustomers.length})`}
+                  <div className={`section-title-underline ${getRoleAccentClass()}`}></div>
                 </Typography>
               </Box>
 
@@ -523,11 +571,13 @@ const CustomerPage = () => {
               <div className="customer-search-container">
                 <input
                   type="text"
-                  placeholder="Search by name, phone, email, ID, or assigned officer..."
+                  placeholder={isSupervisor || isAdmin
+                    ? "Search by name, phone, email, ID, or assigned officer..."
+                    : "Search your customers by name, phone, or email..."}
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
-                    setPage(0); // Reset to first page when searching
+                    setPage(0);
                   }}
                   className="customer-search-input"
                 />
@@ -536,7 +586,7 @@ const CustomerPage = () => {
                   value={statusFilter}
                   onChange={(e) => {
                     setStatusFilter(e.target.value);
-                    setPage(0); // Reset to first page when filtering
+                    setPage(0);
                   }}
                   className="customer-status-filter"
                 >
@@ -545,7 +595,7 @@ const CustomerPage = () => {
                   <option value="inactive">Inactive</option>
                   <option value="arrears">In Arrears</option>
                   <option value="current">Current</option>
-                  {(userRole === 'admin' || userRole === 'supervisor') && (
+                  {(isSupervisor || isAdmin) && (
                     <>
                       <option value="assigned">Assigned</option>
                       <option value="unassigned">Unassigned</option>
@@ -563,33 +613,33 @@ const CustomerPage = () => {
 
             {loading ? (
               <Box className="customer-loading">
-                <LinearProgress />
+                <LinearProgress className={`loading-bar ${getRoleAccentClass()}`} />
                 <Typography className="customer-loading-text">
-                  {userRole === 'officer' 
-                    ? 'Loading your assigned customers...' 
-                    : 'Loading customers...'}
+                  {isSupervisor || isAdmin
+                    ? 'Loading all customers...'
+                    : 'Loading your assigned customers...'}
                 </Typography>
               </Box>
             ) : filteredCustomers.length === 0 ? (
               <div className="table-empty-state">
                 <div className="empty-icon">
-                  <Search sx={{ fontSize: 48, color: '#d4a762' }} />
+                  <Search sx={{ fontSize: 48 }} />
                 </div>
-                <Typography className="empty-title">
-                  {userRole === 'officer' 
-                    ? 'No Assigned Customers Found' 
-                    : 'No Customers Found'}
+                <Typography className={`empty-title ${getRoleTextColor()}`}>
+                  {isSupervisor || isAdmin
+                    ? 'No Customers Found'
+                    : 'No Assigned Customers Found'}
                 </Typography>
                 <Typography className="empty-subtitle">
-                  {userRole === 'officer' 
-                    ? 'No customers have been assigned to you yet.' 
-                    : searchTerm || statusFilter 
+                  {isSupervisor || isAdmin
+                    ? (searchTerm || statusFilter
                       ? 'Try adjusting your search or filter criteria.'
-                      : 'No customers have been added yet. Click "Add Customer" to get started.'}
+                      : 'No customers have been added yet. Click "Add Customer" to get started.')
+                    : 'No customers have been assigned to you yet.'}
                 </Typography>
-                {userRole !== 'officer' && !searchTerm && !statusFilter && (
+                {(isSupervisor || isAdmin) && !searchTerm && !statusFilter && (
                   <button
-                    className="customer-primary-btn"
+                    className={`customer-primary-btn ${getRolePrimaryClass()}`}
                     onClick={() => setOpenDialog(true)}
                     style={{ marginTop: '1rem' }}
                   >
@@ -601,10 +651,15 @@ const CustomerPage = () => {
             ) : (
               <>
                 <div className="table-container-wrapper">
+
+
                   <CustomerTable
                     customers={paginatedCustomers}
                     loading={false}
                     onRefresh={fetchData}
+                    userRole={userRole}
+                    isSupervisor={isSupervisor}
+                    isAdmin={isAdmin}
                   />
                 </div>
 
@@ -614,7 +669,7 @@ const CustomerPage = () => {
                     <div className="pagination-info">
                       Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, filteredCustomers.length)} of {filteredCustomers.length} customers
                     </div>
-                    
+
                     <div className="pagination-controls">
                       <button
                         className="pagination-btn first-page"
@@ -622,41 +677,41 @@ const CustomerPage = () => {
                         disabled={page === 0}
                         title="First Page"
                       >
-                        <FirstPage sx={{ fontSize: 16 }} />
+                        &laquo;
                       </button>
-                      
+
                       <button
                         className="pagination-btn prev-page"
                         onClick={handlePreviousPage}
                         disabled={page === 0}
                         title="Previous Page"
                       >
-                        <KeyboardArrowLeft sx={{ fontSize: 16 }} />
+                        &lsaquo;
                       </button>
-                      
+
                       <div className="page-indicator">
                         Page {page + 1} of {totalPages}
                       </div>
-                      
+
                       <button
                         className="pagination-btn next-page"
                         onClick={handleNextPage}
                         disabled={page >= totalPages - 1}
                         title="Next Page"
                       >
-                        <KeyboardArrowRight sx={{ fontSize: 16 }} />
+                        &rsaquo;
                       </button>
-                      
+
                       <button
                         className="pagination-btn last-page"
                         onClick={handleLastPage}
                         disabled={page >= totalPages - 1}
                         title="Last Page"
                       >
-                        <LastPage sx={{ fontSize: 16 }} />
+                        &raquo;
                       </button>
                     </div>
-                    
+
                     <div className="rows-per-page">
                       <select
                         value={rowsPerPage}
@@ -676,11 +731,11 @@ const CustomerPage = () => {
           </div>
         </Box>
 
-        {/* Add Customer Dialog - Only for non-officers */}
-        {(userRole === 'admin' || userRole === 'supervisor') && (
+        {/* Add Customer Dialog - Only for supervisors/admins */}
+        {(isSupervisor || isAdmin) && (
           <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
             <DialogTitle>
-              <Typography variant="h6" sx={{ color: '#3c2a1c', fontWeight: 700, fontSize: '0.8125rem', textTransform: 'uppercase' }}>
+              <Typography variant="h6" className={getRoleTextColor()}>
                 Add New Customer
               </Typography>
             </DialogTitle>
@@ -770,7 +825,7 @@ const CustomerPage = () => {
                 Cancel
               </button>
               <button
-                className="customer-primary-dialog-btn"
+                className={`customer-primary-dialog-btn ${getRolePrimaryClass()}`}
                 onClick={handleSubmit}
                 disabled={!newCustomer.name || !newCustomer.phoneNumber}
               >

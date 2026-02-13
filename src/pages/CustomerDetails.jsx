@@ -1,4 +1,4 @@
-// src/pages/CustomerDetails.jsx - TABBED INTERFACE VERSION WITH TRANSACTION MODAL
+// src/pages/CustomerDetails.jsx - UPDATED WITH PROFESSIONAL SUBTLE COLOR THEMING
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -28,12 +28,15 @@ import {
     Payment,
     ReceiptLong,
     AccountBalance as AccountBalanceIcon,
-    DoneAll
+    DoneAll,
+    SupervisorAccount,
+    Groups,
+    AssignmentInd
 } from '@mui/icons-material';
 import axios from 'axios';
 import '../styles/CustomerDetails.css';
 import LayoutWrapper from '../LayoutWrapper';
-import authService from '../services/auth.service'; // Import auth service
+import authService from '../services/auth.service';
 
 const CustomerDetails = () => {
     const { id } = useParams();
@@ -44,6 +47,11 @@ const CustomerDetails = () => {
     const [error, setError] = useState(null);
     const [transactions, setTransactions] = useState([]);
     const [transactionsLoading, setTransactionsLoading] = useState(false);
+
+    // User role state
+    const [userRole, setUserRole] = useState('officer');
+    const [isSupervisor, setIsSupervisor] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     // Comment Section State
     const [newComment, setNewComment] = useState('');
@@ -98,6 +106,32 @@ const CustomerDetails = () => {
     // Ref for auto-close timer
     const autoCloseTimerRef = useRef(null);
 
+    // Get user role from auth service
+    const getUserInfo = () => {
+        const user = authService.getCurrentUser();
+        if (!user) return { role: 'officer', isSupervisor: false, isAdmin: false };
+        
+        const role = user.role?.toLowerCase() || 'officer';
+        const isSupervisorUser = role === 'supervisor';
+        const isAdminUser = role === 'admin';
+        
+        console.log('👤 CustomerDetails User Info:', { 
+            username: user.username, 
+            role: role, 
+            isSupervisor: isSupervisorUser,
+            isAdmin: isAdminUser,
+            userId: user.id || user._id
+        });
+        
+        return { 
+            role, 
+            isSupervisor: isSupervisorUser, 
+            isAdmin: isAdminUser,
+            userId: user.id || user._id,
+            username: user.username 
+        };
+    };
+
     // Clear any existing timer on unmount
     useEffect(() => {
         return () => {
@@ -131,6 +165,13 @@ const CustomerDetails = () => {
     useEffect(() => {
         console.log('=== CUSTOMER DETAILS MOUNTED ===');
         console.log('ID from URL:', id);
+        
+        // Get user info first
+        const userInfo = getUserInfo();
+        setUserRole(userInfo.role);
+        setIsSupervisor(userInfo.isSupervisor);
+        setIsAdmin(userInfo.isAdmin);
+
         console.log('🔐 Auth status:', {
             isAuthenticated: authService.isAuthenticated(),
             token: authService.getToken() ? 'Present' : 'Missing',
@@ -1333,6 +1374,43 @@ const CustomerDetails = () => {
         }
     };
 
+    // ==================== ROLE-BASED STYLING FUNCTIONS ====================
+
+    // Get role-based icon
+    const getRoleIcon = () => {
+        if (isSupervisor) return <SupervisorAccount sx={{ fontSize: 16 }} />;
+        if (isAdmin) return <Groups sx={{ fontSize: 16 }} />;
+        return <AssignmentInd sx={{ fontSize: 16 }} />;
+    };
+
+    // Get role-based subtitle
+    const getRoleSubtitle = () => {
+        if (isSupervisor) return 'Supervisor - Manage All Customer Accounts';
+        if (isAdmin) return 'Administrator - Full System Access';
+        return 'Officer - My Assigned Customer Details';
+    };
+
+    // Get role-based color classes - SUBTLE TEXT COLORS ONLY
+    const getRoleTextColor = () => {
+        if (isSupervisor) return 'supervisor-text';
+        if (isAdmin) return 'admin-text';
+        return 'officer-text';
+    };
+
+    // Get role-based accent color for borders/underlines
+    const getRoleAccentClass = () => {
+        if (isSupervisor) return 'supervisor-accent';
+        if (isAdmin) return 'admin-accent';
+        return 'officer-accent';
+    };
+
+    // Get role-based primary color for buttons
+    const getRolePrimaryClass = () => {
+        if (isSupervisor) return 'supervisor-primary';
+        if (isAdmin) return 'admin-primary';
+        return 'officer-primary';
+    };
+
     if (loading) {
         return (
             <Box className="customer-details-wrapper">
@@ -1399,8 +1477,6 @@ const CustomerDetails = () => {
     return (
         <LayoutWrapper>
             <Box className="customer-details-wrapper">
-                {/* Header */}
-
                 {/* Fixed Header - Won't Scroll */}
                 <Box className="customer-details-fixed-header">
                     <Box className="customer-details-header">
@@ -1417,12 +1493,13 @@ const CustomerDetails = () => {
                                     <Typography className="customer-details-subtitle">
                                         ID: {customer?.customerId || customer?._id || id}
                                     </Typography>
+                                   
                                 </Box>
                             </div>
 
                             <div className="customer-details-actions">
                                 <button
-                                    className="customer-details-primary-btn"
+                                    className={`customer-details-primary-btn ${getRolePrimaryClass()}`}
                                     onClick={handleProcessPayment}
                                     disabled={parseFloat(customer?.loanBalance || 0) <= 0 || hasActiveTransaction}
                                     style={{
@@ -1462,30 +1539,30 @@ const CustomerDetails = () => {
                     {/* Horizontal Tab Navigation */}
                     <div className="customer-details-tabs">
                         <button
-                            className={`tab-btn ${activeTab === 'customers' ? 'active' : ''}`}
+                            className={`tab-btn ${activeTab === 'customers' ? 'active' : ''} ${getRoleTextColor()}`}
                             onClick={() => setActiveTab('customers')}
                         >
                             <Person sx={{ fontSize: 25, marginRight: '0.5rem' }} />
                             Customer
-                            {activeTab === 'customers' && <div className="tab-indicator"></div>}
+                            {activeTab === 'customers' && <div className={`tab-indicator ${getRoleAccentClass()}`}></div>}
                         </button>
 
                         <button
-                            className={`tab-btn ${activeTab === 'arrears' ? 'active' : ''}`}
+                            className={`tab-btn ${activeTab === 'arrears' ? 'active' : ''} ${getRoleTextColor()}`}
                             onClick={() => setActiveTab('arrears')}
                         >
                             <AddToPhotos sx={{ fontSize: 25, marginRight: '0.5rem' }} />
                             Arrears
-                            {activeTab === 'arrears' && <div className="tab-indicator"></div>}
+                            {activeTab === 'arrears' && <div className={`tab-indicator ${getRoleAccentClass()}`}></div>}
                         </button>
 
                         <button
-                            className={`tab-btn ${activeTab === 'promises' ? 'active' : ''}`}
+                            className={`tab-btn ${activeTab === 'promises' ? 'active' : ''} ${getRoleTextColor()}`}
                             onClick={() => setActiveTab('promises')}
                         >
                             <History sx={{ fontSize: 25, marginRight: '0.5rem' }} />
                             PTP
-                            {activeTab === 'promises' && <div className="tab-indicator"></div>}
+                            {activeTab === 'promises' && <div className={`tab-indicator ${getRoleAccentClass()}`}></div>}
                         </button>
                     </div>
                 </Box>
@@ -1497,9 +1574,9 @@ const CustomerDetails = () => {
                         <div className="tab-content active">
                             {/* Customer Information Card */}
                             <div className="details-card customer-info-card">
-                                <div className="card-header">
-                                    <Person sx={{ fontSize: 14, marginRight: '0.5rem', color: '#5c4730' }} />
-                                    <Typography className="card-title">
+                                <div className={`card-header ${getRoleAccentClass()}-border`}>
+                                    <Person sx={{ fontSize: 14, marginRight: '0.5rem' }} />
+                                    <Typography className={`card-title ${getRoleTextColor()}`}>
                                         Customer Information
                                     </Typography>
                                 </div>
@@ -1571,9 +1648,9 @@ const CustomerDetails = () => {
                         <div className="tab-content active" data-tab="arrears">
                             {/* Loan Details Card - Full Width */}
                             <div className="details-card loan-details-card" style={{ width: '100%', gridColumn: '1 / -1' }}>
-                                <div className="card-header">
-                                    <AccountBalance sx={{ fontSize: 14, marginRight: '0.5rem', color: '#5c4730' }} />
-                                    <Typography className="card-title">
+                                <div className={`card-header ${getRoleAccentClass()}-border`}>
+                                    <AccountBalance sx={{ fontSize: 14, marginRight: '0.5rem' }} />
+                                    <Typography className={`card-title ${getRoleTextColor()}`}>
                                         Loan Details
                                     </Typography>
                                     <span className={`status-badge ${getStatusColor(customer?.arrears)}`}>
@@ -1610,26 +1687,19 @@ const CustomerDetails = () => {
                                                 {customer?.lastPaymentDate ? formatDate(customer.lastPaymentDate) : 'Never'}
                                             </div>
                                         </div>
-
-                                        {/* <div className="info-item">
-                                        <div className="info-label">Days in Arrears</div>
-                                        <div className="info-value">
-                                            {customer?.daysInArrears || '0'} days
-                                        </div>
-                                    </div> */}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Customer Follow-up Comments Card - 35% */}
                             <div className="details-card comment-card">
-                                <div className="card-header">
-                                    <Comment sx={{ fontSize: 14, marginRight: '0.5rem', color: '#5c4730' }} />
-                                    <Typography className="card-title">
+                                <div className={`card-header ${getRoleAccentClass()}-border`}>
+                                    <Comment sx={{ fontSize: 14, marginRight: '0.5rem' }} />
+                                    <Typography className={`card-title ${getRoleTextColor()}`}>
                                         Customer Follow-up
                                     </Typography>
                                     <button
-                                        className="comment-save-btn"
+                                        className={`comment-save-btn ${getRolePrimaryClass()}`}
                                         onClick={saveComment}
                                         disabled={savingComment || !newComment.trim()}
                                     >
@@ -1652,7 +1722,7 @@ const CustomerDetails = () => {
                                     {/* Comment History - Scrollable */}
                                     <div className="comment-history-section">
                                         <div className="comment-history-header">
-                                            <Typography className="comment-history-title">
+                                            <Typography className={`comment-history-title ${getRoleTextColor()}`}>
                                                 Comment History
                                             </Typography>
                                             {commentsLoading && <span className="loading-indicator">Loading...</span>}
@@ -1704,9 +1774,9 @@ const CustomerDetails = () => {
 
                             {/* Recent Transactions Card - 65% */}
                             <div className="details-card transactions-card">
-                                <div className="card-header">
-                                    <Receipt sx={{ fontSize: 14, marginRight: '0.5rem', color: '#5c4730' }} />
-                                    <Typography className="card-title">
+                                <div className={`card-header ${getRoleAccentClass()}-border`}>
+                                    <Receipt sx={{ fontSize: 14, marginRight: '0.5rem' }} />
+                                    <Typography className={`card-title ${getRoleTextColor()}`}>
                                         Recent Transactions
                                     </Typography>
                                     <button
@@ -1843,19 +1913,19 @@ const CustomerDetails = () => {
                         <div className="tab-content active" data-tab="promises">
                             {/* Payment Promises Card - Full Width */}
                             <div className="details-card promises-card">
-                                <div className="card-header">
+                                <div className={`card-header ${getRoleAccentClass()}-border`}>
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '0.5rem' }}>
                                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                                     </svg>
-                                    <Typography className="card-title">
+                                    <Typography className={`card-title ${getRoleTextColor()}`}>
                                         Payment Promises
                                     </Typography>
-                                    <button
-                                        className="new-promise-btn"
+                                    {/*<button
+                                        className={`new-promise-btn ${getRolePrimaryClass()}`}
                                         onClick={() => setShowPromiseModal(true)}
                                     >
                                         + New Promise
-                                    </button>
+                                    </button>*/}
                                 </div>
 
                                 <div className="card-body">
@@ -1870,7 +1940,7 @@ const CustomerDetails = () => {
 
                                             <button
                                                 onClick={() => setShowPromiseModal(true)}
-                                                className="create-promise-btn"
+                                                className={`create-promise-btn ${getRolePrimaryClass()}`}
                                             >
                                                 + Create First Promise
                                             </button>
@@ -1953,23 +2023,23 @@ const CustomerDetails = () => {
 
                             {/* Placeholder Card - 65% (Payment Processing Card Removed) */}
                             <div className="details-card empty-card">
-                                <div className="card-header">
-                                    <SendToMobile sx={{ fontSize: 14, marginRight: '0.5rem', color: '#5c4730' }} />
-                                    <Typography className="card-title">
+                                <div className={`card-header ${getRoleAccentClass()}-border`}>
+                                    <SendToMobile sx={{ fontSize: 14, marginRight: '0.5rem' }} />
+                                    <Typography className={`card-title ${getRoleTextColor()}`}>
                                         Payment Processing
                                     </Typography>
                                 </div>
                                 <div className="card-body">
                                     <div className="empty-state">
                                         <div className="empty-icon">💳</div>
-                                        <Typography className="empty-title">
+                                        <Typography className={`empty-title ${getRoleTextColor()}`}>
                                             Payment Processing Moved
                                         </Typography>
                                         <Typography className="empty-text">
                                             Use the "Prompt" button in the header to process payments
                                         </Typography>
                                         <button
-                                            className="process-payment-btn"
+                                            className={`process-payment-btn ${getRolePrimaryClass()}`}
                                             onClick={handleProcessPayment}
                                             disabled={parseFloat(customer?.loanBalance || 0) <= 0 || hasActiveTransaction}
                                             style={{ marginTop: '1rem' }}
@@ -1989,14 +2059,12 @@ const CustomerDetails = () => {
                     <div className="payment-modal-overlay-customer">
                         <div className="payment-modal-customer">
                             <div className="payment-modal-header-customer">
-                                <Typography className="payment-modal-title-customer">
+                                <Typography className={`payment-modal-title-customer ${getRoleTextColor()}`}>
                                     Process Payment
                                 </Typography>
                             </div>
 
                             <div className="payment-modal-body-customer">
-
-
                                 {/* Only show form if payment hasn't been successfully initiated */}
                                 {(!mpesaStatus || mpesaStatus.status !== 'success') ? (
                                     <>
@@ -2110,7 +2178,7 @@ const CustomerDetails = () => {
                                                                         No
                                                                     </button>
                                                                     <button
-                                                                        className="popup-confirm-btn-attached"
+                                                                        className={`popup-confirm-btn-attached ${getRolePrimaryClass()}`}
                                                                         onClick={confirmFullBalanceFromPopup}
                                                                     >
                                                                         Yes
@@ -2168,7 +2236,7 @@ const CustomerDetails = () => {
 
                                 {mpesaStatus && mpesaStatus.status === 'success' ? (
                                     <button
-                                        className="payment-modal-sent-btn-customer"
+                                        className={`payment-modal-sent-btn-customer ${getRolePrimaryClass()}`}
                                         onClick={closePaymentModal}
                                     >
                                         Sent
@@ -2190,7 +2258,7 @@ const CustomerDetails = () => {
                                             Cancel
                                         </button>
                                         <button
-                                            className="payment-modal-prompt-btn-customer"
+                                            className={`payment-modal-prompt-btn-customer ${getRolePrimaryClass()}`}
                                             onClick={handleSendPrompt}
                                             disabled={!paymentData.phoneNumber || !paymentData.amount}
                                         >
@@ -2208,7 +2276,7 @@ const CustomerDetails = () => {
                     <div className="payment-modal-overlay-customer">
                         <div className="payment-modal-customer" style={{ maxWidth: '500px' }}>
                             <div className="payment-modal-header-customer">
-                                <Typography className="payment-modal-title-customer">
+                                <Typography className={`payment-modal-title-customer ${getRoleTextColor()}`}>
                                     Create Payment Promise
                                 </Typography>
                             </div>
@@ -2297,10 +2365,9 @@ const CustomerDetails = () => {
                                     Cancel
                                 </button>
                                 <button
-                                    className="payment-modal-prompt-btn-customer"
+                                    className={`payment-modal-prompt-btn-customer ${getRolePrimaryClass()}`}
                                     onClick={createPromise}
                                     disabled={!promiseData.promiseAmount || !promiseData.promiseDate}
-                                    style={{ background: '#8B7355' }}
                                 >
                                     Create Promise
                                 </button>
@@ -2366,7 +2433,7 @@ const CustomerDetails = () => {
                                     Cancel
                                 </button>
                                 <button
-                                    className="confirmation-modal-confirm-btn-customer"
+                                    className={`confirmation-modal-confirm-btn-customer ${getRolePrimaryClass()}`}
                                     onClick={handleConfirmPayment}
                                 >
                                     Send Request
@@ -2389,9 +2456,9 @@ const CustomerDetails = () => {
                                 {/* Modal Header */}
                                 <div className="transaction-modal-header">
                                     <div className="transaction-modal-header-content">
-                                        <ReceiptLong sx={{ fontSize: 20, color: '#5c4730' }} />
+                                        <ReceiptLong sx={{ fontSize: 20 }} />
                                         <div>
-                                            <Typography className="transaction-modal-title">
+                                            <Typography className={`transaction-modal-title ${getRoleTextColor()}`}>
                                                 Transaction Details
                                             </Typography>
                                             <Typography className="transaction-modal-subtitle">
@@ -2416,7 +2483,7 @@ const CustomerDetails = () => {
                                             {/* Customer Information Card */}
                                             <div className="transaction-card-compact">
                                                 <div className="transaction-card-header-compact">
-                                                    <PersonIcon sx={{ fontSize: 14, color: '#5c4730' }} />
+                                                    <PersonIcon sx={{ fontSize: 14 }} />
                                                     <span>Customer Information</span>
                                                 </div>
                                                 <div className="transaction-card-content-compact">
@@ -2438,7 +2505,7 @@ const CustomerDetails = () => {
                                             {/* Transaction Information Card */}
                                             <div className="transaction-card-compact">
                                                 <div className="transaction-card-header-compact">
-                                                    <Payment sx={{ fontSize: 14, color: '#5c4730' }} />
+                                                    <Payment sx={{ fontSize: 14 }} />
                                                     <span>Transaction Information</span>
                                                 </div>
                                                 <div className="transaction-card-content-compact">
@@ -2469,7 +2536,7 @@ const CustomerDetails = () => {
                                             {/* Loan Balance Summary Card */}
                                             <div className="transaction-card-compact loan-card-compact">
                                                 <div className="transaction-card-header-compact">
-                                                    <AccountBalanceIcon sx={{ fontSize: 14, color: '#5c4730' }} />
+                                                    <AccountBalanceIcon sx={{ fontSize: 14 }} />
                                                     <span>Loan Balance Summary</span>
                                                 </div>
                                                 <div className="transaction-card-content-compact">
@@ -2551,7 +2618,7 @@ const CustomerDetails = () => {
                                             {/* Transaction Status Card */}
                                             <div className="transaction-card-compact status-card-compact">
                                                 <div className="transaction-card-header-compact">
-                                                    <ReceiptLong sx={{ fontSize: 14, color: '#5c4730' }} />
+                                                    <ReceiptLong sx={{ fontSize: 14 }} />
                                                     <span>Transaction Status</span>
                                                 </div>
                                                 <div className="transaction-status-wrapper-compact">

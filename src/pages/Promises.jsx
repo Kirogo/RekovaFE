@@ -18,7 +18,10 @@ import {
   Download,
   Done,
   Close,
-  Search
+  Search,
+  AssignmentInd,
+  SupervisorAccount,
+  Groups
 } from '@mui/icons-material';
 import axios from 'axios';
 import authService from '../services/auth.service';
@@ -32,7 +35,11 @@ const Promises = () => {
   const [error, setError] = useState(null);
   const [statistics, setStatistics] = useState(null);
   const [searchTimeout, setSearchTimeout] = useState(null);
-  const [userRole, setUserRole] = useState(null);
+  
+  // User role state
+  const [userRole, setUserRole] = useState('officer');
+  const [isSupervisor, setIsSupervisor] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [filters, setFilters] = useState({
     status: '',
@@ -46,18 +53,30 @@ const Promises = () => {
     sortOrder: 'asc'
   });
 
-  // Get user role from localStorage
-  const getUserRole = () => {
-    try {
-      const userString = localStorage.getItem('user');
-      if (userString) {
-        const user = JSON.parse(userString);
-        return user.role || 'officer';
-      }
-    } catch (error) {
-      console.error('Error getting user role:', error);
-    }
-    return 'officer';
+  // Get user info from auth service
+  const getUserInfo = () => {
+    const user = authService.getCurrentUser();
+    if (!user) return { role: 'officer', isSupervisor: false, isAdmin: false };
+    
+    const role = user.role?.toLowerCase() || 'officer';
+    const isSupervisorUser = role === 'supervisor';
+    const isAdminUser = role === 'admin';
+    
+    console.log('👤 Promises Page - User Info:', { 
+      username: user.username, 
+      role: role, 
+      isSupervisor: isSupervisorUser,
+      isAdmin: isAdminUser,
+      userId: user.id || user._id
+    });
+    
+    return { 
+      role, 
+      isSupervisor: isSupervisorUser, 
+      isAdmin: isAdminUser,
+      userId: user.id || user._id,
+      username: user.username 
+    };
   };
 
   const getApi = () => {
@@ -77,14 +96,18 @@ const Promises = () => {
       setError(null);
 
       const api = getApi();
-      const role = getUserRole();
-      setUserRole(role);
+      const userInfo = getUserInfo();
+      
+      // Update local state
+      setUserRole(userInfo.role);
+      setIsSupervisor(userInfo.isSupervisor);
+      setIsAdmin(userInfo.isAdmin);
 
       let endpoint = '/promises';
       let params = { ...filters };
 
       // For officers, use the officer-specific endpoint
-      if (role === 'officer') {
+      if (userInfo.role === 'officer') {
         console.log('👤 Fetching officer promises from /promises/my-promises...');
         endpoint = '/promises/my-promises';
         // Remove pagination params if they cause issues with officer endpoint
@@ -101,7 +124,7 @@ const Promises = () => {
       });
 
       // Remove page and limit for officer endpoint if not needed
-      if (role !== 'officer') {
+      if (userInfo.role !== 'officer') {
         queryParams.append('page', filters.page);
         queryParams.append('limit', filters.limit);
       }
@@ -110,7 +133,7 @@ const Promises = () => {
       console.log('✅ Promises response:', response.data);
 
       if (response.data.success) {
-        if (role === 'officer') {
+        if (userInfo.role === 'officer') {
           // Handle officer-specific response structure
           const promisesData = response.data.data?.promises || [];
           const summary = response.data.data?.summary || {};
@@ -145,6 +168,25 @@ const Promises = () => {
   };
 
   useEffect(() => {
+    // Add auth debugging
+    console.log('🔐 Promises Page mounted - Auth status:', {
+      isAuthenticated: authService.isAuthenticated(),
+      token: authService.getToken() ? 'Present' : 'Missing',
+      user: authService.getCurrentUser()
+    });
+
+    if (!authService.isAuthenticated()) {
+      console.log('❌ Not authenticated, redirecting to login');
+      authService.logout();
+      navigate('/login');
+      return;
+    }
+
+    const userInfo = getUserInfo();
+    setUserRole(userInfo.role);
+    setIsSupervisor(userInfo.isSupervisor);
+    setIsAdmin(userInfo.isAdmin);
+    
     fetchPromises();
   }, [filters.page, filters.status, filters.promiseType, filters.startDate, filters.endDate]);
 
@@ -283,12 +325,12 @@ const Promises = () => {
   const exportPromises = async () => {
     try {
       const api = getApi();
-      const role = getUserRole();
+      const userInfo = getUserInfo();
 
       let exportEndpoint = '/promises/export';
 
       // For officers, we might need a different export endpoint or handle differently
-      if (role === 'officer') {
+      if (userInfo.role === 'officer') {
         console.warn('⚠️ Officer-specific export might need special handling');
       }
 
@@ -308,6 +350,56 @@ const Promises = () => {
       console.error('Error exporting promises:', error);
       setError('Failed to export promises');
     }
+  };
+
+  // Get role-based icon
+  const getRoleIcon = () => {
+    if (isSupervisor) return <SupervisorAccount sx={{ fontSize: 16 }} />;
+    if (isAdmin) return <Groups sx={{ fontSize: 16 }} />;
+    return <AssignmentInd sx={{ fontSize: 16 }} />;
+  };
+
+  // Get role-based subtitle
+  const getRoleSubtitle = () => {
+    if (isSupervisor) return 'Supervisor - Monitor All Payment Promises';
+    if (isAdmin) return 'Administrator - Full Promise Tracking';
+    return 'Track My Payment Promises';
+  };
+
+  // Get role-based color classes - SUBTLE TEXT COLORS ONLY
+  const getRoleTextColor = () => {
+    if (isSupervisor) return 'supervisor-text';
+    if (isAdmin) return 'admin-text';
+    return 'officer-text';
+  };
+
+  // Get role-based accent color for borders/underlines
+  const getRoleAccentClass = () => {
+    if (isSupervisor) return 'supervisor-accent';
+    if (isAdmin) return 'admin-accent';
+    return 'officer-accent';
+  };
+
+  // Get role-based primary color for buttons
+  const getRolePrimaryClass = () => {
+    if (isSupervisor) return 'supervisor-primary';
+    if (isAdmin) return 'admin-primary';
+    return 'officer-primary';
+  };
+
+  // Handle refresh
+  const handleRefresh = () => {
+    console.log('🔄 Refreshing promises data...');
+    fetchPromises();
+    setFilters(prev => ({
+      ...prev,
+      customerName: '',
+      status: '',
+      promiseType: '',
+      startDate: '',
+      endDate: '',
+      page: 1
+    }));
   };
 
   if (loading && !promises.length) {
@@ -356,25 +448,19 @@ const Promises = () => {
             }} />
           </Box>
         )}
-        {/* Header - Updated title based on role */}
+        
+        {/* Header - Updated with role-based styling */}
         <Box className="promises-page-header">
           <Box className="promises-page-header-content">
             <Box>
-              <Typography className="promises-page-subtitle">
-                {userRole === 'officer' ? 'My Payment Promises' : 'Track and manage payment promises'}
+              <Typography className={`page-subtitle ${getRoleTextColor()}`}>
+                {getRoleSubtitle()}
               </Typography>
             </Box>
             <Box className="promises-page-header-actions">
               <button
-                className="promises-page-action-btn"
-                onClick={exportPromises}
-              >
-                <Download sx={{ fontSize: 14 }} />
-                Export
-              </button>
-              <button
-                className="promises-page-refresh-btn"
-                onClick={fetchPromises}
+                className="customer-action-btn"
+                onClick={handleRefresh}
                 disabled={loading}
               >
                 <Refresh sx={{ fontSize: 14 }} />
@@ -384,65 +470,61 @@ const Promises = () => {
           </Box>
         </Box>
 
-        {/* Statistics Cards */}
+        {/* Statistics Cards - Updated with role-based styling */}
         {statistics && (
-          <div className="promises-page-statistics-grid">
-            <div className="promises-page-stat-card">
-              <div className="promises-page-stat-header">
-                <div className="promises-page-stat-label">
-                  {userRole === 'officer' ? 'My Promises' : 'Total Promises'}
+          <div className="customer-stats-grid">
+            {[
+              {
+                title: isSupervisor || isAdmin ? 'Total Promises' : 'My Promises',
+                value: statistics.total || 0,
+                icon: <CalendarToday sx={{ fontSize: 16 }} />,
+                meta: isSupervisor || isAdmin ? 'All payment promises' : 'Your assigned promises'
+              },
+              {
+                title: 'Fulfilled',
+                value: statistics.fulfilled || 0,
+                icon: <TrendingUp sx={{ fontSize: 16 }} />,
+                meta: statistics.fulfillmentRate ? 
+                  `${typeof statistics.fulfillmentRate === 'number' 
+                    ? statistics.fulfillmentRate.toFixed(1) 
+                    : statistics.fulfillmentRate}% fulfillment rate` : 
+                  'Successfully completed'
+              },
+              {
+                title: 'Pending',
+                value: statistics.pending || 0,
+                icon: <AccessTime sx={{ fontSize: 16 }} />,
+                meta: 'Awaiting payment'
+              },
+              ...(isSupervisor || isAdmin ? [
+                {
+                  title: 'System Role',
+                  value: isSupervisor ? 'Supervisor' : isAdmin ? 'Admin' : 'Officer',
+                  icon: getRoleIcon(),
+                  meta: 'Current user role'
+                }
+              ] : [])
+            ].map((stat, index) => (
+              <div key={index} className="customer-stat-card">
+                <div className={`stat-top-border ${getRoleAccentClass()}`}></div>
+                <div className="customer-stat-header">
+                  <div className={`customer-stat-label ${getRoleTextColor()}`}>
+                    {stat.title}
+                  </div>
+                  <div className={`customer-stat-icon-wrapper ${getRoleAccentClass()}`}>
+                    {stat.icon}
+                  </div>
                 </div>
-                <div className="promises-page-stat-icon">
-                  <CalendarToday sx={{ fontSize: 16 }} />
+                <div>
+                  <div className={`customer-stat-value ${getRoleTextColor()}`}>
+                    {stat.value}
+                  </div>
+                  <div className="customer-stat-meta">
+                    {stat.meta}
+                  </div>
                 </div>
               </div>
-              <div className="promises-page-stat-value">
-                {statistics.total || 0}
-              </div>
-            </div>
-
-            <div className="promises-page-stat-card">
-              <div className="promises-page-stat-header">
-                <div className="promises-page-stat-label">Fulfilled</div>
-                <div className="promises-page-stat-icon success">
-                  <TrendingUp sx={{ fontSize: 16 }} />
-                </div>
-              </div>
-              <div className="promises-page-stat-value success">
-                {statistics.fulfilled || 0}
-                {statistics.fulfillmentRate && (
-                  <span className="promises-page-stat-percent">
-                    ({typeof statistics.fulfillmentRate === 'number'
-                      ? statistics.fulfillmentRate.toFixed(1)
-                      : statistics.fulfillmentRate}%)
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="promises-page-stat-card">
-              <div className="promises-page-stat-header">
-                <div className="promises-page-stat-label">Pending</div>
-                <div className="promises-page-stat-icon warning">
-                  <AccessTime sx={{ fontSize: 16 }} />
-                </div>
-              </div>
-              <div className="promises-page-stat-value warning">
-                {statistics.pending || 0}
-              </div>
-            </div>
-
-            <div className="promises-page-stat-card">
-              <div className="promises-page-stat-header">
-                <div className="promises-page-stat-label">Broken</div>
-                <div className="promises-page-stat-icon error">
-                  <TrendingDown sx={{ fontSize: 16 }} />
-                </div>
-              </div>
-              <div className="promises-page-stat-value error">
-                {statistics.broken || 0}
-              </div>
-            </div>
+            ))}
           </div>
         )}
 
@@ -507,7 +589,9 @@ const Promises = () => {
               <input
                 type="text"
                 className="promises-page-filter-input promises-page-search-input"
-                placeholder="Type customer name..."
+                placeholder={isSupervisor || isAdmin 
+                  ? "Search all customers..." 
+                  : "Search your customers..."}
                 value={filters.customerName || ''}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 onKeyPress={(e) => {
@@ -535,167 +619,251 @@ const Promises = () => {
         </div>
 
         {/* Promises Table */}
-        <div className="promises-page-table-container">
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-
-          {loading ? (
-            <div className="promises-page-loading">
-              <LinearProgress sx={{ width: '100%' }} />
-            </div>
-          ) : promises.length === 0 ? (
-            <div className="promises-page-empty">
-              <div className="promises-page-empty-icon">📋</div>
-              <Typography className="promises-page-empty-title">
-                {userRole === 'officer' ? 'No Promises Yet' : 'No Promises Found'}
-              </Typography>
-              {filters.customerName && (
-                <button
-                  className="promises-page-clear-filters-btn"
-                  onClick={clearSearch}
-                >
-                  Clear Search
-                </button>
-              )}
-            </div>
-          ) : (
-            <>
-              <div className="promises-page-table-header">
-                <Typography className="promises-page-table-title">
-                  {userRole === 'officer' ? 'My Promises' : 'All Promises'} ({promises.length})
+        <Box className="customer-main-content">
+          <div className="customer-content-card">
+            <div className="customer-section-header">
+              <Box>
+                <Typography className={`customer-section-title ${getRoleTextColor()}`}>
+                  {isSupervisor || isAdmin 
+                    ? `ALL PAYMENT PROMISES (${promises.length})` 
+                    : `MY PAYMENT PROMISES (${promises.length})`}
+                  <div className={`section-title-underline ${getRoleAccentClass()}`}></div>
                 </Typography>
-              </div>
-              <table className="promises-page-table">
-                <thead>
-                  <tr>
-                    <th>Customer</th>
-                    <th>Phone</th>
-                    <th>Amount</th>
-                    <th>Due Date</th>
-                    <th>Status</th>
-                    {userRole !== 'officer' && <th>Created By</th>}
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {promises.map((promise) => {
-                    const { date, time } = formatDateTime(promise.promiseDate);
-                    const createdDate = formatDateTime(promise.createdAt).date;
+              </Box>
+            </div>
 
-                    return (
-                      <tr key={promise._id} className="promises-page-table-row">
-                        <td
-                          className="promises-page-customer-cell"
-                          onClick={() => handlePromiseClick(promise)}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <div className="promises-page-customer-name">
-                            {promise.customerId?.name || promise.customerName}
-                          </div>
-                          <div
-                            className="promises-page-loan-type"
-                          >
-                            {promise.customerId?.loanType || 'Standard Loan'}
-                          </div>
-                        </td>
-                        <td className="promises-page-phone-cell">
-                          {promise.phoneNumber}
-                        </td>
-                        <td className="promises-page-amount-cell">
-                          <div className="promises-page-amount-value">
-                            {formatCurrency(promise.promiseAmount)}
-                          </div>
-                        </td>
-                        <td className="promises-page-date-cell">
-                          <div className="promises-page-promise-date">{date}</div>
-                          <div className="promises-page-promise-time">{time}</div>
-                          {promise.status === 'PENDING' && new Date(promise.promiseDate) < new Date() && (
-                            <div className="promises-page-overdue-badge">Overdue</div>
-                          )}
-                        </td>
-                        <td className="promises-page-status-cell">
-                          <span className={`promises-page-status-badge ${getStatusColor(promise.status)}`}>
-                            {getStatusIcon(promise.status)}
-                            {promise.status}
-                          </span>
-                        </td>
-                        {userRole !== 'officer' && (
-                          <td className="promises-page-creator-cell">
-                            <div className="promises-page-creator-name">{promise.createdByName}</div>
-                            <div className="promises-page-creator-date">
-                              {createdDate}
-                            </div>
-                          </td>
-                        )}
-                        <td className="promises-page-actions-cell">
-                          {promise.status === 'PENDING' && (
-                            <div className="promises-page-promise-actions">
-                              <button
-                                className="promises-page-promise-action-btn fulfilled-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updatePromiseStatus(promise.promiseId, 'FULFILLED');
-                                }}
-                                title="Mark as Fulfilled"
-                              >
-                                <Done sx={{ fontSize: 10, marginRight: '0.125rem' }} />
-                                Fulfilled
-                              </button>
-                              <button
-                                className="promises-page-promise-action-btn broken-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updatePromiseStatus(promise.promiseId, 'BROKEN');
-                                }}
-                                title="Mark as Broken"
-                              >
-                                <Close sx={{ fontSize: 10, marginRight: '0.125rem' }} />
-                                Broken
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </>
-          )}
+            {error && (
+              <Alert severity="error" className="customer-alert" sx={{ mx: 1, mt: 1 }}>
+                {error}
+              </Alert>
+            )}
 
-          {/* Pagination - Only show for non-officer roles since officer endpoint doesn't support pagination */}
-          {userRole !== 'officer' && statistics?.pagination && statistics.pagination.pages > 1 && (
-            <div className="promises-page-pagination">
-              <button
-                className="promises-page-pagination-btn"
-                disabled={filters.page <= 1}
-                onClick={() => handleFilterChange('page', filters.page - 1)}
-              >
-                Previous
-              </button>
-
-              <div className="promises-page-pagination-info">
-                Page {filters.page} of {statistics.pagination.pages}
-                {filters.customerName && (
-                  <span className="promises-page-pagination-search-info">
-                    • Searching: "{filters.customerName}"
-                  </span>
+            {loading ? (
+              <Box className="customer-loading">
+                <LinearProgress className={`loading-bar ${getRoleAccentClass()}`} />
+                <Typography className="customer-loading-text">
+                  {isSupervisor || isAdmin 
+                    ? 'Loading all promises...' 
+                    : 'Loading your promises...'}
+                </Typography>
+              </Box>
+            ) : promises.length === 0 ? (
+              <div className="table-empty-state">
+                <div className="empty-icon">
+                  📋
+                </div>
+                <Typography className={`empty-title ${getRoleTextColor()}`}>
+                  {isSupervisor || isAdmin 
+                    ? 'No Payment Promises Found' 
+                    : 'No Payment Promises Found'}
+                </Typography>
+                <Typography className="empty-subtitle">
+                  {isSupervisor || isAdmin 
+                    ? (filters.customerName || filters.status || filters.promiseType 
+                      ? 'Try adjusting your search or filter criteria.'
+                      : 'No payment promises have been recorded yet.')
+                    : 'No payment promises have been assigned to you yet.'}
+                </Typography>
+                {(filters.customerName || filters.status || filters.promiseType) && (
+                  <button
+                    className={`customer-primary-btn ${getRolePrimaryClass()}`}
+                    onClick={() => {
+                      setFilters({
+                        ...filters,
+                        status: '',
+                        promiseType: '',
+                        startDate: '',
+                        endDate: '',
+                        customerName: '',
+                        page: 1
+                      });
+                    }}
+                    style={{ marginTop: '1rem' }}
+                  >
+                    Clear Filters
+                  </button>
                 )}
               </div>
+            ) : (
+              <>
+                <div className="table-container-wrapper">
+                  <table className="promises-page-table">
+                    <thead>
+                      <tr>
+                        <th className="customer-table-header-cell">Customer</th>
+                        <th className="customer-table-header-cell">Phone</th>
+                        <th className="customer-table-header-cell">Amount</th>
+                        <th className="customer-table-header-cell">Due Date</th>
+                        <th className="customer-table-header-cell">Status</th>
+                        {isSupervisor || isAdmin ? <th className="customer-table-header-cell">Created By</th> : null}
+                        <th className="customer-table-header-cell">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {promises.map((promise) => {
+                        const { date, time } = formatDateTime(promise.promiseDate);
+                        const createdDate = formatDateTime(promise.createdAt).date;
 
-              <button
-                className="promises-page-pagination-btn"
-                disabled={filters.page >= statistics.pagination.pages}
-                onClick={() => handleFilterChange('page', filters.page + 1)}
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </div>
+                        return (
+                          <tr 
+                            key={promise._id} 
+                            className="customer-table-row"
+                            onClick={() => handlePromiseClick(promise)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <td className="customer-table-cell">
+                              <div className="customer-name-container">
+                                <div className="customer-name-text">
+                                  {promise.customerId?.name || promise.customerName}
+                                </div>
+                                <div className="customer-account-text">
+                                  {promise.customerId?.loanType || 'Standard Loan'}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="customer-table-cell">
+                              <div className="customer-contact-container">
+                                <div className="customer-phone-text">
+                                  {promise.phoneNumber}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="customer-table-cell">
+                              <span className="amount-cell">
+                                {formatCurrency(promise.promiseAmount)}
+                              </span>
+                            </td>
+                            <td className="customer-table-cell">
+                              <div>
+                                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#2c3e50' }}>
+                                  {date}
+                                </div>
+                                <div style={{ fontSize: '0.625rem', color: '#666' }}>
+                                  {time}
+                                </div>
+                                {promise.status === 'PENDING' && new Date(promise.promiseDate) < new Date() && (
+                                  <div className="promises-page-overdue-badge">Overdue</div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="customer-table-cell">
+                              <span className={`promises-page-status-badge ${getStatusColor(promise.status)}`}>
+                                {getStatusIcon(promise.status)}
+                                {promise.status}
+                              </span>
+                            </td>
+                            {isSupervisor || isAdmin ? (
+                              <td className="customer-table-cell">
+                                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#2c3e50' }}>
+                                  {promise.createdByName}
+                                </div>
+                                <div style={{ fontSize: '0.625rem', color: '#666' }}>
+                                  {createdDate}
+                                </div>
+                              </td>
+                            ) : null}
+                            <td className="customer-table-cell">
+                              {promise.status === 'PENDING' && (
+                                <div className="promises-page-promise-actions">
+                                  <button
+                                    className="promises-page-promise-action-btn fulfilled-btn"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updatePromiseStatus(promise.promiseId, 'FULFILLED');
+                                    }}
+                                    title="Mark as Fulfilled"
+                                  >
+                                    <Done sx={{ fontSize: 10, marginRight: '0.125rem' }} />
+                                    Fulfilled
+                                  </button>
+                                  <button
+                                    className="promises-page-promise-action-btn broken-btn"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updatePromiseStatus(promise.promiseId, 'BROKEN');
+                                    }}
+                                    title="Mark as Broken"
+                                  >
+                                    <Close sx={{ fontSize: 10, marginRight: '0.125rem' }} />
+                                    Broken
+                                  </button>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination - Only show for non-officer roles since officer endpoint doesn't support pagination */}
+                {!isSupervisor && !isAdmin && statistics?.pagination && statistics.pagination.pages > 1 && (
+                  <div className="customer-pagination">
+                    <div className="pagination-info">
+                      Showing {((filters.page - 1) * filters.limit) + 1} to {Math.min(filters.page * filters.limit, statistics.pagination.total)} of {statistics.pagination.total} promises
+                    </div>
+                    
+                    <div className="pagination-controls">
+                      <button
+                        className="pagination-btn first-page"
+                        onClick={() => handleFilterChange('page', 1)}
+                        disabled={filters.page <= 1}
+                        title="First Page"
+                      >
+                        &laquo;
+                      </button>
+                      
+                      <button
+                        className="pagination-btn prev-page"
+                        onClick={() => handleFilterChange('page', filters.page - 1)}
+                        disabled={filters.page <= 1}
+                        title="Previous Page"
+                      >
+                        &lsaquo;
+                      </button>
+                      
+                      <div className="page-indicator">
+                        Page {filters.page} of {statistics.pagination.pages}
+                      </div>
+                      
+                      <button
+                        className="pagination-btn next-page"
+                        onClick={() => handleFilterChange('page', filters.page + 1)}
+                        disabled={filters.page >= statistics.pagination.pages}
+                        title="Next Page"
+                      >
+                        &rsaquo;
+                      </button>
+                      
+                      <button
+                        className="pagination-btn last-page"
+                        onClick={() => handleFilterChange('page', statistics.pagination.pages)}
+                        disabled={filters.page >= statistics.pagination.pages}
+                        title="Last Page"
+                      >
+                        &raquo;
+                      </button>
+                    </div>
+                    
+                    <div className="rows-per-page">
+                      <select
+                        value={filters.limit}
+                        onChange={(e) => handleFilterChange('limit', parseInt(e.target.value))}
+                        className="rows-select"
+                      >
+                        <option value="10">10 per page</option>
+                        <option value="20">20 per page</option>
+                        <option value="50">50 per page</option>
+                        <option value="100">100 per page</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </Box>
       </Box>
     </LayoutWrapper>
   );

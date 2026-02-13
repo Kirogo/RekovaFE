@@ -1,4 +1,4 @@
-/* src/styles/layout.css */
+/* src/styles/layout.css - CLEANED UP VERSION */
 
 /* Reset and base styles */
 * {
@@ -164,38 +164,6 @@ body {
   z-index: 1;
 }
 
-/* Right Sidebar - FIXED POSITIONING */
-.right-sidebar {
-  position: fixed !important;
-  top: 70px !important;
-  right: 0 !important;
-  width: 320px !important;
-  height: calc(100vh - 70px) !important;
-  background: white !important;
-  border-left: 1px solid rgba(92, 71, 48, 0.1) !important;
-  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.05) !important;
-  z-index: 90 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  overflow: hidden !important;
-  font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, sans-serif !important;
-}
-
-/* When collapsed - COMPLETELY hidden except toggle button */
-.right-sidebar.collapsed {
-  width: 40px !important;
-  background: #5c4730 !important;
-  border-left: none !important;
-  transform: translateX(calc(100% - 45px)) !important; /* Only toggle button visible */
-}
-
-/* When expanded - fully visible */
-.right-sidebar.expanded {
-  transform: translateX(0) !important;
-  width: 280px !important;
-}
-
 /* Ensure sidebar is above content but below modals */
 .right-sidebar {
   z-index: 90 !important;
@@ -223,15 +191,6 @@ body {
   .right-sidebar-expanded .customer-details-content {
     padding-right: calc(280px + 0.75rem) !important;
   }
-  
-  .right-sidebar {
-    width: 280px !important;
-  }
-  
-  .right-sidebar.collapsed {
-    width: 40px !important;
-    transform: translateX(calc(100% - 45px)) !important;
-  }
 }
 
 @media (max-width: 992px) {
@@ -247,15 +206,6 @@ body {
   
   .right-sidebar-expanded .customer-details-content {
     padding-right: calc(240px + 0.75rem) !important;
-  }
-  
-  .right-sidebar {
-    width: 240px !important;
-  }
-  
-  .right-sidebar.collapsed {
-    width: 35px !important;
-    transform: translateX(calc(100% - 40px)) !important;
   }
 }
 
@@ -306,16 +256,6 @@ body {
   .right-sidebar-expanded .customer-details-content {
     padding-right: calc(200px + 0.5rem) !important;
   }
-  
-  .right-sidebar {
-    top: 65px !important;
-    width: 200px !important;
-  }
-  
-  .right-sidebar.collapsed {
-    width: 30px !important;
-    transform: translateX(calc(100% - 35px)) !important;
-  }
 }
 
 @media (max-width: 576px) {
@@ -355,16 +295,6 @@ body {
   .right-sidebar-expanded .customer-details-content {
     padding-right: calc(150px + 0.5rem) !important;
   }
-  
-  .right-sidebar {
-    top: 60px !important;
-    width: 150px !important;
-  }
-  
-  .right-sidebar.collapsed {
-    width: 25px !important;
-    transform: translateX(calc(100% - 30px)) !important;
-  }
 }
 
 /* Special case for very small screens - hide sidebar */
@@ -377,9 +307,5 @@ body {
   .payment-page-wrapper,
   .promises-page-wrapper {
     padding-right: 1rem !important;
-  }
-  
-  .right-sidebar {
-    display: none !important;
   }
 }

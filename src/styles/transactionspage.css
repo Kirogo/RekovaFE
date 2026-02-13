@@ -1,4 +1,5 @@
-/* src/styles/transactionspage.css - CORRECTED VERSION */
+/* src/styles/transactionspage.css - UPDATED WITH PROFESSIONAL SUBTLE COLOR THEMING */
+
 .transactions-page-wrapper {
   min-height: calc(100vh - 70px);
   padding: 1.5rem;
@@ -14,7 +15,66 @@
   font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
 }
 
-/* Header - Matching Dashboard */
+/* ==================== ROLE-BASED TEXT COLORS ==================== */
+
+/* Officer Text Color - Brown */
+.officer-text {
+  color: #5c4730 !important;
+}
+
+/* Officer Accent - For borders, underlines, icons */
+.officer-accent {
+  background: linear-gradient(90deg, #d4a762, #5c4730) !important;
+}
+
+/* Officer Primary Button */
+.officer-primary {
+  background: #5c4730 !important;
+}
+
+.officer-primary:hover {
+  background: #3c2a1c !important;
+}
+
+/* Supervisor Text Color - Dark Gray */
+.supervisor-text {
+  color: #2c3e50 !important;
+}
+
+/* Supervisor Accent - Dark Gray gradient */
+.supervisor-accent {
+  background: linear-gradient(90deg, #34495e, #2c3e50) !important;
+}
+
+/* Supervisor Primary Button */
+.supervisor-primary {
+  background: #2c3e50 !important;
+}
+
+.supervisor-primary:hover {
+  background: #1a252f !important;
+}
+
+/* Admin Text Color - Slightly darker gray */
+.admin-text {
+  color: #1a252f !important;
+}
+
+/* Admin Accent - Darker gray gradient */
+.admin-accent {
+  background: linear-gradient(90deg, #2c3e50, #1a252f) !important;
+}
+
+/* Admin Primary Button */
+.admin-primary {
+  background: #1a252f !important;
+}
+
+.admin-primary:hover {
+  background: #0d1117 !important;
+}
+
+/* ==================== HEADER SECTION ==================== */
 .transactions-header {
   margin-bottom: 1rem;
   padding: 0;
@@ -29,28 +89,8 @@
   width: 100%;
 }
 
-.transactions-title {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  margin: 0;
-  color: #2c1810;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-  font-family: 'Century Gothic' !important;
-  text-transform: capitalize;
-}
-
-.transactions-subtitle {
-  font-size: 0.6875rem;
-  margin: 0.25rem 0 0 0;
-  color: #666666;
-  font-weight: 500;
-  opacity: 0.8;
-  font-family: 'Century Gothic' !important;
-  letter-spacing: 0.1px;
-}
-
-/* Minimal Stats Grid - Matching Dashboard */
+/* ==================== STATS GRID ==================== */
+/* Using customer-stats-grid styles from customerpage.css */
 .transactions-stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -61,7 +101,7 @@
 
 .transactions-stat-card {
   border-radius: 0.5rem;
-  border: 1px solid rgba(92, 71, 48, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   padding: 1rem;
   background: white;
   transition: all 0.15s ease;
@@ -77,21 +117,20 @@
   font-family: 'Century Gothic' !important;
 }
 
-.transactions-stat-card::before {
-  content: '';
+/* Top border for stat cards */
+.stat-top-border {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 0.125rem;
-  background: linear-gradient(90deg, #d4a762, #5c4730);
   opacity: 0.8;
 }
 
 .transactions-stat-card:hover {
   transform: translateY(-0.125rem);
-  box-shadow: 0 0.25rem 0.75rem rgba(92, 71, 48, 0.05);
-  border-color: rgba(212, 167, 98, 0.2);
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 .transactions-stat-header {
@@ -107,7 +146,7 @@
   text-transform: uppercase;
   letter-spacing: 0.3px;
   margin: 0;
-  color: #5c4730;
+  color: #2c3e50;
   opacity: 1;
   font-family: 'Century Gothic' !important;
   line-height: 1.1;
@@ -120,7 +159,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #5c4730, #3c2a1c);
   color: white;
   flex-shrink: 0;
   font-size: 1rem;
@@ -137,7 +175,7 @@
   font-weight: 900;
   margin: 0;
   line-height: 1;
-  color: #3c2a1c;
+  color: #2c3e50;
   letter-spacing: -0.2px;
   font-family: 'Century Gothic' !important;
 }
@@ -152,7 +190,7 @@
   line-height: 1.1;
 }
 
-/* Main Content */
+/* ==================== MAIN CONTENT ==================== */
 .transactions-main-content {
   margin-bottom: 1.875rem;
   width: 100%;
@@ -160,36 +198,35 @@
 
 .transactions-content-card {
   border-radius: 0.5rem;
-  border: 1px solid rgba(92, 71, 48, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   padding: 0;
   background: white;
   width: 100%;
-  box-shadow: 0 1px 3px rgba(92, 71, 48, 0.03);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   box-sizing: border-box;
   font-family: 'Century Gothic' !important;
   overflow: hidden;
 }
 
-/* Section Headers - Matching Dashboard */
+/* Section Headers */
 .transactions-section-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   margin-bottom: 0;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(92, 71, 48, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   font-family: 'Century Gothic' !important;
   background: #faf9f8;
   padding: 0.75rem 1rem;
   margin: 0;
-  border-bottom: 1px solid rgba(212, 167, 98, 0.15);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 .transactions-section-title {
   font-size: 0.8125rem !important;
   font-family: 'Century Gothic' !important;
   font-weight: 900;
-  color: #3c2a1c;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.35px;
@@ -200,133 +237,18 @@
   padding-bottom: 0.375rem;
 }
 
-.transactions-section-title::after {
-  content: '';
+.section-title-underline {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 2.25rem;
   height: 0.15rem;
-  background: linear-gradient(90deg, #d4a762, #5c4730);
   border-radius: 0.125rem;
   display: block !important;
 }
 
-/* Action Buttons - Matching Dashboard */
-.transactions-action-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
-  border: 1px solid rgba(92, 71, 48, 0.1);
-  border-radius: 0.375rem;
-  background: white;
-  color: #5c4730;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-size: 0.6875rem;
-  letter-spacing: 0.15px;
-  font-family: 'Century Gothic' !important;
-  height: 28px;
-}
-
-.transactions-action-btn:hover {
-  background: #faf9f8;
-  border-color: #d4a762;
-  transform: translateY(-0.125rem);
-  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.05);
-}
-
-.transactions-action-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.transactions-primary-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
-  border: none;
-  border-radius: 0.375rem;
-  background: #5c4730;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-size: 0.6875rem;
-  letter-spacing: 0.15px;
-  font-family: 'Century Gothic' !important;
-  height: 28px;
-}
-
-.transactions-primary-btn:hover {
-  background: #3c2a1c;
-  transform: translateY(-0.125rem);
-  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.08);
-}
-
-.transactions-primary-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Search and Filter Section */
-.transactions-search-container {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.transactions-search-input {
-  padding: 0.375rem 0.75rem;
-  border: 1px solid rgba(92, 71, 48, 0.1);
-  border-radius: 0.375rem;
-  font-size: 0.6875rem;
-  font-family: 'Century Gothic' !important;
-  background: white;
-  color: #3c2a1c;
-  transition: all 0.15s ease;
-  width: 200px;
-}
-
-.transactions-search-input:focus {
-  outline: none;
-  border-color: #d4a762;
-  box-shadow: 0 0 0 3px rgba(212, 167, 98, 0.1);
-}
-
-.transactions-search-input::placeholder {
-  color: #999;
-  font-weight: 500;
-}
-
-.transactions-status-filter {
-  padding: 0.375rem 0.75rem;
-  border: 1px solid rgba(92, 71, 48, 0.1);
-  border-radius: 0.375rem;
-  font-size: 0.6875rem;
-  font-family: 'Century Gothic' !important;
-  background: white;
-  color: #5c4730;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.transactions-status-filter:focus {
-  outline: none;
-  border-color: #d4a762;
-  box-shadow: 0 0 0 3px rgba(212, 167, 98, 0.1);
-}
-
 /* =========================== TRANSACTIONS TABLE ======================= */
-.transactionspage-table-container {
+.table-container-wrapper {
   width: 100%;
   overflow-x: auto;
   background: white;
@@ -352,15 +274,15 @@
   text-align: left;
   font-size: 0.6875rem !important;
   font-weight: 700 !important;
-  color: #5c4730 !important;
+  color: #2c3e50 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.4px !important;
   font-family: 'Century Gothic' !important;
-  border-bottom: 1px solid rgba(212, 167, 98, 0.15) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15) !important;
   white-space: nowrap;
   height: 40px;
   vertical-align: middle;
-  border-right: 1px solid rgba(92, 71, 48, 0.05);
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .transactionspage-table th:last-child {
@@ -374,24 +296,24 @@
 }
 
 .transactionspage-table tbody tr:hover {
-  background: #f8f5f0;
-  transform: translateX(0.25rem);
-  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.03);
-  border-left-color: #d4a762;
+  background: #f0f2f5 !important;
+  transform: translateX(0.25rem) !important;
+  box-shadow: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.03) !important;
+  border-left-color: #3498db;
   cursor: pointer;
 }
 
 .transactionspage-table td {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(92, 71, 48, 0.04);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
   font-size: 0.75rem !important;
   font-weight: 600 !important;
-  color: #3c2a1c !important;
+  color: #2c3e50 !important;
   letter-spacing: 0.08px !important;
   font-family: 'Century Gothic' !important;
   vertical-align: middle;
   height: 40px;
-  border-right: 1px solid rgba(92, 71, 48, 0.03);
+  border-right: 1px solid rgba(0, 0, 0, 0.03);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -404,14 +326,14 @@
 /* Column Widths - Balanced spacing */
 .transactionspage-table th:nth-child(1),
 .transactionspage-table td:nth-child(1) {
-  width: 20%;  /* Increased from 18% for larger ID */
-  min-width: 140px;  /* Increased from 120px */
-  max-width: 200px;  /* Increased from 180px */
+  width: 20%;
+  min-width: 140px;
+  max-width: 200px;
 }
 
 .transactionspage-table th:nth-child(2),
 .transactionspage-table td:nth-child(2) {
-  width: 21%;  /* Reduced from 22% to accommodate larger ID */
+  width: 21%;
   min-width: 140px;
   max-width: 200px;
 }
@@ -441,7 +363,7 @@
 
 .transactionspage-table th:nth-child(6),
 .transactionspage-table td:nth-child(6) {
-  width: 17%;  /* Reduced from 18% to accommodate larger ID */
+  width: 17%;
   min-width: 120px;
   max-width: 160px;
 }
@@ -460,35 +382,35 @@
 
 /* ==================== TRANSACTION ID - LARGER & MORE PROMINENT ==================== */
 .transactionspage-table .transaction-id {
-  font-weight: 800 !important;  /* Much bolder (was 700) */
-  font-size: 0.8125rem !important;  /* Larger: 13px (was 0.75rem/12px) */
-  color: #3c2a1c !important;  /* Darker color for better contrast */
-  letter-spacing: 0.1px;  /* Slightly more spacing */
+  font-weight: 800 !important;
+  font-size: 0.8125rem !important;
+  color: #2c3e50 !important;
+  letter-spacing: 0.1px;
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: 'SF Mono', 'Roboto Mono', 'Courier New', monospace !important; /* Distinct monospace font */
-  background: linear-gradient(135deg, #f8f5f0, #ffffff);
+  font-family: 'SF Mono', 'Roboto Mono', 'Courier New', monospace !important;
+  background: linear-gradient(135deg, #f0f2f5, #ffffff);
   padding: 0.25rem 0.5rem !important;
   border-radius: 0.25rem;
-  border: 1px solid rgba(212, 167, 98, 0.15);
+  border: 1px solid rgba(52, 152, 219, 0.15);
   margin: -0.125rem 0;
   transition: all 0.15s ease;
 }
 
 /* Hover effect for transaction ID */
 .transactionspage-table tbody tr:hover .transaction-id {
-  background: linear-gradient(135deg, #f5f0e8, #ffffff);
-  border-color: rgba(212, 167, 98, 0.3);
+  background: linear-gradient(135deg, #e3e6ea, #ffffff);
+  border-color: rgba(52, 152, 219, 0.3);
   transform: translateX(2px);
-  box-shadow: 0 2px 4px rgba(92, 71, 48, 0.08);
+  box-shadow: 0 2px 4px rgba(52, 152, 219, 0.08);
 }
 
 /* Other table cell text styling */
 .transaction-customer {
   font-weight: 700;
-  color: #3c2a1c;
+  color: #2c3e50;
   font-size: 0.75rem;
   display: block;
   overflow: hidden;
@@ -508,7 +430,7 @@
 
 .transaction-amount {
   font-weight: 700;
-  color: #3c2a1c;
+  color: #2c3e50;
   font-size: 0.75rem;
   display: block;
   text-align: right;
@@ -573,151 +495,6 @@
   text-decoration: line-through;
 }
 
-/* Empty State - Matching Dashboard */
-.transactions-empty-state {
-  text-align: center;
-  padding: 3rem 1rem;
-  background: #f8f9fa;
-  border-radius: 0.5rem;
-  border: 1px dashed rgba(212, 167, 98, 0.2);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-family: 'Century Gothic' !important;
-  min-height: 200px;
-  margin: 1rem;
-}
-
-.transactions-empty-icon {
-  font-size: 1.5rem;
-  color: #d4a762;
-  margin-bottom: 0.75rem;
-  opacity: 0.7;
-}
-
-.transactions-empty-title {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #5c4730;
-  margin-bottom: 0.375rem;
-  font-family: 'Century Gothic' !important;
-}
-
-.transactions-empty-subtitle {
-  font-size: 0.75rem;
-  color: #666;
-  margin-bottom: 1rem;
-  font-family: 'Century Gothic' !important;
-  font-weight: 500;
-}
-
-/* Loading Styles - Matching Customer Page */
-.transactions-loading {
-  padding: 1.5rem !important;
-  text-align: center !important;
-  font-family: 'Century Gothic' !important;
-}
-
-.transactions-loading .MuiLinearProgress-root {
-  height: 0.25rem !important;
-  border-radius: 0.25rem !important;
-  background-color: #f5f0ea !important;
-  margin-bottom: 1rem !important;
-}
-
-.transactions-loading .MuiLinearProgress-bar {
-  background-color: #5c4730 !important;
-}
-
-.transactions-loading-text {
-  font-size: 0.75rem !important;
-  color: #666 !important;
-  font-weight: 500 !important;
-  font-family: 'Century Gothic' !important;
-}
-
-/* Error Alert - Matching Customer Page */
-.transactions-error-message {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.75rem;
-  font-family: 'Century Gothic' !important;
-  margin: 1rem;
-}
-
-/* Pagination - Matching Style */
-.transactions-pagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  border-top: 1px solid rgba(92, 71, 48, 0.08);
-  background: #faf9f8;
-  font-family: 'Century Gothic' !important;
-}
-
-.transactions-pagination-info {
-  font-size: 0.6875rem;
-  color: #666;
-  font-weight: 500;
-}
-
-.transactions-pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.transactions-pagination-btn {
-  padding: 0.25rem 0.625rem;
-  border: 1px solid rgba(92, 71, 48, 0.15);
-  border-radius: 0.25rem;
-  background: white;
-  color: #5c4730;
-  font-size: 0.625rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-family: 'Century Gothic' !important;
-  text-transform: uppercase;
-  letter-spacing: 0.15px;
-}
-
-.transactions-pagination-btn:hover:not(:disabled) {
-  background: #faf9f8;
-  border-color: #d4a762;
-  transform: translateY(-0.0625rem);
-  box-shadow: 0 0.125rem 0.25rem rgba(92, 71, 48, 0.1);
-}
-
-.transactions-pagination-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.transactions-rows-select {
-  padding: 0.25rem 0.5rem;
-  border: 1px solid rgba(92, 71, 48, 0.15);
-  border-radius: 0.25rem;
-  background: white;
-  color: #5c4730;
-  font-size: 0.625rem;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: 'Century Gothic' !important;
-}
-
-.transactions-rows-select:focus {
-  outline: none;
-  border-color: #d4a762;
-}
-
 /* ===== TRANSACTION DETAILS MODAL STYLES ===== */
 .transaction-modal-container {
   position: absolute;
@@ -730,8 +507,8 @@
   outline: none;
   border-radius: 0.5rem;
   background: white;
-  box-shadow: 0 0.125rem 0.75rem rgba(92, 71, 48, 0.08);
-  border: 1px solid rgba(92, 71, 48, 0.1);
+  box-shadow: 0 0.125rem 0.75rem rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   font-family: 'Century Gothic' !important;
@@ -748,7 +525,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(212, 167, 98, 0.15);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
   background: #faf9f8;
   flex-shrink: 0;
 }
@@ -762,7 +539,6 @@
 .transaction-modal-title {
   font-size: 0.8125rem !important;
   font-weight: 900 !important;
-  color: #3c2a1c !important;
   text-transform: uppercase !important;
   letter-spacing: 0.35px !important;
   font-family: 'Century Gothic' !important;
@@ -784,18 +560,18 @@
 }
 
 .transaction-modal-close-btn {
-  color: #5c4730 !important;
+  color: #2c3e50 !important;
   padding: 0.25rem !important;
   min-width: 24px !important;
   min-height: 24px !important;
   background: white;
-  border: 1px solid rgba(92, 71, 48, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 0.375rem;
 }
 
 .transaction-modal-close-btn:hover {
   background: #faf9f8;
-  border-color: #d4a762;
+  border-color: #3498db;
 }
 
 .transaction-modal-body {
@@ -823,7 +599,7 @@
 /* Compact Cards */
 .transaction-card-compact {
   background: white;
-  border: 1px solid rgba(92, 71, 48, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 0.5rem;
   padding: 0.75rem;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
@@ -831,12 +607,12 @@
 }
 
 .transaction-card-compact:hover {
-  border-color: rgba(212, 167, 98, 0.2);
+  border-color: rgba(52, 152, 219, 0.2);
 }
 
 .loan-card-compact {
   background: #faf9f8;
-  border-color: rgba(212, 167, 98, 0.2);
+  border-color: rgba(52, 152, 219, 0.2);
 }
 
 .status-card-compact {
@@ -850,12 +626,12 @@
   gap: 0.375rem;
   font-size: 0.75rem;
   font-weight: 900;
-  color: #5c4730;
+  color: #2c3e50;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   margin-bottom: 0.5rem;
   padding-bottom: 0.375rem;
-  border-bottom: 1px solid rgba(92, 71, 48, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   font-family: 'Century Gothic' !important;
 }
 
@@ -891,7 +667,7 @@
 .transaction-detail-value-compact {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #3c2a1c;
+  color: #2c3e50;
   text-align: right;
   font-family: 'Century Gothic' !important;
   flex: 1;
@@ -901,12 +677,12 @@
 /* Special value styles */
 .amount-highlight {
   font-size: 0.875rem;
-  color: #5c4730;
+  color: #2c3e50;
 }
 
 .balance-amount {
   font-size: 0.875rem;
-  color: #5c4730;
+  color: #2c3e50;
 }
 
 .arrears-amount {
@@ -933,7 +709,7 @@
 }
 
 .new-balance-amount {
-  color: #3c2a1c;
+  color: #2c3e50;
   font-weight: 800;
 }
 
@@ -967,7 +743,7 @@
   margin: 0 -0.5rem;
   padding: 0.5rem;
   border-radius: 0.375rem;
-  border: 1px solid rgba(92, 71, 48, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .arrears-info-compact {
@@ -999,7 +775,7 @@
   margin: 0 -0.5rem;
   padding: 0.5rem;
   border-radius: 0.375rem;
-  border: 2px solid rgba(92, 71, 48, 0.1);
+  border: 2px solid rgba(0, 0, 0, 0.1);
 }
 
 /* Status Display */
@@ -1063,31 +839,9 @@
   justify-content: flex-end;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  border-top: 1px solid rgba(92, 71, 48, 0.08);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
   background: white;
   flex-shrink: 0;
-}
-
-.transaction-modal-secondary-btn {
-  padding: 0.375rem 0.75rem;
-  border: 1px solid rgba(92, 71, 48, 0.1);
-  border-radius: 0.375rem;
-  background: white;
-  color: #5c4730;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-size: 0.6875rem;
-  letter-spacing: 0.15px;
-  font-family: 'Century Gothic' !important;
-  height: 28px;
-}
-
-.transaction-modal-secondary-btn:hover {
-  background: #faf9f8;
-  border-color: #d4a762;
-  transform: translateY(-0.125rem);
-  box-shadow: 0 0.125rem 0.375rem rgba(92, 71, 48, 0.05);
 }
 
 /* Scrollbar Styling */
@@ -1111,24 +865,24 @@
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-  .transactions-stats-grid {
+  .customer-stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.625rem;
   }
 }
 
 @media (max-width: 992px) {
-  .transactions-section-header {
+  .customer-section-header {
     flex-direction: column;
     gap: 0.75rem;
     align-items: flex-start;
   }
   
-  .transactions-search-container {
+  .customer-search-container {
     width: 100%;
   }
   
-  .transactions-search-input {
+  .customer-search-input {
     flex: 1;
   }
   
@@ -1142,35 +896,16 @@
     padding: 1rem;
   }
   
-  .transactions-title {
-    font-size: 0.8125rem;
-  }
-  
-  .transactions-subtitle {
-    font-size: 0.625rem;
-  }
-  
-  .transactions-header-content {
-    flex-direction: column;
-    gap: 0.75rem;
-    align-items: flex-start;
-  }
-  
-  .transactions-stats-grid {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
-  
-  .transactions-stat-card {
+  .customer-stat-card {
     padding: 0.875rem;
     min-height: 5.5rem;
   }
   
-  .transactions-stat-value {
+  .customer-stat-value {
     font-size: 1rem;
   }
   
-  .transactions-section-title {
+  .customer-section-title {
     font-size: 0.75rem !important;
     letter-spacing: 0.3px;
   }
@@ -1215,32 +950,24 @@
 }
 
 @media (max-width: 480px) {
-  .transactions-title {
-    font-size: 0.75rem;
-  }
-  
-  .transactions-subtitle {
-    font-size: 0.5625rem;
-  }
-  
-  .transactions-stat-value {
+  .customer-stat-value {
     font-size: 0.9375rem;
   }
   
-  .transactions-stat-icon-wrapper {
+  .customer-stat-icon-wrapper {
     width: 1.75rem;
     height: 1.75rem;
     font-size: 0.875rem;
   }
   
-  .transactions-action-btn,
-  .transactions-primary-btn {
+  .customer-action-btn,
+  .customer-primary-btn {
     font-size: 0.625rem;
     padding: 0.3125rem 0.625rem;
     height: 24px;
   }
   
-  .transactions-section-title {
+  .customer-section-title {
     font-size: 0.6875rem !important;
     letter-spacing: 0.25px;
   }
@@ -1256,13 +983,13 @@
     font-size: 0.5625rem !important;
   }
   
-  .transactions-search-input,
-  .transactions-status-filter {
+  .customer-search-input,
+  .customer-status-filter {
     font-size: 0.625rem;
     padding: 0.3125rem 0.625rem;
   }
   
-  .transactions-search-input {
+  .customer-search-input {
     width: 150px;
   }
   
@@ -1293,10 +1020,10 @@
 /* Century Gothic font fallback */
 @supports not (font-family: 'Century Gothic') {
   .transactions-page-wrapper,
-  .transactions-stat-card,
-  .transactions-content-card,
-  .transactions-action-btn,
-  .transactions-primary-btn,
+  .customer-stat-card,
+  .customer-content-card,
+  .customer-action-btn,
+  .customer-primary-btn,
   .transactionspage-table th,
   .transactionspage-table td,
   .transaction-modal-container,

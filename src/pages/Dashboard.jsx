@@ -711,7 +711,7 @@ const Dashboard = () => {
           <Box>
             <Typography className="dashboard-subtitle">
               {currentUser ? 
-                `Welcome, ${currentUser.name || currentUser.username} (${userRole})` : 
+                `Welcome, ${currentUser.name || currentUser.username}` : 
                 'Your Collection Performance Overview'}
             </Typography>
           </Box>
