@@ -68,7 +68,8 @@ import {
     FileDownload,
     BarChart as BarChartIcon,
     Download,
-    Download as DownloadIcon
+    Download as DownloadIcon,
+    PieChart as PieChartIcon  // ✅ FIXED: Import PieChart as PieChartIcon
 } from "@mui/icons-material";
 import axios from "axios";
 import authService from "../services/auth.service";
@@ -1548,26 +1549,7 @@ const SupervisorDashboard = () => {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="officer-metric-card-compact">
-                                                        <div className="metric-card-header-compact light-header">
-                                                            <Call sx={{ fontSize: 14, color: '#2c3e50' }} />
-                                                            <span>Calls</span>
-                                                        </div>
-                                                        <div className="metric-card-content-compact">
-                                                            <div className="metric-row-compact">
-                                                                <span>Today</span>
-                                                                <span>{officerDetails?.calls?.today || selectedOfficer.callsToday || 0}</span>
-                                                            </div>
-                                                            <div className="metric-row-compact">
-                                                                <span>This Week</span>
-                                                                <span>{officerDetails?.calls?.weekly || 0}</span>
-                                                            </div>
-                                                            <div className="metric-row-compact">
-                                                                <span>Avg Duration</span>
-                                                                <span>{officerDetails?.calls?.averageDuration || '0:00'}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    
                                                     <div className="officer-metric-card-compact">
                                                         <div className="metric-card-header-compact light-header">
                                                             <AssignmentTurnedIn sx={{ fontSize: 14, color: '#2c3e50' }} />
@@ -1585,6 +1567,23 @@ const SupervisorDashboard = () => {
                                                             <div className="metric-row-compact">
                                                                 <span>In Progress</span>
                                                                 <span>{officerDetails?.assignments?.inProgress || 0}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="officer-metric-card-compact">
+                                                        <div className="metric-card-header-compact light-header">
+                                                            <Call sx={{ fontSize: 14, color: '#2c3e50' }} />
+                                                            <span>Calls</span>
+                                                        </div>
+                                                        <div className="metric-card-content-compact">
+                                                            <div className="metric-row-compact">
+                                                                <span>Today</span>
+                                                                <span>{officerDetails?.calls?.today || selectedOfficer.callsToday || 0}</span>
+                                                            </div>
+                                                            <div className="metric-row-compact">
+                                                                <span>This Week</span>
+                                                                <span>{officerDetails?.calls?.weekly || 0}</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1738,7 +1737,7 @@ const SupervisorDashboard = () => {
 
                                                 <div className="customer-distribution-compact">
                                                     <div className="distribution-header-compact">
-                                                        <PieChart sx={{ fontSize: 14, color: '#2c3e50' }} />
+                                                        <PieChartIcon sx={{ fontSize: 14, color: '#2c3e50' }} />  {/* ✅ FIXED: Using PieChartIcon instead of PieChart */}
                                                         <span>Status Distribution</span>
                                                     </div>
                                                     <div className="distribution-legend-compact">
