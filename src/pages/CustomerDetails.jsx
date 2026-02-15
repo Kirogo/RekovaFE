@@ -37,6 +37,7 @@ import axios from 'axios';
 import '../styles/CustomerDetails.css';
 import LayoutWrapper from '../LayoutWrapper';
 import authService from '../services/auth.service';
+import MPesaStkPopup from '../components/payments/MPesaStkPopup';
 
 const CustomerDetails = () => {
     const { id } = useParams();
@@ -76,6 +77,10 @@ const CustomerDetails = () => {
     const [showPinEntry, setShowPinEntry] = useState(false);
     const [manualPin, setManualPin] = useState('');
 
+    // WhatsApp Chat Popup State
+    const [showWhatsAppChat, setShowWhatsAppChat] = useState(false);
+    const [activeTransaction, setActiveTransaction] = useState(null);
+
     // Active transaction tracking
     const [hasActiveTransaction, setHasActiveTransaction] = useState(false);
     const [activeTransactionStatus, setActiveTransactionStatus] = useState(null);
@@ -110,25 +115,25 @@ const CustomerDetails = () => {
     const getUserInfo = () => {
         const user = authService.getCurrentUser();
         if (!user) return { role: 'officer', isSupervisor: false, isAdmin: false };
-        
+
         const role = user.role?.toLowerCase() || 'officer';
         const isSupervisorUser = role === 'supervisor';
         const isAdminUser = role === 'admin';
-        
-        console.log('👤 CustomerDetails User Info:', { 
-            username: user.username, 
-            role: role, 
+
+        console.log('👤 CustomerDetails User Info:', {
+            username: user.username,
+            role: role,
             isSupervisor: isSupervisorUser,
             isAdmin: isAdminUser,
             userId: user.id || user._id
         });
-        
-        return { 
-            role, 
-            isSupervisor: isSupervisorUser, 
+
+        return {
+            role,
+            isSupervisor: isSupervisorUser,
             isAdmin: isAdminUser,
             userId: user.id || user._id,
-            username: user.username 
+            username: user.username
         };
     };
 
@@ -165,7 +170,7 @@ const CustomerDetails = () => {
     useEffect(() => {
         console.log('=== CUSTOMER DETAILS MOUNTED ===');
         console.log('ID from URL:', id);
-        
+
         // Get user info first
         const userInfo = getUserInfo();
         setUserRole(userInfo.role);
@@ -381,14 +386,14 @@ const CustomerDetails = () => {
         } catch (error) {
             console.error('❌ Error fetching transactions:', error.message);
             console.error('Full error:', error);
-            
+
             if (error.response?.status === 401) {
                 console.log('⚠️ 401 Unauthorized - logging out');
                 authService.logout();
                 navigate('/login');
                 return;
             }
-            
+
             setTransactions([]); // Set empty array on error
         } finally {
             setTransactionsLoading(false);
@@ -420,7 +425,7 @@ const CustomerDetails = () => {
                 }
             } catch (apiError) {
                 console.error('Error fetching comments from API:', apiError.message);
-                
+
                 if (apiError.response?.status === 401) {
                     console.log('⚠️ 401 Unauthorized - logging out');
                     authService.logout();
@@ -461,7 +466,7 @@ const CustomerDetails = () => {
             }
         } catch (error) {
             console.error('Error fetching promises:', error.message);
-            
+
             if (error.response?.status === 401) {
                 console.log('⚠️ 401 Unauthorized - logging out');
                 authService.logout();
@@ -583,7 +588,7 @@ const CustomerDetails = () => {
                 }
             } catch (apiError) {
                 console.error('❌ API save failed:', apiError.message);
-                
+
                 if (apiError.response?.status === 401) {
                     console.log('⚠️ 401 Unauthorized - logging out');
                     authService.logout();
@@ -851,7 +856,7 @@ const CustomerDetails = () => {
                 promiseType: promiseData.promiseType,
                 notes: promiseData.notes
             });
-            
+
             if (response.data.success) {
                 setPromiseData({
                     promiseAmount: '',
@@ -865,14 +870,14 @@ const CustomerDetails = () => {
             }
         } catch (error) {
             console.error('Error creating promise:', error);
-            
+
             if (error.response?.status === 401) {
                 console.log('⚠️ 401 Unauthorized - logging out');
                 authService.logout();
                 navigate('/login');
                 return;
             }
-            
+
             setError(error.response?.data?.message || 'Failed to create promise');
         }
     };
@@ -889,14 +894,14 @@ const CustomerDetails = () => {
             }
         } catch (error) {
             console.error('Error updating promise:', error);
-            
+
             if (error.response?.status === 401) {
                 console.log('⚠️ 401 Unauthorized - logging out');
                 authService.logout();
                 navigate('/login');
                 return;
             }
-            
+
             setError(error.response?.data?.message || 'Failed to update promise');
         }
     };
@@ -933,7 +938,7 @@ const CustomerDetails = () => {
 
         try {
             const api = getApi();
-            
+
             const response = await api.post('/payments/manual-pin', {
                 transactionId: mpesaStatus.transactionId,
                 pin: manualPin
@@ -960,14 +965,14 @@ const CustomerDetails = () => {
             }
         } catch (error) {
             console.error('Manual PIN error:', error);
-            
+
             if (error.response?.status === 401) {
                 console.log('⚠️ 401 Unauthorized - logging out');
                 authService.logout();
                 navigate('/login');
                 return;
             }
-            
+
             setError(error.response?.data?.message || 'Failed to process payment');
         }
     };
@@ -975,7 +980,7 @@ const CustomerDetails = () => {
     const handleExportStatement = async () => {
         try {
             const api = getApi();
-            
+
             const response = await api.get(`/customers/${id}/statement`, {
                 responseType: 'blob'
             });
@@ -990,14 +995,14 @@ const CustomerDetails = () => {
             window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error('Error exporting statement:', error);
-            
+
             if (error.response?.status === 401) {
                 console.log('⚠️ 401 Unauthorized - logging out');
                 authService.logout();
                 navigate('/login');
                 return;
             }
-            
+
             setError(error.response?.data?.message || 'Failed to export statement. Please try again.');
         }
     };
@@ -1117,25 +1122,26 @@ const CustomerDetails = () => {
             console.log('Payment request response:', response.data);
 
             if (response.data.success) {
-                // Show success message briefly, then close modal
-                setMpesaStatus({
-                    status: 'success',
-                    message: '',
+                // Store the active transaction
+                const transactionData = {
                     transactionId: response.data.data.transaction?.transactionId,
-                    phoneUsed: phoneToUse,
-                    sentAt: new Date().toISOString()
-                });
+                    phoneNumber: phoneToUse,
+                    amount: parseFloat(paymentData.amount),
+                    customerName: customer?.name,
+                    mpesaReceiptNumber: response.data.data.transaction?.mpesaReceiptNumber,
+                    loanBalanceAfter: response.data.data.customer?.loanBalanceAfter || customer?.loanBalance - parseFloat(paymentData.amount)
+                };
+
+                setActiveTransaction(transactionData);
+
+                // Close the payment modal
+                closePaymentModal();
+
+                // Open WhatsApp chat popup
+                setShowWhatsAppChat(true);
 
                 // Refresh transactions
                 fetchCustomerTransactions();
-
-                // Close modal after 2 seconds
-                setTimeout(() => {
-                    closePaymentModal();
-                    // Show success toast
-                    alert('Payment request sent successfully.');
-                }, 3000);
-
             } else {
                 setMpesaStatus({
                     status: 'failed',
@@ -1147,14 +1153,14 @@ const CustomerDetails = () => {
             }
         } catch (error) {
             console.error('Error sending payment request:', error);
-            
+
             if (error.response?.status === 401) {
                 console.log('⚠️ 401 Unauthorized - logging out');
                 authService.logout();
                 navigate('/login');
                 return;
             }
-            
+
             setMpesaStatus({
                 status: 'error',
                 message: error.response?.data?.message || 'Failed to send payment request',
@@ -1164,6 +1170,59 @@ const CustomerDetails = () => {
             setPaymentInitiated(false);
             setProcessingPayment(false);
         }
+    };
+
+    const handleWhatsAppPinSubmit = async (pin, status, errorDetails) => {
+        if (!activeTransaction) return;
+
+        try {
+            const api = getApi();
+
+            if (status === 'SUCCESS') {
+                // Call the backend to mark transaction as success
+                const response = await api.post('/payments/manual-pin', {
+                    transactionId: activeTransaction.transactionId,
+                    pin: '1234' // Demo PIN
+                });
+
+                if (response.data.success) {
+                    // Refresh data
+                    fetchCustomerDetails();
+                    fetchCustomerTransactions();
+
+                    // Close chat after 2 seconds
+                    setTimeout(() => {
+                        setShowWhatsAppChat(false);
+                        setActiveTransaction(null);
+                    }, 2000);
+                }
+            } else if (status === 'FAILED' || status === 'EXPIRED') {
+                // Mark transaction as failed in backend
+                try {
+                    await api.post(`/payments/mark-failed/${activeTransaction.transactionId}`, {
+                        failureReason: status === 'EXPIRED' ? 'EXPIRED' : 'WRONG_PIN'
+                    });
+
+                    // Refresh data
+                    fetchCustomerTransactions();
+                } catch (err) {
+                    console.error('Error marking transaction as failed:', err);
+                }
+            }
+        } catch (error) {
+            console.error('Error in WhatsApp PIN submission:', error);
+        }
+    };
+
+    const handleResendPrompt = async () => {
+        // Close current chat
+        setShowWhatsAppChat(false);
+        setActiveTransaction(null);
+
+        // Re-open payment modal
+        setShowPaymentModal(true);
+        setPaymentInitiated(false);
+        setProcessingPayment(false);
     };
 
     // Add this function to handle PIN submission
@@ -1195,14 +1254,14 @@ const CustomerDetails = () => {
 
         } catch (error) {
             console.error('PIN submission error:', error);
-            
+
             if (error.response?.status === 401) {
                 console.log('⚠️ 401 Unauthorized - logging out');
                 authService.logout();
                 navigate('/login');
                 return;
             }
-            
+
             alert('Error: ' + (error.response?.data?.message || error.message));
         }
     };
@@ -1493,7 +1552,7 @@ const CustomerDetails = () => {
                                     <Typography className="customer-details-subtitle">
                                         ID: {customer?.customerId || customer?._id || id}
                                     </Typography>
-                                   
+
                                 </Box>
                             </div>
 
@@ -2661,6 +2720,20 @@ const CustomerDetails = () => {
                         )}
                     </Box>
                 </Modal>
+
+                {/* M-PESA STK Popup */}
+                <MPesaStkPopup
+                    open={showWhatsAppChat}
+                    onClose={() => {
+                        setShowWhatsAppChat(false);
+                        setActiveTransaction(null);
+                    }}
+                    customer={customer}
+                    transaction={activeTransaction}
+                    onPinSubmit={handleWhatsAppPinSubmit}
+                    onResendPrompt={handleResendPrompt}
+                    autoCloseTime={30000} // 30 seconds timeout
+                />
             </Box>
         </LayoutWrapper>
     );

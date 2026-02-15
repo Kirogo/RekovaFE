@@ -1,4 +1,4 @@
-/* src/styles/CustomerDetails.css - COMPLETE VERSION WITH PROFESSIONAL SUBTLE COLOR THEMING */
+/* src/styles/CustomerDetails.css - COMPLETE VERSION WITH FIXED MODAL Z-INDEX */
 
 .customer-details-wrapper {
   min-height: calc(100vh - 70px);
@@ -39,7 +39,7 @@
   border-color: #3c2a1c !important;
 }
 
-/* Supervisor Text Color - Dark Gray (LIKE SUPERVISOR DASHBOARD) */
+/* Supervisor Text Color - Dark Gray */
 .supervisor-text {
   color: #2c3e50 !important;
 }
@@ -360,11 +360,11 @@
 }
 
 .card-title {
-  font-size: 0.625rem !important; /* Reduced from 0.6875rem to 0.625rem (10px) */
+  font-size: 0.625rem !important;
   font-weight: 600;
   color: #5c4730;
   text-transform: uppercase;
-  letter-spacing: 0.15px; /* Slightly reduced letter spacing */
+  letter-spacing: 0.15px;
   margin: 0;
   display: flex;
   align-items: center;
@@ -390,7 +390,7 @@
 
 .customer-info-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Two equal columns */
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
   flex: 1;
 }
@@ -414,11 +414,11 @@
 
 .customer-info-grid .info-label {
   font-size: 0.5625rem;
-  font-weight: 700; /* Bolder for better visibility */
-  color: #5c4730 !important; /* Dark brown for better visibility */
+  font-weight: 700;
+  color: #5c4730 !important;
   text-transform: uppercase;
-  letter-spacing: 0.25px; /* Slightly more spacing */
-  opacity: 0.9 !important; /* More opaque for better visibility */
+  letter-spacing: 0.25px;
+  opacity: 0.9 !important;
   font-family: inherit;
   white-space: nowrap;
   overflow: hidden;
@@ -428,7 +428,7 @@
 
 .customer-info-grid .info-value {
   font-size: 0.75rem;
-  font-weight: 600; /* Slightly bolder */
+  font-weight: 600;
   color: #3c2a1c;
   line-height: 1.3;
   font-family: inherit;
@@ -484,11 +484,11 @@
 
 /* Specific item styling for better layout */
 .customer-info-item.full-width {
-  grid-column: 1 / -1; /* Make full width for name and email */
+  grid-column: 1 / -1;
 }
 
 .customer-info-item.half-width {
-  grid-column: span 1; /* Regular half width */
+  grid-column: span 1;
 }
 
 /* ==================== CUSTOMER TAB LAYOUT ==================== */
@@ -503,12 +503,12 @@
 
 .tab-content[data-tab="customers"] .customer-info-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Two columns */
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
 }
 
 .tab-content[data-tab="customers"] .customer-info-item {
-  min-height: 60px; /* Ensure consistent row height */
+  min-height: 60px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -532,7 +532,7 @@
 
 .tab-content[data-tab="arrears"] .customer-info-grid {
   display: grid;
-  grid-template-columns: 1fr; /* Single column in arrears tab */
+  grid-template-columns: 1fr;
   gap: 0.5rem;
 }
 
@@ -545,12 +545,12 @@
 /* Responsive adjustments for customer info */
 @media (max-width: 1200px) {
   .tab-content[data-tab="customers"] .customer-info-grid {
-    grid-template-columns: repeat(2, 1fr); /* Keep 2 columns */
+    grid-template-columns: repeat(2, 1fr);
   }
   
   .tab-content[data-tab="customers"] .customer-info-item.name-item,
   .tab-content[data-tab="customers"] .customer-info-item.email-item {
-    grid-column: 1 / -1; /* Full width on medium screens */
+    grid-column: 1 / -1;
   }
 }
 
@@ -621,7 +621,7 @@
 
 .loan-info-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 equal columns */
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.75rem;
   flex: 1;
 }
@@ -757,13 +757,13 @@
 /* Responsive adjustments for loan details */
 @media (max-width: 1200px) {
   .loan-info-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 columns on medium screens */
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 768px) {
   .loan-info-grid {
-    grid-template-columns: 1fr; /* 1 column on mobile */
+    grid-template-columns: 1fr;
     gap: 0.5rem;
   }
   
@@ -796,7 +796,7 @@
   border: 1px solid rgba(92, 71, 48, 0.08);
   border-radius: 0.25rem;
   font-size: 0.6875rem;
-  font-family: inherit; /* Inherits Century Gothic */
+  font-family: inherit;
   resize: vertical;
   background: white;
   transition: all 0.15s ease;
@@ -842,26 +842,25 @@
 }
 
 .comment-history-header {
-  padding: 0.5rem 0.75rem !important; /* Match other card headers */
+  padding: 0.5rem 0.75rem !important;
   border-bottom: 1px solid rgba(92, 71, 48, 0.06);
-  background: #faf9f8 !important; /* Match other card headers */
+  background: #faf9f8 !important;
   display: flex;
   align-items: center;
-  min-height: 32px !important; /* Match other card headers */
+  min-height: 32px !important;
 }
 
-/* UPDATED: Make comment history title match other card titles */
 .comment-history-title {
-  font-size: 0.625rem !important; /* Reduced to 10px to match .card-title */
+  font-size: 0.625rem !important;
   font-weight: 600 !important;
   color: #5c4730 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.15px !important; /* Match .card-title */
+  letter-spacing: 0.15px !important;
   margin: 0 !important;
   display: flex !important;
   align-items: center !important;
   flex: 1 !important;
-  font-family: inherit !important; /* Century Gothic */
+  font-family: inherit !important;
 }
 
 .loading-indicator {
@@ -915,7 +914,7 @@
 
 .comment-history-date {
   color: #666;
-  font-family: 'SF Mono', 'Roboto Mono', monospace; /* Keep monospace for dates */
+  font-family: 'SF Mono', 'Roboto Mono', monospace;
 }
 
 .local-comment-badge {
@@ -986,7 +985,7 @@
   font-size: 0.6875rem;
   background: white;
   height: 28px;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .search-input:focus {
@@ -1002,7 +1001,7 @@
   background: white;
   min-width: 90px;
   height: 28px;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .refresh-btn {
@@ -1045,10 +1044,10 @@
 .customer-details-wrapper .transactions-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.59375rem !important; /* 9.5px */
+  font-size: 0.59375rem !important;
   background: white;
   table-layout: fixed;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .customer-details-wrapper .transactions-table thead {
@@ -1063,7 +1062,7 @@
   text-align: left;
   font-weight: 600;
   color: #5c4730;
-  font-size: 0.59375rem !important; /* 9.5px */
+  font-size: 0.59375rem !important;
   text-transform: uppercase;
   letter-spacing: 0.06px;
   border-bottom: 1px solid rgba(92, 71, 48, 0.1);
@@ -1071,7 +1070,7 @@
   height: 22px !important;
   vertical-align: middle;
   overflow: hidden;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .customer-details-wrapper .transactions-table tbody tr {
@@ -1088,16 +1087,16 @@
   vertical-align: middle;
   border-bottom: 1px solid rgba(92,71,48,0.03);
   height: 26px !important;
-  font-size: 0.59375rem !important; /* 9.5px */
+  font-size: 0.59375rem !important;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 /* Transaction ID cell - Show full number */
 .transaction-id {
-  font-family: 'SF Mono', 'Roboto Mono', monospace; /* Keep monospace for IDs */
-  font-size: 0.59375rem !important; /* 9.5px */
+  font-family: 'SF Mono', 'Roboto Mono', monospace;
+  font-size: 0.59375rem !important;
   font-weight: 500;
   color: #5c4730;
   white-space: nowrap;
@@ -1113,10 +1112,10 @@
   font-weight: 600;
   color: #3c2a1c;
   text-align: right;
-  font-size: 0.59375rem !important; /* 9.5px */
+  font-size: 0.59375rem !important;
   padding-right: 0.375rem !important;
   white-space: nowrap;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 /* Date cell - Compact with 9.5px font */
@@ -1128,18 +1127,18 @@
 }
 
 .date-cell .date {
-  font-size: 0.59375rem !important; /* 9.5px */
+  font-size: 0.59375rem !important;
   font-weight: 500;
   color: #374151;
-  font-family: 'SF Mono', 'Roboto Mono', monospace; /* Keep monospace for dates */
+  font-family: 'SF Mono', 'Roboto Mono', monospace;
   line-height: 1;
   white-space: nowrap;
 }
 
 .date-cell .time {
-  font-size: 0.59375rem !important; /* 9.5px - same as date */
+  font-size: 0.59375rem !important;
   color: #666;
-  font-family: 'SF Mono', 'Roboto Mono', monospace; /* Keep monospace for times */
+  font-family: 'SF Mono', 'Roboto Mono', monospace;
   margin-top: 0.09375rem;
   line-height: 1;
 }
@@ -1154,19 +1153,19 @@
 .transactions-table .status-badge {
   padding: 0.125rem 0.25rem !important;
   border-radius: 3px;
-  font-size: 0.59375rem !important; /* 9.5px */
+  font-size: 0.59375rem !important;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06px;
   display: inline-block;
   line-height: 1;
   white-space: nowrap;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 /* Initiator cell */
 .initiator-cell {
-  font-size: 0.59375rem !important; /* 9.5px */
+  font-size: 0.59375rem !important;
   color: #666;
   font-style: italic;
   max-width: 65px;
@@ -1174,7 +1173,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   padding-right: 0.1875rem !important;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 /* Optimized column widths */
@@ -1248,17 +1247,17 @@
 }
 
 .total-label {
-  font-size: 0.59375rem !important; /* 9.5px */
+  font-size: 0.59375rem !important;
   font-weight: 600;
   color: #5c4730;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .total-amount {
-  font-size: 0.59375rem !important; /* 9.5px */
+  font-size: 0.59375rem !important;
   font-weight: 700;
   color: #059669;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 /* Loading States */
@@ -1286,7 +1285,7 @@
   font-size: 0.75rem;
   color: #666;
   font-weight: 500;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 /* Empty States */
@@ -1306,7 +1305,7 @@
 .empty-text {
   font-size: 0.75rem;
   font-weight: 500;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 /* ==================== PROMISES CARD ==================== */
@@ -1373,7 +1372,7 @@
   border-radius: 0.25rem;
   background: white;
   transition: all 0.15s ease;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .promise-item:hover {
@@ -1388,7 +1387,7 @@
 }
 
 .promise-id {
-  font-family: 'SF Mono', 'Roboto Mono', monospace; /* Keep monospace for IDs */
+  font-family: 'SF Mono', 'Roboto Mono', monospace;
   font-size: 0.625rem;
   font-weight: 600;
   color: #5c4730;
@@ -1404,7 +1403,7 @@
   padding: 0.125rem 0.25rem;
   border-radius: 6px;
   letter-spacing: 0.2px;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .promise-status.pending {
@@ -1434,14 +1433,14 @@
   font-weight: 700;
   color: #3c2a1c;
   margin-bottom: 0.125rem;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .promise-date {
   font-size: 0.6875rem;
   color: #666;
   font-weight: 500;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .promise-notes {
@@ -1452,7 +1451,7 @@
   background: #faf9f8;
   border-radius: 0.1875rem;
   border-left: 2px solid #d4a762;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .promise-footer {
@@ -1467,7 +1466,7 @@
   font-size: 0.625rem;
   color: #666;
   text-transform: capitalize;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .promise-actions {
@@ -1485,7 +1484,7 @@
   transition: all 0.15s ease;
   text-transform: uppercase;
   letter-spacing: 0.2px;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .promise-action-btn.fulfilled {
@@ -1528,7 +1527,7 @@
   font-size: 0.6875rem;
   color: #666;
   font-weight: 500;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .summary-value {
@@ -1538,7 +1537,7 @@
   border-radius: 6px;
   min-width: 18px;
   text-align: center;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .summary-value.pending {
@@ -1595,7 +1594,7 @@
   font-weight: 600;
   color: #5c4730;
   margin-bottom: 0.25rem;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 .empty-text {
@@ -1603,7 +1602,7 @@
   color: #666;
   line-height: 1.3;
   max-width: 250px;
-  font-family: inherit; /* Century Gothic */
+  font-family: inherit;
 }
 
 /* Process Payment Button in Empty Card */
@@ -1669,29 +1668,39 @@
   100% { transform: rotate(360deg); }
 }
 
-/* ===== PAYMENT MODAL STYLES ===== */
-.payment-modal-overlay-customer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: 0.75rem;
-  animation: fadeIn 0.3s ease;
+/* ==================== MODAL STYLES - FIXED Z-INDEX ==================== */
+
+/* All modal overlays - Highest z-index to appear above everything */
+.payment-modal-overlay-customer,
+.mpesa-stk-overlay,
+.confirmation-modal-overlay-customer,
+.promise-modal-overlay-customer,
+.manual-pin-modal-overlay-customer,
+.pin-entry-modal-overlay-customer {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 999999 !important;
+  animation: fadeIn 0.2s ease !important;
+  backdrop-filter: blur(4px) !important;
+  margin: 0 !important;
+  padding: 0.75rem !important;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Payment Modal Container - SCROLLABLE */
-.payment-modal-customer {
+/* Ensure modal containers are properly positioned */
+.payment-modal-customer,
+.confirmation-modal-customer,
+.promise-modal-customer,
+.manual-pin-modal-customer,
+.pin-entry-modal-customer {
+  position: relative !important;
+  z-index: 1000000 !important;
   background: white;
   border-radius: 0.375rem;
   width: 100%;
@@ -1699,13 +1708,48 @@
   max-height: 90vh;
   overflow: hidden;
   animation: slideUp 0.3s ease;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(92, 71, 48, 0.08);
-  display: flex;
-  flex-direction: column;
-  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
 }
 
+/* Fix for M-PESA STK Popup */
+.mpesa-stk-overlay {
+  z-index: 999999 !important;
+}
+
+.mpesa-stk-container {
+  position: relative !important;
+  z-index: 1000000 !important;
+}
+
+/* Fix for Material-UI Modal */
+.MuiModal-root {
+  z-index: 999999 !important;
+}
+
+.transaction-modal-container {
+  position: relative !important;
+  z-index: 1000000 !important;
+  outline: none;
+}
+
+/* Payment Modal Specific */
+.payment-modal-overlay-customer {
+  z-index: 999999 !important;
+}
+
+/* Confirmation Modal Specific */
+.confirmation-modal-customer {
+  z-index: 1000000 !important;
+}
+
+/* Promise Modal Specific */
+.promise-modal-customer {
+  z-index: 1000000 !important;
+}
+
+/* ===== PAYMENT MODAL STYLES ===== */
 .payment-modal-header-customer {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid rgba(92, 71, 48, 0.08);
@@ -2111,7 +2155,7 @@
   width: 100%;
   max-width: 360px;
   animation: slideUp 0.3s ease;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(0, 124, 0, 0.15);
   overflow: hidden;
   display: flex;
@@ -2367,7 +2411,7 @@
   width: 100%;
   max-width: 320px;
   animation: slideUp 0.3s ease;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(92, 71, 48, 0.08);
   overflow: hidden;
   display: flex;
@@ -2578,7 +2622,7 @@
   max-height: 90vh;
   overflow: hidden;
   animation: slideUp 0.3s ease;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(92, 71, 48, 0.08);
   display: flex;
   flex-direction: column;
@@ -2758,7 +2802,7 @@
   width: 100%;
   max-width: 300px;
   animation: slideUp 0.3s ease;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(92, 71, 48, 0.08);
   overflow: hidden;
   display: flex;
@@ -2897,11 +2941,12 @@
   outline: none;
   border-radius: 0.5rem;
   background: white;
-  box-shadow: 0 0.125rem 0.75rem rgba(92, 71, 48, 0.08);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(92, 71, 48, 0.1);
   display: flex;
   flex-direction: column;
   font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
+  z-index: 1000000 !important;
 }
 
 .transaction-modal-content {
@@ -3352,7 +3397,7 @@
   }
   
   .customer-info-item {
-    flex: 0 0 calc(50% - 0.25rem); /* Two columns on medium screens */
+    flex: 0 0 calc(50% - 0.25rem);
   }
 }
 
@@ -3398,7 +3443,7 @@
   }
   
   .customer-info-item {
-    flex: 0 0 100%; /* Full width on mobile */
+    flex: 0 0 100%;
   }
   
   .transaction-filters {

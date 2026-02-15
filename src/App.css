@@ -7,6 +7,25 @@
   box-sizing: border-box;
 }
 
+/* Ensure proper stacking context */
+#root {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+}
+
+/* Modal portal container - make sure this exists */
+#modal-root {
+  position: relative;
+  z-index: 999999;
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden !important;
+  padding-right: var(--scrollbar-width, 0px);
+}
+
 html, body, #root {
   height: 100%;
   width: 100%;

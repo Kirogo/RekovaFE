@@ -1,4 +1,4 @@
-// src/pages/CustomerPage.jsx - UPDATED WITH PROFESSIONAL SUBTLE COLOR THEMING
+// src/pages/CustomerPage.jsx 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {

@@ -1,4 +1,4 @@
-/* src/styles/layout.css - CLEANED UP VERSION */
+/* src/styles/layout.css - FIXED VERSION */
 
 /* Reset and base styles */
 * {
@@ -11,6 +11,7 @@ html, body, #root {
   height: 100%;
   width: 100%;
   overflow-x: hidden;
+  position: relative;
 }
 
 body {
@@ -67,7 +68,7 @@ body {
   top: 0;
   right: 0;
   left: 205px;
-  z-index: 1000;
+  z-index: 100; /* Lower z-index */
   transition: left 0.3s ease;
   height: 70px;
 }
@@ -93,6 +94,8 @@ body {
   box-sizing: border-box;
   padding: 1.5rem;
   transition: padding-right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+  z-index: 1;
 }
 
 /* When right sidebar is COLLAPSED - NO extra padding */
@@ -129,6 +132,8 @@ body {
   display: flex;
   flex-direction: column;
   transition: padding-right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+  z-index: 1;
 }
 
 .customer-details-content {
@@ -137,6 +142,8 @@ body {
   padding: 0.75rem;
   height: calc(100vh - 140px);
   transition: padding-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1;
 }
 
 /* Apply right sidebar padding to customer details content */
@@ -154,6 +161,7 @@ body {
   width: 100%;
   height: 100%;
   overflow-x: hidden;
+  z-index: 1;
 }
 
 /* Main content inside layout */
@@ -164,16 +172,109 @@ body {
   z-index: 1;
 }
 
-/* Ensure sidebar is above content but below modals */
+/* ==================== FIXED MODAL Z-INDEX ==================== */
+
+/* Ensure sidebar is below modals */
 .right-sidebar {
-  z-index: 90 !important;
+  z-index: 500 !important; /* Lower than modals but above content */
 }
 
-/* Modal should be above sidebar */
-.MuiModal-root,
+/* Modal base styles - HIGHEST PRIORITY */
 .payment-modal-overlay-customer,
+.mpesa-stk-overlay,
+.confirmation-modal-overlay-customer,
+.promise-modal-overlay-customer,
+.manual-pin-modal-overlay-customer,
+.pin-entry-modal-overlay-customer,
+[class*="modal-overlay"],
+[class*="Modal-overlay"] {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 999999 !important;
+  animation: fadeIn 0.2s ease !important;
+  backdrop-filter: blur(4px) !important;
+  margin: 0 !important;
+  padding: 1rem !important;
+  box-sizing: border-box !important;
+}
+
+/* Modal containers */
+.payment-modal-customer,
+.confirmation-modal-customer,
+.promise-modal-customer,
+.manual-pin-modal-customer,
+.pin-entry-modal-customer,
+.mpesa-stk-container {
+  position: relative !important;
+  z-index: 1000000 !important;
+  background: white;
+  border-radius: 0.375rem;
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+}
+
+/* Fix for Material-UI Modal */
+.MuiModal-root {
+  z-index: 999999 !important;
+  position: fixed !important;
+}
+
+.MuiModal-backdrop {
+  z-index: -1 !important;
+}
+
+/* Transaction Modal */
 .transaction-modal-container {
-  z-index: 2000 !important;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  outline: none;
+  border-radius: 0.5rem;
+  background: white;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(92, 71, 48, 0.1);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000000 !important;
+}
+
+/* Ensure modals break out of any parent constraints */
+body.modal-open {
+  overflow: hidden !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Responsive adjustments for right sidebar */
@@ -218,6 +319,7 @@ body {
     height: 65px !important;
     left: 0 !important;
     right: 0 !important;
+    z-index: 100 !important;
   }
   
   .main-content-wrapper:not(.collapsed) .navbar {
@@ -265,6 +367,7 @@ body {
   
   .navbar {
     height: 60px !important;
+    z-index: 100 !important;
   }
   
   .page-wrapper-base,
@@ -295,6 +398,17 @@ body {
   .right-sidebar-expanded .customer-details-content {
     padding-right: calc(150px + 0.5rem) !important;
   }
+  
+  /* Modal adjustments for mobile */
+  .payment-modal-customer,
+  .confirmation-modal-customer,
+  .promise-modal-customer,
+  .manual-pin-modal-customer,
+  .pin-entry-modal-customer,
+  .mpesa-stk-container {
+    max-width: 95% !important;
+    max-height: 95vh !important;
+  }
 }
 
 /* Special case for very small screens - hide sidebar */
@@ -306,6 +420,16 @@ body {
   .reports-page-wrapper,
   .payment-page-wrapper,
   .promises-page-wrapper {
+    padding-right: 1rem !important;
+  }
+  
+  .right-sidebar-expanded .page-wrapper-base,
+  .right-sidebar-expanded .dashboard-wrapper,
+  .right-sidebar-expanded .customer-page-wrapper,
+  .right-sidebar-expanded .transactions-page-wrapper,
+  .right-sidebar-expanded .reports-page-wrapper,
+  .right-sidebar-expanded .payment-page-wrapper,
+  .right-sidebar-expanded .promises-page-wrapper {
     padding-right: 1rem !important;
   }
 }
