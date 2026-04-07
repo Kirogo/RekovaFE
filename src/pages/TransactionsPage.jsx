@@ -1,4 +1,4 @@
-// src/pages/TransactionsPage.jsx - UPDATED WITH PROFESSIONAL SUBTLE COLOR THEMING
+// src/pages/TransactionsPage.jsx - COMPLETELY FIXED
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -28,8 +28,8 @@ import {
   SupervisorAccount,
   Groups
 } from '@mui/icons-material';
-import axios from 'axios';
 import authService from '../services/auth.service';
+import { authAxios } from '../services/api'; // ✅ IMPORT the configured axios instance
 import LayoutWrapper from '../LayoutWrapper';
 import '../styles/transactionspage.css';
 
@@ -47,7 +47,7 @@ const TransactionsPage = () => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [customerDetails, setCustomerDetails] = useState(null);
-  
+
   // User role state
   const [userRole, setUserRole] = useState('officer');
   const [isSupervisor, setIsSupervisor] = useState(false);
@@ -57,38 +57,26 @@ const TransactionsPage = () => {
   const getUserInfo = () => {
     const user = authService.getCurrentUser();
     if (!user) return { role: 'officer', isSupervisor: false, isAdmin: false };
-    
+
     const role = user.role?.toLowerCase() || 'officer';
     const isSupervisorUser = role === 'supervisor';
     const isAdminUser = role === 'admin';
-    
-    console.log('👤 User Info:', { 
-      username: user.username, 
-      role: role, 
+
+    console.log('👤 User Info:', {
+      username: user.username,
+      role: role,
       isSupervisor: isSupervisorUser,
       isAdmin: isAdminUser,
       userId: user.id || user._id
     });
-    
-    return { 
-      role, 
-      isSupervisor: isSupervisorUser, 
+
+    return {
+      role,
+      isSupervisor: isSupervisorUser,
       isAdmin: isAdminUser,
       userId: user.id || user._id,
-      username: user.username 
+      username: user.username
     };
-  };
-
-  // Get API instance with auth token
-  const getApi = () => {
-    const token = authService.getToken();
-    return axios.create({
-      baseURL: "http://localhost:5000/api",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
   };
 
   const fetchTransactions = async () => {
@@ -96,7 +84,6 @@ const TransactionsPage = () => {
       setLoading(true);
       setError(null);
 
-      const api = getApi();
       const userInfo = getUserInfo();
 
       console.log(`📡 Fetching transactions for ${userInfo.role}...`);
@@ -108,7 +95,7 @@ const TransactionsPage = () => {
       if (userInfo.role === 'officer') {
         // For officers: fetch only their transactions
         console.log('👤 Fetching officer transactions from /api/transactions/my-transactions...');
-        response = await api.get('/transactions/my-transactions?limit=100');
+        response = await authAxios.get('/transactions/my-transactions?limit=100'); // ✅ Use authAxios
 
         console.log('✅ Officer transactions response:', response.data);
 
@@ -142,7 +129,7 @@ const TransactionsPage = () => {
       } else {
         // For admins/supervisors: fetch all transactions
         console.log('👑 Fetching all transactions from /api/transactions...');
-        response = await api.get('/transactions?limit=100');
+        response = await authAxios.get('/transactions?limit=100'); // ✅ Use authAxios
 
         console.log('✅ All transactions response:', response.data);
 
@@ -212,8 +199,7 @@ const TransactionsPage = () => {
     if (!customerId) return null;
 
     try {
-      const api = getApi();
-      const response = await api.get(`/customers/${customerId}`);
+      const response = await authAxios.get(`/customers/${customerId}`); // ✅ Use authAxios
 
       if (response.data.success) {
         return response.data.data?.customer || response.data.data;
@@ -244,13 +230,7 @@ const TransactionsPage = () => {
     setUserRole(userInfo.role);
     setIsSupervisor(userInfo.isSupervisor);
     setIsAdmin(userInfo.isAdmin);
-    
-    console.log('👤 TransactionsPage - Setting user role:', {
-      role: userInfo.role,
-      isSupervisor: userInfo.isSupervisor,
-      isAdmin: userInfo.isAdmin
-    });
-    
+
     fetchTransactions();
   }, []);
 
@@ -343,8 +323,7 @@ const TransactionsPage = () => {
     try {
       setExportLoading(true);
 
-      const api = getApi();
-      const response = await api.get('/transactions/export', {
+      const response = await authAxios.get('/transactions/export', { // ✅ Use authAxios
         responseType: 'blob'
       });
 
@@ -404,14 +383,53 @@ const TransactionsPage = () => {
     if (!dateString) return 'N/A';
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-KE', {
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+      const localDate = new Date(date.getTime() + (3 * 60 * 60 * 1000));
+      return localDate.toLocaleDateString('en-KE', {
         month: 'short',
         day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+        year: 'numeric',
+        timeZone: 'Africa/Nairobi'
       });
-    } catch {
+    } catch (error) {
       return 'N/A';
+    }
+  };
+
+  const formatDateTime = (dateString) => {
+    if (!dateString) return { date: 'N/A', time: '', full: 'N/A' };
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return { date: 'Invalid date', time: '', full: 'Invalid date' };
+      }
+
+      // Add 3 hours for East African Time (UTC+3)
+      const localDate = new Date(date.getTime() + (3 * 60 * 60 * 1000));
+
+      const dateDisplay = localDate.toLocaleDateString('en-KE', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'Africa/Nairobi'
+      });
+
+      const timeDisplay = localDate.toLocaleTimeString('en-KE', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Africa/Nairobi'
+      });
+
+      return {
+        date: dateDisplay,
+        time: timeDisplay,
+        full: `${dateDisplay} ${timeDisplay}`
+      };
+    } catch (error) {
+      return { date: 'N/A', time: '', full: 'N/A' };
     }
   };
 
@@ -624,8 +642,8 @@ const TransactionsPage = () => {
             <div className="customer-section-header">
               <Box>
                 <Typography className={`customer-section-title ${getRoleTextColor()}`}>
-                  {isSupervisor || isAdmin 
-                    ? `ALL TRANSACTIONS (${filteredTransactions.length})` 
+                  {isSupervisor || isAdmin
+                    ? `ALL TRANSACTIONS (${filteredTransactions.length})`
                     : `MY TRANSACTIONS (${filteredTransactions.length})`}
                   <div className={`section-title-underline ${getRoleAccentClass()}`}></div>
                 </Typography>
@@ -635,8 +653,8 @@ const TransactionsPage = () => {
               <div className="customer-search-container">
                 <input
                   type="text"
-                  placeholder={isSupervisor || isAdmin 
-                    ? "Search by customer, phone, transaction ID..." 
+                  placeholder={isSupervisor || isAdmin
+                    ? "Search by customer, phone, transaction ID..."
                     : "Search your transactions by customer or ID..."}
                   value={searchTerm}
                   onChange={(e) => {
@@ -674,8 +692,8 @@ const TransactionsPage = () => {
               <Box className="customer-loading">
                 <LinearProgress className={`loading-bar ${getRoleAccentClass()}`} />
                 <Typography className="customer-loading-text">
-                  {isSupervisor || isAdmin 
-                    ? 'Loading all transactions...' 
+                  {isSupervisor || isAdmin
+                    ? 'Loading all transactions...'
                     : 'Loading your transactions...'}
                 </Typography>
               </Box>
@@ -688,8 +706,8 @@ const TransactionsPage = () => {
                   No Transactions Found
                 </Typography>
                 <Typography className="empty-subtitle">
-                  {isSupervisor || isAdmin 
-                    ? 'No transactions have been recorded yet.' 
+                  {isSupervisor || isAdmin
+                    ? 'No transactions have been recorded yet.'
                     : 'No transactions have been initiated by you yet.'}
                 </Typography>
               </div>
@@ -780,7 +798,7 @@ const TransactionsPage = () => {
                     <div className="pagination-info">
                       Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, filteredTransactions.length)} of {filteredTransactions.length} transactions
                     </div>
-                    
+
                     <div className="pagination-controls">
                       <button
                         className="pagination-btn first-page"
@@ -790,7 +808,7 @@ const TransactionsPage = () => {
                       >
                         &laquo;
                       </button>
-                      
+
                       <button
                         className="pagination-btn prev-page"
                         onClick={() => handleChangePage(page - 1)}
@@ -799,11 +817,11 @@ const TransactionsPage = () => {
                       >
                         &lsaquo;
                       </button>
-                      
+
                       <div className="page-indicator">
                         Page {page + 1} of {Math.ceil(filteredTransactions.length / rowsPerPage)}
                       </div>
-                      
+
                       <button
                         className="pagination-btn next-page"
                         onClick={() => handleChangePage(page + 1)}
@@ -812,7 +830,7 @@ const TransactionsPage = () => {
                       >
                         &rsaquo;
                       </button>
-                      
+
                       <button
                         className="pagination-btn last-page"
                         onClick={() => handleChangePage(Math.ceil(filteredTransactions.length / rowsPerPage) - 1)}
@@ -822,7 +840,7 @@ const TransactionsPage = () => {
                         &raquo;
                       </button>
                     </div>
-                    
+
                     <div className="rows-per-page">
                       <select
                         value={rowsPerPage}
@@ -917,7 +935,7 @@ const TransactionsPage = () => {
                           <div className="transaction-detail-item-compact">
                             <span className="transaction-detail-label-compact">Payment Method</span>
                             <span className="transaction-detail-value-compact">
-                              {selectedTransaction.paymentMethod || 'MPesa'}
+                              {'MPesa'}
                             </span>
                           </div>
                           <div className="transaction-detail-item-compact">

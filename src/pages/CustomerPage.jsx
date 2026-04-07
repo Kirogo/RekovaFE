@@ -24,7 +24,7 @@ import {
   AssignmentInd
 } from '@mui/icons-material';
 import CustomerTable from '../components/common/CustomerTable';
-import axios from 'axios';
+import { authAxios } from '../services/api';
 import LayoutWrapper from '../LayoutWrapper';
 import authService from '../services/auth.service';
 import '../styles/customerpage.css';
@@ -162,7 +162,6 @@ const CustomerPage = () => {
 
       console.log('🔍 CustomerPage: Starting data fetch...');
 
-      // Check authentication first
       if (!authService.isAuthenticated()) {
         console.log('❌ Not authenticated, redirecting to login');
         authService.logout();
@@ -170,59 +169,65 @@ const CustomerPage = () => {
         return;
       }
 
-      // Use authService.getApi() instead of creating new axios instance
-      const api = authService.getApi();
-      console.log('🔑 API headers:', api.defaults.headers);
-
-      let customersData = [];
       const userInfo = getUserInfo();
 
       console.log(`👤 Fetching customers for ${userInfo.role} (${userInfo.username})...`);
 
-      // Determine the correct route based on role
       const route = userInfo.isSupervisor || userInfo.isAdmin ? '/customers' : '/customers/assigned-to-me';
 
       try {
-        const response = await api.get(route);
+        const response = await authAxios.get(route);
         console.log(`📋 ${userInfo.role} customers response:`, response.data);
 
+        let customersData = [];
         if (response.data.success) {
-          customersData = response.data.data?.customers || response.data.customers || [];
+          if (response.data.data?.items) {
+            customersData = response.data.data.items;
+          } else if (response.data.data?.customers) {
+            customersData = response.data.data.customers;
+          } else if (Array.isArray(response.data.data)) {
+            customersData = response.data.data;
+          } else if (Array.isArray(response.data.customers)) {
+            customersData = response.data.customers;
+          }
+
           console.log(`✅ Found ${customersData.length} customers for ${userInfo.role}`);
         } else {
           console.log('⚠️ Using fallback method for customers');
-          const allResponse = await api.get('/customers?limit=1000');
-          const allCustomers = allResponse.data.data?.customers || [];
+          const allResponse = await authAxios.get('/customers?limit=1000');
+          const allCustomers = allResponse.data.data?.items ||
+            allResponse.data.data?.customers ||
+            allResponse.data.customers ||
+            [];
 
-          // For officers, filter by assignedTo field
           if (userInfo.role === 'officer' && userInfo.userId) {
             customersData = allCustomers.filter(customer => {
-              const assignedTo = customer.assignedTo;
+              const assignedTo = customer.assignedToUserId || customer.assignedTo;
               if (!assignedTo) return false;
-
-              // Check if assignedTo is an object with _id
-              if (assignedTo._id) {
-                return assignedTo._id === userInfo.userId ||
-                  assignedTo._id.toString() === userInfo.userId;
-              }
-
-              // Check if assignedTo is a string ID
               return assignedTo === userInfo.userId ||
-                assignedTo.toString() === userInfo.userId;
+                assignedTo.toString() === userInfo.userId ||
+                assignedTo._id === userInfo.userId;
             });
             console.log(`🔍 Filtered ${customersData.length} customers assigned to officer ${userInfo.userId}`);
           } else {
             customersData = allCustomers;
           }
         }
-      } catch (fetchError) {
-        console.error(`❌ Error fetching ${userInfo.role} customers:`, fetchError);
-        console.error('Error details:', {
-          status: fetchError.response?.status,
-          message: fetchError.response?.data?.message
+
+        const sortedCustomers = customersData.sort((a, b) => {
+          const dateA = new Date(a.createdAt || 0);
+          const dateB = new Date(b.createdAt || 0);
+          return dateB - dateA;
         });
 
-        // Check if it's a 401 error
+        setCustomers(sortedCustomers);
+        setFilteredCustomers(sortedCustomers);
+
+        console.log(`📊 Displaying ${sortedCustomers.length} customers for ${userInfo.role}`);
+
+      } catch (fetchError) {
+        console.error(`❌ Error fetching ${userInfo.role} customers:`, fetchError);
+
         if (fetchError.response?.status === 401) {
           console.log('⚠️ 401 Unauthorized - logging out');
           authService.logout();
@@ -230,35 +235,11 @@ const CustomerPage = () => {
           return;
         }
 
-        // Fallback to all customers
-        try {
-          const response = await api.get('/customers?limit=100');
-          customersData = response.data.data?.customers || response.data.customers || [];
-        } catch (fallbackError) {
-          console.error('❌ Fallback also failed:', fallbackError);
-          throw fallbackError;
-        }
+        throw fetchError;
       }
-
-      // Sort by created date (newest first)
-      const sortedCustomers = customersData.sort((a, b) => {
-        const dateA = new Date(a.createdAt || 0);
-        const dateB = new Date(b.createdAt || 0);
-        return dateB - dateA;
-      });
-
-      setCustomers(sortedCustomers);
-      setFilteredCustomers(sortedCustomers);
-
-      console.log(`📊 Displaying ${sortedCustomers.length} customers for ${userInfo.role}`);
 
     } catch (error) {
       console.error('❌ Error fetching data:', error);
-      console.error('Error details:', {
-        status: error.response?.status,
-        message: error.response?.data?.message,
-        data: error.response?.data
-      });
 
       if (error.response?.status === 401) {
         console.log('⚠️ 401 Unauthorized - logging out');

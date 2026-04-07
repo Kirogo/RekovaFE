@@ -1,3 +1,4 @@
+// src/pages/Promises.jsx - COMPLETELY FIXED
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -23,8 +24,8 @@ import {
   SupervisorAccount,
   Groups
 } from '@mui/icons-material';
-import axios from 'axios';
 import authService from '../services/auth.service';
+import { authAxios } from '../services/api'; // ✅ IMPORT the configured axios instance
 import LayoutWrapper from "../LayoutWrapper";
 import '../styles/Promises.css';
 
@@ -79,23 +80,11 @@ const Promises = () => {
     };
   };
 
-  const getApi = () => {
-    const token = authService.getToken();
-    return axios.create({
-      baseURL: "http://localhost:5000/api",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-  };
-
   const fetchPromises = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const api = getApi();
       const userInfo = getUserInfo();
       
       // Update local state
@@ -129,7 +118,7 @@ const Promises = () => {
         queryParams.append('limit', filters.limit);
       }
 
-      const response = await api.get(`${endpoint}?${queryParams.toString()}`);
+      const response = await authAxios.get(`${endpoint}?${queryParams.toString()}`); // ✅ Use authAxios
       console.log('✅ Promises response:', response.data);
 
       if (response.data.success) {
@@ -230,38 +219,58 @@ const Promises = () => {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-KE', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
-    } catch {
-      return 'N/A';
-    }
-  };
+        if (!dateString) return 'N/A';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return 'Invalid date';
+            }
+            const localDate = new Date(date.getTime() + (3 * 60 * 60 * 1000));
+            return localDate.toLocaleDateString('en-KE', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                timeZone: 'Africa/Nairobi'
+            });
+        } catch (error) {
+            return 'N/A';
+        }
+    };
 
-  const formatDateTime = (dateString) => {
-    if (!dateString) return { date: 'N/A', time: '' };
-    try {
-      const date = new Date(dateString);
-      return {
-        date: date.toLocaleDateString('en-KE', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric'
-        }),
-        time: date.toLocaleTimeString('en-KE', {
-          hour: '2-digit',
-          minute: '2-digit'
-        })
-      };
-    } catch {
-      return { date: 'N/A', time: '' };
-    }
-  };
+    const formatDateTime = (dateString) => {
+        if (!dateString) return { date: 'N/A', time: '', full: 'N/A' };
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return { date: 'Invalid date', time: '', full: 'Invalid date' };
+            }
+
+            // Add 3 hours for East African Time (UTC+3)
+            const localDate = new Date(date.getTime() + (3 * 60 * 60 * 1000));
+
+            const dateDisplay = localDate.toLocaleDateString('en-KE', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                timeZone: 'Africa/Nairobi'
+            });
+
+            const timeDisplay = localDate.toLocaleTimeString('en-KE', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,
+                timeZone: 'Africa/Nairobi'
+            });
+
+            return {
+                date: dateDisplay,
+                time: timeDisplay,
+                full: `${dateDisplay} ${timeDisplay}`
+            };
+        } catch (error) {
+            return { date: 'N/A', time: '', full: 'N/A' };
+        }
+    };
 
   const formatCurrency = (amount) => {
     const numAmount = parseFloat(amount || 0);
@@ -309,8 +318,7 @@ const Promises = () => {
 
   const updatePromiseStatus = async (promiseId, status) => {
     try {
-      const api = getApi();
-      const response = await api.patch(`/promises/${promiseId}/status`, { status });
+      const response = await authAxios.patch(`/promises/${promiseId}/status`, { status }); // ✅ Use authAxios
 
       if (response.data.success) {
         fetchPromises();
@@ -324,7 +332,6 @@ const Promises = () => {
 
   const exportPromises = async () => {
     try {
-      const api = getApi();
       const userInfo = getUserInfo();
 
       let exportEndpoint = '/promises/export';
@@ -334,7 +341,7 @@ const Promises = () => {
         console.warn('⚠️ Officer-specific export might need special handling');
       }
 
-      const response = await api.get(exportEndpoint, {
+      const response = await authAxios.get(exportEndpoint, { // ✅ Use authAxios
         responseType: 'blob'
       });
 

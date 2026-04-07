@@ -1,4 +1,3 @@
-// src/pages/CustomerDetails.jsx - UPDATED WITH PROFESSIONAL SUBTLE COLOR THEMING
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -33,10 +32,10 @@ import {
     Groups,
     AssignmentInd
 } from '@mui/icons-material';
-import axios from 'axios';
 import '../styles/CustomerDetails.css';
 import LayoutWrapper from '../LayoutWrapper';
 import authService from '../services/auth.service';
+import { authAxios } from '../services/api';
 import MPesaStkPopup from '../components/payments/MPesaStkPopup';
 
 const CustomerDetails = () => {
@@ -240,7 +239,7 @@ const CustomerDetails = () => {
         if (hasActiveTransaction && Array.isArray(transactions)) {
             pollInterval = setInterval(() => {
                 fetchCustomerTransactions();
-            }, 5000); // Poll every 5 seconds
+            }, 5000);
         }
 
         return () => {
@@ -250,11 +249,6 @@ const CustomerDetails = () => {
         };
     }, [hasActiveTransaction, id]);
 
-    // Get API instance with auth headers
-    const getApi = () => {
-        return authService.getApi();
-    };
-
     const fetchCustomerDetails = async () => {
         console.log('🔄 Starting fetchCustomerDetails');
 
@@ -262,7 +256,6 @@ const CustomerDetails = () => {
             setLoading(true);
             setError(null);
 
-            // Check authentication
             if (!authService.isAuthenticated()) {
                 console.log('❌ Not authenticated');
                 authService.logout();
@@ -270,71 +263,38 @@ const CustomerDetails = () => {
                 return;
             }
 
-            const api = getApi();
-            console.log('🔑 API headers for customer details:', api.defaults.headers);
+            console.log('🔑 Fetching customer details for ID:', id);
 
-            // Add a timeout for the request
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const response = await authAxios.get(`/customers/${id}`);
 
-            try {
-                const response = await api.get(`/customers/${id}`, {
-                    signal: controller.signal
+            if (response.data.success) {
+                const customerData = response.data.data;
+                setCustomer(customerData);
+                setPaymentData({
+                    phoneNumber: customerData.phoneNumber || '',
+                    alternativePhoneNumber: '',
+                    amount: customerData.arrears || '',
+                    useAlternativeNumber: false
                 });
-
-                clearTimeout(timeoutId);
-                setServerOnline(true); // Server is online
-
-                if (response.data.success) {
-                    const customerData = response.data.data.customer;
-                    setCustomer(customerData);
-                    setPaymentData({
-                        phoneNumber: customerData.phoneNumber || '',
-                        alternativePhoneNumber: '',
-                        amount: customerData.arrears || '',
-                        useAlternativeNumber: false
-                    });
-                    console.log('✅ Customer details loaded:', customerData.name);
-                } else {
-                    console.error('❌ API returned success: false:', response.data.message);
-                    setError(response.data.message || 'Failed to load customer details');
-                }
-            } catch (fetchError) {
-                clearTimeout(timeoutId);
-                if (fetchError.name === 'AbortError') {
-                    console.error('Request timeout - server might be offline');
-                    setServerOnline(false);
-                    setError('Server is taking too long to respond. Please check if the backend is running.');
-                } else if (fetchError.response?.status === 401) {
-                    console.log('⚠️ 401 Unauthorized - logging out');
-                    authService.logout();
-                    navigate('/login');
-                    return;
-                } else {
-                    throw fetchError;
-                }
+                console.log('✅ Customer details loaded:', customerData.name);
+                setServerOnline(true);
+            } else {
+                console.error('❌ API returned success: false:', response.data.message);
+                setError(response.data.message || 'Failed to load customer details');
             }
         } catch (error) {
             console.error('❌ Error in fetchCustomerDetails:', error);
-            console.error('Error details:', {
-                message: error.message,
-                status: error.response?.status,
-                data: error.response?.data
-            });
 
             if (error.code === 'ERR_NETWORK') {
                 setServerOnline(false);
-                setError('Cannot connect to server. Please make sure the backend is running on port 5000.');
+                setError('Cannot connect to server. Please make sure the backend is running on port 5555.');
             } else if (error.response?.status === 401) {
                 console.log('⚠️ 401 Unauthorized - logging out');
                 authService.logout();
                 navigate('/login');
                 return;
-            } else if (error.request) {
-                setServerOnline(false);
-                setError('No response from server. The backend might be offline.');
             } else {
-                setError('Error: ' + error.message);
+                setError('Error: ' + (error.response?.data?.message || error.message));
             }
         } finally {
             setLoading(false);
@@ -351,13 +311,9 @@ const CustomerDetails = () => {
             setTransactionsLoading(true);
             console.log('🔄 Fetching transactions for customer:', id);
 
-            const api = getApi();
-            const response = await api.get(`/transactions?customerId=${id}&limit=10&sort=-createdAt`);
-
-            console.log('📊 Transactions API response:', response.data); // Debug log
+            const response = await authAxios.get(`/transactions?customerId=${id}&limit=10&sort=-createdAt`);
 
             if (response.data.success) {
-                // Ensure transactions is an array
                 const newTransactions = Array.isArray(response.data.data)
                     ? response.data.data
                     : Array.isArray(response.data.data?.transactions)
@@ -367,7 +323,6 @@ const CustomerDetails = () => {
                 console.log('✅ Processed transactions:', newTransactions.length, 'items');
                 setTransactions(newTransactions);
 
-                // Check if there are any active transactions
                 const activeTx = newTransactions.find(tx => {
                     const status = tx.status?.toLowerCase();
                     return status === 'pending' || status === 'initiated';
@@ -381,11 +336,10 @@ const CustomerDetails = () => {
                 }
             } else {
                 console.warn('⚠️ API returned success: false for transactions');
-                setTransactions([]); // Set empty array on failure
+                setTransactions([]);
             }
         } catch (error) {
             console.error('❌ Error fetching transactions:', error.message);
-            console.error('Full error:', error);
 
             if (error.response?.status === 401) {
                 console.log('⚠️ 401 Unauthorized - logging out');
@@ -394,7 +348,7 @@ const CustomerDetails = () => {
                 return;
             }
 
-            setTransactions([]); // Set empty array on error
+            setTransactions([]);
         } finally {
             setTransactionsLoading(false);
         }
@@ -405,21 +359,17 @@ const CustomerDetails = () => {
 
         try {
             setCommentsLoading(true);
-            const api = getApi();
 
             try {
-                // Try to fetch from API first
-                const response = await api.get(`/customers/${id}/comments`);
+                const response = await authAxios.get(`/customers/${id}/comments`);
 
                 if (response.data.success) {
                     const comments = response.data.data.comments || [];
-                    // Sort by createdAt descending (newest first)
                     const sortedComments = comments.sort((a, b) =>
                         new Date(b.createdAt) - new Date(a.createdAt)
                     );
                     setCommentHistory(sortedComments);
 
-                    // Save to localStorage as backup cache
                     const commentsKey = `customer_comments_${id}`;
                     localStorage.setItem(commentsKey, JSON.stringify(sortedComments.slice(0, 50)));
                 }
@@ -433,7 +383,6 @@ const CustomerDetails = () => {
                     return;
                 }
 
-                // Fallback to localStorage
                 const commentsKey = `customer_comments_${id}`;
                 const storedComments = JSON.parse(localStorage.getItem(commentsKey) || '[]');
 
@@ -457,9 +406,8 @@ const CustomerDetails = () => {
 
         try {
             setPromisesLoading(true);
-            const api = getApi();
 
-            const response = await api.get(`/promises/customer/${id}?limit=5`);
+            const response = await authAxios.get(`/promises/customer/${id}?limit=5`);
 
             if (response.data.success) {
                 setPromises(response.data.data.promises || []);
@@ -486,8 +434,6 @@ const CustomerDetails = () => {
         if (localComments.length === 0) return;
 
         try {
-            const api = getApi();
-
             for (const localComment of localComments) {
                 try {
                     const commentData = {
@@ -496,10 +442,9 @@ const CustomerDetails = () => {
                         customerName: localComment.customerName || customer?.name || ''
                     };
 
-                    const response = await api.post(`/customers/${id}/comments`, commentData);
+                    const response = await authAxios.post(`/customers/${id}/comments`, commentData);
 
                     if (response.data.success) {
-                        // Update localStorage with server data
                         const updatedComments = storedComments.map(c => {
                             if (c._id === localComment._id) {
                                 return response.data.data.comment;
@@ -508,8 +453,6 @@ const CustomerDetails = () => {
                         }).filter(c => !c.savedLocally);
 
                         localStorage.setItem(commentsKey, JSON.stringify(updatedComments));
-
-                        // Refresh comments from server
                         fetchCustomerComments();
                     }
                 } catch (syncError) {
@@ -536,7 +479,6 @@ const CustomerDetails = () => {
                 customerName: customer?.name || ''
             };
 
-            // Create optimistic update (temporary ID)
             const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             const optimisticComment = {
                 ...commentData,
@@ -544,25 +486,19 @@ const CustomerDetails = () => {
                 author: currentUser,
                 createdAt: new Date().toISOString(),
                 customerId: id,
-                comment: newComment.trim() // Ensure comment text is included
+                comment: newComment.trim()
             };
 
-            // Optimistically add to UI immediately
             setCommentHistory(prev => [optimisticComment, ...prev]);
-
-            // Clear the input field
             const commentText = newComment;
             setNewComment('');
 
-            // Try to save to backend API
             try {
-                const api = getApi();
-                const response = await api.post(`/customers/${id}/comments`, commentData);
+                const response = await authAxios.post(`/customers/${id}/comments`, commentData);
 
                 if (response.data.success) {
                     const savedComment = response.data.data.comment || response.data.data;
 
-                    // Replace temporary comment with saved one from server
                     setCommentHistory(prev =>
                         prev.map(comment =>
                             comment._id === tempId ? savedComment : comment
@@ -571,10 +507,8 @@ const CustomerDetails = () => {
 
                     setCommentSaved(true);
 
-                    // Update localStorage cache
                     const commentsKey = `customer_comments_${id}`;
                     const cachedComments = JSON.parse(localStorage.getItem(commentsKey) || '[]');
-                    // Remove temp comment and add saved one
                     const filteredCache = cachedComments.filter(c => c._id !== tempId);
                     const updatedCache = [savedComment, ...filteredCache];
                     localStorage.setItem(commentsKey, JSON.stringify(updatedCache.slice(0, 50)));
@@ -596,7 +530,6 @@ const CustomerDetails = () => {
                     return;
                 }
 
-                // Save to localStorage as fallback
                 const commentsKey = `customer_comments_${id}`;
                 const storedComments = JSON.parse(localStorage.getItem(commentsKey) || '[]');
 
@@ -604,15 +537,13 @@ const CustomerDetails = () => {
                     ...optimisticComment,
                     _id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                     savedLocally: true,
-                    comment: commentText // Use the original comment text
+                    comment: commentText
                 };
 
-                // Remove temp comment and add local version
                 const filteredStored = storedComments.filter(c => c._id !== tempId);
                 const updatedComments = [localComment, ...filteredStored];
                 localStorage.setItem(commentsKey, JSON.stringify(updatedComments.slice(0, 50)));
 
-                // Update UI with localStorage version
                 setCommentHistory(prev =>
                     prev.map(comment =>
                         comment._id === tempId ? localComment : comment
@@ -620,12 +551,7 @@ const CustomerDetails = () => {
                 );
 
                 setCommentSaved(true);
-
-                setTimeout(() => {
-                    setCommentSaved(false);
-                }, 3000);
-
-                // Show warning that comment is saved locally only
+                setTimeout(() => setCommentSaved(false), 3000);
                 setError('Comment saved locally (server unavailable). Will sync when server is back.');
                 setTimeout(() => setError(null), 5000);
             }
@@ -639,44 +565,46 @@ const CustomerDetails = () => {
 
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
-
         try {
             const date = new Date(dateString);
             if (isNaN(date.getTime())) {
                 return 'Invalid date';
             }
-
-            // For promises, use a simpler format
-            return date.toLocaleDateString('en-KE', {
+            const localDate = new Date(date.getTime() + (3 * 60 * 60 * 1000));
+            return localDate.toLocaleDateString('en-KE', {
                 month: 'short',
                 day: 'numeric',
-                year: 'numeric'
+                year: 'numeric',
+                timeZone: 'Africa/Nairobi'
             });
         } catch (error) {
-            console.error('Error formatting date:', error);
             return 'N/A';
         }
     };
 
     const formatDateTime = (dateString) => {
         if (!dateString) return { date: 'N/A', time: '', full: 'N/A' };
-
         try {
             const date = new Date(dateString);
             if (isNaN(date.getTime())) {
                 return { date: 'Invalid date', time: '', full: 'Invalid date' };
             }
 
-            const dateDisplay = date.toLocaleDateString('en-KE', {
+            // Add 3 hours for East African Time (UTC+3)
+            const localDate = new Date(date.getTime() + (3 * 60 * 60 * 1000));
+
+            const dateDisplay = localDate.toLocaleDateString('en-KE', {
                 month: 'short',
                 day: 'numeric',
-                year: 'numeric'
+                year: 'numeric',
+                timeZone: 'Africa/Nairobi'
             });
 
-            const timeDisplay = date.toLocaleTimeString('en-KE', {
+            const timeDisplay = localDate.toLocaleTimeString('en-KE', {
                 hour: '2-digit',
                 minute: '2-digit',
-                hour12: true
+                hour12: true,
+                timeZone: 'Africa/Nairobi'
             });
 
             return {
@@ -710,14 +638,11 @@ const CustomerDetails = () => {
     };
 
     const getTransactionNumber = (transaction) => {
-        // Try different possible fields for transaction number
         if (transaction.transactionId) return transaction.transactionId;
         if (transaction.mpesaReceiptNumber) return transaction.mpesaReceiptNumber;
         if (transaction.receiptNumber) return transaction.receiptNumber;
         if (transaction.checkoutRequestId) return `CHK${transaction.checkoutRequestId.substring(0, 8)}`;
         if (transaction._id) return `TRX${transaction._id.substring(0, 8).toUpperCase()}`;
-
-        // Fallback to a generated ID
         return `TRX${Date.now().toString().substring(5)}`;
     };
 
@@ -759,7 +684,6 @@ const CustomerDetails = () => {
         return statusMap[status?.toLowerCase()] || status || 'PENDING';
     };
 
-    // Transaction status props function
     const getStatusProps = (status) => {
         const statusUpper = status?.toUpperCase();
         switch (statusUpper) {
@@ -802,17 +726,14 @@ const CustomerDetails = () => {
         }
     };
 
-    // Filter transactions - ADDED ARRAY CHECK
     const filteredTransactions = Array.isArray(transactions)
         ? transactions.filter(transaction => {
             const matchesSearch = !searchTerm ||
                 transaction.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 transaction.transactionId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 getTransactionNumber(transaction).toLowerCase().includes(searchTerm.toLowerCase());
-
             const matchesStatus = !statusFilter ||
                 transaction.status?.toLowerCase() === statusFilter.toLowerCase();
-
             return matchesSearch && matchesStatus;
         })
         : [];
@@ -839,7 +760,6 @@ const CustomerDetails = () => {
 
         try {
             const user = authService.getCurrentUser();
-            const api = getApi();
 
             console.log('📤 Sending request to /api/promises with:', {
                 customerId: id,
@@ -849,7 +769,7 @@ const CustomerDetails = () => {
                 notes: promiseData.notes
             });
 
-            const response = await api.post('/promises', {
+            const response = await authAxios.post('/promises', {
                 customerId: id,
                 promiseAmount: parseFloat(promiseData.promiseAmount),
                 promiseDate: promiseData.promiseDate,
@@ -884,9 +804,7 @@ const CustomerDetails = () => {
 
     const updatePromiseStatus = async (promiseId, status) => {
         try {
-            const api = getApi();
-
-            const response = await api.patch(`/promises/${promiseId}/status`, { status });
+            const response = await authAxios.patch(`/promises/${promiseId}/status`, { status });
 
             if (response.data.success) {
                 fetchCustomerPromises();
@@ -911,7 +829,6 @@ const CustomerDetails = () => {
         setShowPaymentModal(true);
         setMpesaStatus(null);
         setPaymentInitiated(false);
-        // Reset alternative phone number field when modal opens
         setPaymentData(prev => ({
             ...prev,
             alternativePhoneNumber: '',
@@ -937,27 +854,28 @@ const CustomerDetails = () => {
         }
 
         try {
-            const api = getApi();
-
-            const response = await api.post('/payments/manual-pin', {
+            const response = await authAxios.post('/payments/manual-pin', {
                 transactionId: mpesaStatus.transactionId,
                 pin: manualPin
             });
 
             if (response.data.success) {
+                const transactionStatus = response.data.data?.status || 'SUCCESS';
+
                 setMpesaStatus({
                     status: 'completed',
                     message: 'Payment Completed!',
                     details: '',
-                    completedAt: new Date().toISOString()
+                    completedAt: new Date().toISOString(),
+                    transactionStatus: transactionStatus
                 });
-
                 setShowPinEntry(false);
                 setManualPin('');
 
-                // Refresh data
-                fetchCustomerDetails();
-                fetchCustomerTransactions();
+                setTimeout(() => {
+                    fetchCustomerDetails();
+                    fetchCustomerTransactions();
+                }, 500);
 
                 alert('Payment completed successfully!');
             } else {
@@ -979,9 +897,7 @@ const CustomerDetails = () => {
 
     const handleExportStatement = async () => {
         try {
-            const api = getApi();
-
-            const response = await api.get(`/customers/${id}/statement`, {
+            const response = await authAxios.get(`/customers/${id}/statement`, {
                 responseType: 'blob'
             });
 
@@ -1020,10 +936,8 @@ const CustomerDetails = () => {
 
         if (type === 'fullBalance') {
             console.log('Showing full balance popup');
-            // Show popup attached to the button
             setShowFullBalancePopup(true);
         } else {
-            // Directly set arrears amount
             setPaymentData(prev => ({
                 ...prev,
                 amount
@@ -1031,14 +945,11 @@ const CustomerDetails = () => {
         }
     };
 
-    // Confirm full balance payment from simple popup
     const confirmFullBalanceFromPopup = () => {
         console.log('confirmFullBalanceFromPopup called');
         const amountNum = parseFloat(customer?.loanBalance || 0);
 
-        // Check if amount exceeds daily limit
         if (amountNum > 496500) {
-            // Show error message and set to max allowed
             setError(`Daily MPESA limit is ${formatCurrency(496500)}. The maximum amount that can be collected at once is ${formatCurrency(496500)}.`);
             setTimeout(() => setError(null), 5000);
             setPaymentData(prev => ({
@@ -1046,19 +957,16 @@ const CustomerDetails = () => {
                 amount: '496500'
             }));
         } else {
-            // Set full balance amount
             setPaymentData(prev => ({
                 ...prev,
                 amount: customer?.loanBalance || ''
             }));
         }
 
-        // Close the popup
         setShowFullBalancePopup(false);
     };
 
     const handleSendPrompt = () => {
-        // Determine which phone number to use
         const phoneToUse = paymentData.useAlternativeNumber
             ? paymentData.alternativePhoneNumber
             : paymentData.phoneNumber;
@@ -1073,13 +981,11 @@ const CustomerDetails = () => {
             return;
         }
 
-        // Validate alternative phone number if enabled
         if (paymentData.useAlternativeNumber && paymentData.alternativePhoneNumber.length !== 12) {
             setError('Please enter a valid alternative Kenyan phone number (254XXXXXXXXX)');
             return;
         }
 
-        // Check daily limit
         const amountNum = parseFloat(paymentData.amount);
         if (amountNum > 496500) {
             setError(`Daily MPESA limit exceeded. Maximum allowed is ${formatCurrency(496500)}`);
@@ -1096,9 +1002,7 @@ const CustomerDetails = () => {
             setShowConfirmationModal(false);
 
             const user = authService.getCurrentUser();
-            const api = getApi();
 
-            // Determine which phone number to use
             const phoneToUse = paymentData.useAlternativeNumber
                 ? paymentData.alternativePhoneNumber
                 : paymentData.phoneNumber;
@@ -1109,11 +1013,11 @@ const CustomerDetails = () => {
                 customer: customer?.name
             });
 
-            const response = await api.post('/payments/initiate', {
+            const response = await authAxios.post('/payments/initiate', {
                 phoneNumber: phoneToUse,
                 amount: parseFloat(paymentData.amount),
                 description: `Loan repayment for ${customer?.name}`,
-                customerId: customer?._id || id,
+                customerId: customer?.id || id,
                 isAlternativeNumber: paymentData.useAlternativeNumber,
                 originalPhoneNumber: paymentData.phoneNumber,
                 initiatedBy: user?.username || 'Agent'
@@ -1122,25 +1026,19 @@ const CustomerDetails = () => {
             console.log('Payment request response:', response.data);
 
             if (response.data.success) {
-                // Store the active transaction
                 const transactionData = {
-                    transactionId: response.data.data.transaction?.transactionId,
+                    transactionId: response.data.data?.transactionId,
                     phoneNumber: phoneToUse,
                     amount: parseFloat(paymentData.amount),
                     customerName: customer?.name,
-                    mpesaReceiptNumber: response.data.data.transaction?.mpesaReceiptNumber,
-                    loanBalanceAfter: response.data.data.customer?.loanBalanceAfter || customer?.loanBalance - parseFloat(paymentData.amount)
+                    mpesaReceiptNumber: response.data.data?.mpesaReceiptNumber,
+                    loanBalanceAfter: response.data.data?.customer?.loanBalanceAfter || customer?.loanBalance - parseFloat(paymentData.amount)
                 };
 
+                console.log('Setting active transaction:', transactionData);
                 setActiveTransaction(transactionData);
-
-                // Close the payment modal
                 closePaymentModal();
-
-                // Open WhatsApp chat popup
                 setShowWhatsAppChat(true);
-
-                // Refresh transactions
                 fetchCustomerTransactions();
             } else {
                 setMpesaStatus({
@@ -1173,66 +1071,95 @@ const CustomerDetails = () => {
     };
 
     const handleWhatsAppPinSubmit = async (pin, status, errorDetails) => {
-        if (!activeTransaction) return;
+        console.log('🔍 handleWhatsAppPinSubmit called with:', { pin, status, errorDetails, activeTransaction });
+
+        if (!activeTransaction) {
+            console.error('❌ No active transaction found');
+            alert('No active transaction found. Please initiate a new payment.');
+            return;
+        }
+
+        if (!activeTransaction.transactionId) {
+            console.error('❌ No transaction ID in active transaction:', activeTransaction);
+            alert('Transaction ID missing. Please initiate a new payment.');
+            return;
+        }
 
         try {
-            const api = getApi();
-
             if (status === 'SUCCESS') {
-                // Call the backend to mark transaction as success
-                const response = await api.post('/payments/manual-pin', {
+                console.log('✅ PIN entered, verifying with backend for transaction:', activeTransaction.transactionId);
+
+                const requestBody = {
                     transactionId: activeTransaction.transactionId,
-                    pin: '1234' // Demo PIN
-                });
+                    pin: pin
+                };
+                console.log('📤 Sending request:', requestBody);
+
+                const response = await authAxios.post('/payments/verify-pin', requestBody);
+
+                console.log('PIN verification response:', response.data);
 
                 if (response.data.success) {
-                    // Refresh data
-                    fetchCustomerDetails();
-                    fetchCustomerTransactions();
+                    console.log('✅ PIN verified successfully, transaction status:', response.data.data?.status);
 
-                    // Close chat after 2 seconds
+                    setTransactions(prevTransactions =>
+                        prevTransactions.map(t =>
+                            t.transactionId === activeTransaction.transactionId
+                                ? { ...t, status: 'SUCCESS', mpesaReceiptNumber: response.data.data?.mpesaReceiptNumber }
+                                : t
+                        )
+                    );
+
+                    alert(`✅ Payment successful! Receipt: ${response.data.data?.mpesaReceiptNumber || 'N/A'}`);
+
                     setTimeout(() => {
-                        setShowWhatsAppChat(false);
-                        setActiveTransaction(null);
-                    }, 2000);
+                        fetchCustomerDetails();
+                        fetchCustomerTransactions();
+                        setTimeout(() => {
+                            setShowWhatsAppChat(false);
+                            setActiveTransaction(null);
+                        }, 1000);
+                    }, 500);
+                } else {
+                    console.error('PIN verification failed:', response.data.message);
+                    alert('Payment failed: ' + (response.data.message || 'Unknown error'));
                 }
             } else if (status === 'FAILED' || status === 'EXPIRED') {
-                // Mark transaction as failed in backend
                 try {
-                    await api.post(`/payments/mark-failed/${activeTransaction.transactionId}`, {
+                    await authAxios.post(`/payments/mark-failed/${activeTransaction.transactionId}`, {
                         failureReason: status === 'EXPIRED' ? 'EXPIRED' : 'WRONG_PIN'
                     });
-
-                    // Refresh data
                     fetchCustomerTransactions();
+                    alert(`Payment ${status.toLowerCase()}. Please try again.`);
+                    setShowWhatsAppChat(false);
+                    setActiveTransaction(null);
                 } catch (err) {
                     console.error('Error marking transaction as failed:', err);
                 }
             }
         } catch (error) {
             console.error('Error in WhatsApp PIN submission:', error);
+            if (error.response?.data?.message) {
+                alert('Payment failed: ' + error.response.data.message);
+            } else {
+                alert('An error occurred while processing the payment. Please try again.');
+            }
         }
     };
 
     const handleResendPrompt = async () => {
-        // Close current chat
         setShowWhatsAppChat(false);
         setActiveTransaction(null);
-
-        // Re-open payment modal
         setShowPaymentModal(true);
         setPaymentInitiated(false);
         setProcessingPayment(false);
     };
 
-    // Add this function to handle PIN submission
     const handlePinSubmit = async (transactionId, pin) => {
         try {
-            const api = getApi();
-
             console.log('Submitting PIN:', { transactionId, pin });
 
-            const response = await api.post('/payments/process-pin', {
+            const response = await authAxios.post('/payments/process-pin', {
                 transactionId: transactionId,
                 pin: pin
             });
@@ -1241,17 +1168,12 @@ const CustomerDetails = () => {
 
             if (response.data.success) {
                 alert('✅ Payment successful! Receipt: ' + response.data.data.receipt);
-
-                // Refresh customer data
                 fetchCustomerDetails();
                 fetchCustomerTransactions();
-
-                // Close modal
                 closePaymentModal();
             } else {
                 alert('❌ Payment failed: ' + response.data.message);
             }
-
         } catch (error) {
             console.error('PIN submission error:', error);
 
@@ -1269,20 +1191,12 @@ const CustomerDetails = () => {
     const startStatusPolling = (transactionId) => {
         const pollInterval = setInterval(async () => {
             try {
-                const api = getApi();
-
-                // CORRECT ENDPOINT:
-                const response = await api.get(`/payments/status/${transactionId}`);
-
-                console.log('Polling status response:', response.data);
+                const response = await authAxios.get(`/payments/status/${transactionId}`);
 
                 if (response.data.success) {
                     const transaction = response.data.data.transaction;
                     const status = transaction.status?.toUpperCase();
 
-                    console.log('Polling status:', status);
-
-                    // Check if transaction is completed
                     if (status !== 'PENDING') {
                         clearInterval(pollInterval);
 
@@ -1294,10 +1208,7 @@ const CustomerDetails = () => {
                                 details: 'The customer has confirmed the payment.',
                                 completedAt: new Date().toISOString()
                             }));
-
-                            // Show success notification
                             alert('Payment completed successfully!');
-
                         } else if (status === 'FAILED') {
                             setMpesaStatus(prev => ({
                                 ...prev,
@@ -1315,7 +1226,6 @@ const CustomerDetails = () => {
                             }));
                         }
 
-                        // Refresh customer data
                         fetchCustomerDetails();
                         fetchCustomerTransactions();
                     }
@@ -1323,9 +1233,8 @@ const CustomerDetails = () => {
             } catch (error) {
                 console.error('Polling error:', error);
             }
-        }, 5000); // Poll every 5 seconds
+        }, 5000);
 
-        // Clear interval after 30 minutes
         setTimeout(() => {
             clearInterval(pollInterval);
             setMpesaStatus(prev => ({
@@ -1334,7 +1243,7 @@ const CustomerDetails = () => {
                 message: '⏰ Polling stopped',
                 details: 'Status polling stopped after 30 minutes.'
             }));
-        }, 30 * 60 * 1000); // 30 minutes
+        }, 30 * 60 * 1000);
     };
 
     const closePaymentModal = () => {
@@ -1344,23 +1253,19 @@ const CustomerDetails = () => {
         setShowFullBalancePopup(false);
         setProcessingPayment(false);
 
-        // Clear any pending auto-close timer
         if (autoCloseTimerRef.current) {
             clearTimeout(autoCloseTimerRef.current);
             autoCloseTimerRef.current = null;
         }
     };
 
-    // Transaction modal functions
     const handleTransactionClick = async (transaction) => {
         setSelectedTransaction(transaction);
 
-        // Fetch customer details for the transaction
         if (transaction.customerId?._id || transaction.customerId) {
             try {
-                const api = getApi();
                 const customerId = transaction.customerId._id || transaction.customerId;
-                const response = await api.get(`/customers/${customerId}`);
+                const response = await authAxios.get(`/customers/${customerId}`);
 
                 if (response.data.success) {
                     setTransactionCustomerDetails(response.data.data.customer);
@@ -1384,10 +1289,8 @@ const CustomerDetails = () => {
         setTransactionCustomerDetails(null);
     };
 
-    // Calculate loan details for transaction modal
     const calculateLoanDetails = (transaction) => {
         const currentCustomerData = transactionCustomerDetails || transaction.customerId;
-
         const transactionAmount = parseFloat(transaction.amount || 0);
         const totalLoanBalance = parseFloat(currentCustomerData?.loanBalance || 0);
         const arrearsAmount = parseFloat(currentCustomerData?.arrears || currentCustomerData?.arrearsBalance || 0);
@@ -1433,37 +1336,30 @@ const CustomerDetails = () => {
         }
     };
 
-    // ==================== ROLE-BASED STYLING FUNCTIONS ====================
-
-    // Get role-based icon
     const getRoleIcon = () => {
         if (isSupervisor) return <SupervisorAccount sx={{ fontSize: 16 }} />;
         if (isAdmin) return <Groups sx={{ fontSize: 16 }} />;
         return <AssignmentInd sx={{ fontSize: 16 }} />;
     };
 
-    // Get role-based subtitle
     const getRoleSubtitle = () => {
         if (isSupervisor) return 'Supervisor - Manage All Customer Accounts';
         if (isAdmin) return 'Administrator - Full System Access';
         return 'Officer - My Assigned Customer Details';
     };
 
-    // Get role-based color classes - SUBTLE TEXT COLORS ONLY
     const getRoleTextColor = () => {
         if (isSupervisor) return 'supervisor-text';
         if (isAdmin) return 'admin-text';
         return 'officer-text';
     };
 
-    // Get role-based accent color for borders/underlines
     const getRoleAccentClass = () => {
         if (isSupervisor) return 'supervisor-accent';
         if (isAdmin) return 'admin-accent';
         return 'officer-accent';
     };
 
-    // Get role-based primary color for buttons
     const getRolePrimaryClass = () => {
         if (isSupervisor) return 'supervisor-primary';
         if (isAdmin) return 'admin-primary';
@@ -1552,7 +1448,6 @@ const CustomerDetails = () => {
                                     <Typography className="customer-details-subtitle">
                                         ID: {customer?.customerId || customer?._id || id}
                                     </Typography>
-
                                 </Box>
                             </div>
 
@@ -1628,10 +1523,9 @@ const CustomerDetails = () => {
 
                 {/* Scrollable Content Area */}
                 <div className="customer-details-content">
-                    {/* Tab Content */}
+                    {/* Tab Content - Customers */}
                     {activeTab === 'customers' && (
                         <div className="tab-content active">
-                            {/* Customer Information Card */}
                             <div className="details-card customer-info-card">
                                 <div className={`card-header ${getRoleAccentClass()}-border`}>
                                     <Person sx={{ fontSize: 14, marginRight: '0.5rem' }} />
@@ -1642,7 +1536,6 @@ const CustomerDetails = () => {
 
                                 <div className="card-body">
                                     <div className="customer-info-grid">
-                                        {/* Full width items */}
                                         <div className="customer-info-item name-item full-width">
                                             <div className="info-label">Full Name</div>
                                             <div className="info-value">{customer?.name || 'N/A'}</div>
@@ -1703,9 +1596,9 @@ const CustomerDetails = () => {
                         </div>
                     )}
 
+                    {/* Tab Content - Arrears */}
                     {activeTab === 'arrears' && (
                         <div className="tab-content active" data-tab="arrears">
-                            {/* Loan Details Card - Full Width */}
                             <div className="details-card loan-details-card" style={{ width: '100%', gridColumn: '1 / -1' }}>
                                 <div className={`card-header ${getRoleAccentClass()}-border`}>
                                     <AccountBalance sx={{ fontSize: 14, marginRight: '0.5rem' }} />
@@ -1750,7 +1643,6 @@ const CustomerDetails = () => {
                                 </div>
                             </div>
 
-                            {/* Customer Follow-up Comments Card - 35% */}
                             <div className="details-card comment-card">
                                 <div className={`card-header ${getRoleAccentClass()}-border`}>
                                     <Comment sx={{ fontSize: 14, marginRight: '0.5rem' }} />
@@ -1767,7 +1659,6 @@ const CustomerDetails = () => {
                                 </div>
 
                                 <div className="card-body">
-                                    {/* Comment Input */}
                                     <div className="comment-input-section">
                                         <textarea
                                             className="comment-textarea"
@@ -1778,7 +1669,6 @@ const CustomerDetails = () => {
                                         />
                                     </div>
 
-                                    {/* Comment History - Scrollable */}
                                     <div className="comment-history-section">
                                         <div className="comment-history-header">
                                             <Typography className={`comment-history-title ${getRoleTextColor()}`}>
@@ -1831,7 +1721,6 @@ const CustomerDetails = () => {
                                 </div>
                             </div>
 
-                            {/* Recent Transactions Card - 65% */}
                             <div className="details-card transactions-card">
                                 <div className={`card-header ${getRoleAccentClass()}-border`}>
                                     <Receipt sx={{ fontSize: 14, marginRight: '0.5rem' }} />
@@ -1850,7 +1739,6 @@ const CustomerDetails = () => {
                                 </div>
 
                                 <div className="card-body">
-                                    {/* Transaction Filters */}
                                     <div className="transaction-filters">
                                         <input
                                             type="text"
@@ -1921,8 +1809,7 @@ const CustomerDetails = () => {
                                                                             style={{
                                                                                 backgroundColor: status === 'success' ? '#d1fae5' :
                                                                                     status === 'pending' ? '#fef3c7' :
-                                                                                        status === 'failed' ? '#fee2e2' :
-                                                                                            '#f3f4f6',
+                                                                                        status === 'failed' ? '#fee2e2' : '#f3f4f6',
                                                                                 color: status === 'success' ? '#059669' :
                                                                                     status === 'pending' ? '#d97706' :
                                                                                         status === 'failed' ? '#dc2626' : '#6b7280',
@@ -1948,7 +1835,19 @@ const CustomerDetails = () => {
                                                 </table>
                                             </div>
 
-                                            {/* Total row */}
+                                            {(() => {
+                                                const successfulTotal = filteredTransactions
+                                                    .filter(transaction => transaction.status?.toLowerCase() === 'success')
+                                                    .reduce((sum, transaction) => sum + parseFloat(transaction.amount || 0), 0);
+
+                                                return successfulTotal > 0 ? (
+                                                    <div className="transactions-total">
+                                                        <div className="total-label">Total Successful:</div>
+                                                        <div className="total-amount">{formatCurrency(successfulTotal)}</div>
+                                                    </div>
+                                                ) : null;
+                                            })()}
+
                                             {(() => {
                                                 const successfulTotal = filteredTransactions
                                                     .filter(transaction => transaction.status?.toLowerCase() === 'success')
@@ -1968,9 +1867,9 @@ const CustomerDetails = () => {
                         </div>
                     )}
 
+                    {/* Tab Content - Promises */}
                     {activeTab === 'promises' && (
                         <div className="tab-content active" data-tab="promises">
-                            {/* Payment Promises Card - Full Width */}
                             <div className="details-card promises-card">
                                 <div className={`card-header ${getRoleAccentClass()}-border`}>
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '0.5rem' }}>
@@ -1979,12 +1878,6 @@ const CustomerDetails = () => {
                                     <Typography className={`card-title ${getRoleTextColor()}`}>
                                         Payment Promises
                                     </Typography>
-                                    {/*<button
-                                        className={`new-promise-btn ${getRolePrimaryClass()}`}
-                                        onClick={() => setShowPromiseModal(true)}
-                                    >
-                                        + New Promise
-                                    </button>*/}
                                 </div>
 
                                 <div className="card-body">
@@ -1996,7 +1889,6 @@ const CustomerDetails = () => {
                                     ) : promises.length === 0 ? (
                                         <div className="empty-promises">
                                             <div className="empty-icon"></div>
-
                                             <button
                                                 onClick={() => setShowPromiseModal(true)}
                                                 className={`create-promise-btn ${getRolePrimaryClass()}`}
@@ -2080,7 +1972,6 @@ const CustomerDetails = () => {
                                 </div>
                             </div>
 
-                            {/* Placeholder Card - 65% (Payment Processing Card Removed) */}
                             <div className="details-card empty-card">
                                 <div className={`card-header ${getRoleAccentClass()}-border`}>
                                     <SendToMobile sx={{ fontSize: 14, marginRight: '0.5rem' }} />
@@ -2124,7 +2015,6 @@ const CustomerDetails = () => {
                             </div>
 
                             <div className="payment-modal-body-customer">
-                                {/* Only show form if payment hasn't been successfully initiated */}
                                 {(!mpesaStatus || mpesaStatus.status !== 'success') ? (
                                     <>
                                         <div className="payment-info-container-customer">
@@ -2151,7 +2041,6 @@ const CustomerDetails = () => {
                                             </div>
                                         </div>
 
-                                        {/* Alternative Phone Number Section */}
                                         <div className="payment-form-group-customer">
                                             <div className="checkbox-container-customer">
                                                 <input
@@ -2210,7 +2099,6 @@ const CustomerDetails = () => {
                                                     Arrears: {formatCurrency(customer?.arrears)}
                                                 </button>
 
-                                                {/* Full Balance button with popup container */}
                                                 <div className="full-balance-button-container">
                                                     <button
                                                         type="button"
@@ -2222,7 +2110,6 @@ const CustomerDetails = () => {
                                                         Full Balance: {formatCurrency(customer?.loanBalance)}
                                                     </button>
 
-                                                    {/* Full Balance Popup - Attached to Button */}
                                                     {showFullBalancePopup && (
                                                         <div className="full-balance-popup-attached">
                                                             <div className="popup-content-attached">
@@ -2255,9 +2142,7 @@ const CustomerDetails = () => {
                                         </div>
                                     </>
                                 ) : (
-                                    // Show only success message when payment is successful
                                     <div className="whatsapp-success-details-customer">
-
                                         <Typography className="whatsapp-success-title-customer">
                                             Payment Request Sent!
                                         </Typography>
@@ -2289,10 +2174,7 @@ const CustomerDetails = () => {
                                 )}
                             </div>
 
-                            {/* payment modal footer section */}
                             <div className="payment-modal-footer-customer">
-                                {/* Show Sent button when payment is successfully sent */}
-
                                 {mpesaStatus && mpesaStatus.status === 'success' ? (
                                     <button
                                         className={`payment-modal-sent-btn-customer ${getRolePrimaryClass()}`}
@@ -2512,7 +2394,6 @@ const CustomerDetails = () => {
                     <Box className="transaction-modal-container">
                         {selectedTransaction && (
                             <div className="transaction-modal-content">
-                                {/* Modal Header */}
                                 <div className="transaction-modal-header">
                                     <div className="transaction-modal-header-content">
                                         <ReceiptLong sx={{ fontSize: 20 }} />
@@ -2534,12 +2415,9 @@ const CustomerDetails = () => {
                                     </IconButton>
                                 </div>
 
-                                {/* Modal Body */}
                                 <div className="transaction-modal-body">
                                     <div className="transaction-details-grid-compact">
-                                        {/* Left Column */}
                                         <div className="transaction-column-compact">
-                                            {/* Customer Information Card */}
                                             <div className="transaction-card-compact">
                                                 <div className="transaction-card-header-compact">
                                                     <PersonIcon sx={{ fontSize: 14 }} />
@@ -2561,7 +2439,6 @@ const CustomerDetails = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Transaction Information Card */}
                                             <div className="transaction-card-compact">
                                                 <div className="transaction-card-header-compact">
                                                     <Payment sx={{ fontSize: 14 }} />
@@ -2590,9 +2467,7 @@ const CustomerDetails = () => {
                                             </div>
                                         </div>
 
-                                        {/* Right Column */}
                                         <div className="transaction-column-compact">
-                                            {/* Loan Balance Summary Card */}
                                             <div className="transaction-card-compact loan-card-compact">
                                                 <div className="transaction-card-header-compact">
                                                     <AccountBalanceIcon sx={{ fontSize: 14 }} />
@@ -2674,7 +2549,6 @@ const CustomerDetails = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Transaction Status Card */}
                                             <div className="transaction-card-compact status-card-compact">
                                                 <div className="transaction-card-header-compact">
                                                     <ReceiptLong sx={{ fontSize: 14 }} />
@@ -2707,7 +2581,6 @@ const CustomerDetails = () => {
                                     </div>
                                 </div>
 
-                                {/* Modal Footer */}
                                 <div className="transaction-modal-footer">
                                     <button
                                         className="transaction-modal-secondary-btn"
@@ -2732,7 +2605,7 @@ const CustomerDetails = () => {
                     transaction={activeTransaction}
                     onPinSubmit={handleWhatsAppPinSubmit}
                     onResendPrompt={handleResendPrompt}
-                    autoCloseTime={30000} // 30 seconds timeout
+                    autoCloseTime={30000}
                 />
             </Box>
         </LayoutWrapper>

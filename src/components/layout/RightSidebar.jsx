@@ -1,4 +1,4 @@
-// src/components/layout/RightSidebar.jsx - FIXED VERSION
+// src/components/layout/RightSidebar.jsx - COMPLETELY FIXED
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -11,10 +11,10 @@ import {
   Today,
   ChevronRight
 } from '@mui/icons-material';
-import axios from 'axios';
 import authService from '../../services/auth.service';
+import { authAxios } from '../../services/api';  // ✅ Use the configured axios instance
 import '../../styles/rightsidebar.css';
-import '../../styles/layout.css'; // Make sure layout.css is also imported
+import '../../styles/layout.css';
 
 const RightSidebar = ({ onToggle }) => {
   const navigate = useNavigate();
@@ -37,33 +37,40 @@ const RightSidebar = ({ onToggle }) => {
       setIsSupervisor(user.role === 'supervisor' || user.role === 'SUPERVISOR');
       setIsAdmin(user.role === 'admin' || user.role === 'ADMIN');
       console.log('RightSidebar - User role:', user.role);
-      console.log('RightSidebar - isSupervisor:', isSupervisor);
-      console.log('RightSidebar - isAdmin:', isAdmin);
     }
-  }, [isSupervisor, isAdmin]); // Added dependencies for logging
-
-  const getApi = () => {
-    const token = authService.getToken();
-    return axios.create({
-      baseURL: "http://localhost:5000/api",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-  };
+  }, []);
 
   const fetchPromises = async () => {
     try {
       setLoading(true);
-      const api = getApi();
-      const response = await api.get("/promises?status=PENDING&limit=50&sortBy=promiseDate&sortOrder=asc");
+      // Use a shorter timeout for this component since it's less critical
+      const response = await authAxios.get("/promises?status=PENDING&limit=20&sortBy=promiseDate&sortOrder=asc", {
+        timeout: 15000 // 15 seconds for promises
+      });
 
-      if (response.data.success) {
-        setUpcomingPromises(response.data.data.promises || []);
+      console.log('✅ Promises response:', response.data);
+
+      if (response.data.success && response.data.data) {
+        // Backend returns data as an array directly
+        const promises = Array.isArray(response.data.data) 
+          ? response.data.data 
+          : response.data.data.promises || [];
+        setUpcomingPromises(promises);
       }
     } catch (err) {
       console.error("Error fetching promises:", err);
+
+      if (err.code === 'ECONNABORTED') {
+        console.warn('⚠️ Promise fetch timed out - will retry on next mount');
+        // Don't show error to user, just set empty array
+        setUpcomingPromises([]);
+      } else if (err.response?.status === 401) {
+        console.warn('⚠️ Unauthorized - token may have expired');
+        setUpcomingPromises([]);
+      } else if (err.response?.status === 500) {
+        console.error('❌ Server error fetching promises:', err.response.data);
+        setUpcomingPromises([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -123,7 +130,7 @@ const RightSidebar = ({ onToggle }) => {
   const toggleSidebar = () => {
     const newCollapsedState = !collapsed;
     setCollapsed(newCollapsedState);
-    
+
     if (onToggle) {
       onToggle(newCollapsedState);
     }
@@ -144,7 +151,7 @@ const RightSidebar = ({ onToggle }) => {
   const getSidebarClass = () => {
     let baseClass = 'right-sidebar';
     if (collapsed) baseClass += ' collapsed';
-    
+
     // Priority: Admin > Supervisor > Officer
     if (isAdmin) {
       baseClass += ' admin-right-sidebar';
@@ -155,14 +162,14 @@ const RightSidebar = ({ onToggle }) => {
     } else {
       console.log('Applying officer (default) styling');
     }
-    
+
     return baseClass;
   };
 
   // Get role-based classes with fallback to officer
   const getRoleBasedClass = (type) => {
     if (isAdmin) {
-      switch(type) {
+      switch (type) {
         case 'collapsed-content': return 'admin-collapsed-content';
         case 'collapsed-icon': return 'admin-collapsed-icon';
         case 'header': return 'admin-right-sidebar-header';
@@ -194,7 +201,7 @@ const RightSidebar = ({ onToggle }) => {
         default: return '';
       }
     } else if (isSupervisor) {
-      switch(type) {
+      switch (type) {
         case 'collapsed-content': return 'supervisor-collapsed-content';
         case 'collapsed-icon': return 'supervisor-collapsed-icon';
         case 'header': return 'supervisor-right-sidebar-header';
@@ -227,7 +234,7 @@ const RightSidebar = ({ onToggle }) => {
       }
     } else {
       // Officer classes
-      switch(type) {
+      switch (type) {
         case 'collapsed-content': return 'officer-collapsed-content';
         case 'collapsed-icon': return 'officer-collapsed-icon';
         case 'header': return 'officer-right-sidebar-header';

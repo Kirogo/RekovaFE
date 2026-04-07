@@ -20,8 +20,8 @@ import {
   LibraryAdd,
   Schedule
 } from "@mui/icons-material";
-import axios from "axios";
 import authService from "../services/auth.service";
+import { authAxios } from "../services/api";
 import "../styles/dashboard.css";
 
 const Dashboard = () => {
@@ -41,47 +41,37 @@ const Dashboard = () => {
   const [additionalStats, setAdditionalStats] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Helper function to get user role
   const getUserRole = () => {
     try {
-      const userString = localStorage.getItem('user');
-      if (userString) {
-        const user = JSON.parse(userString);
-        return user.role || 'officer';
+      const user = authService.getCurrentUser();
+      if (user && user.role) {
+        return user.role;
       }
     } catch (error) {
-      console.error('Error getting user role:', error);
+      console.error('Error getting user role from auth service:', error);
     }
     return 'officer';
   };
 
-  // Helper function to get current user ID
   const getCurrentUserId = () => {
     try {
-      const userString = localStorage.getItem('user');
-      if (userString) {
-        const user = JSON.parse(userString);
-        return user.id || user._id || null;
+      const user = authService.getCurrentUser();
+      if (user && (user.id || user._id)) {
+        return user.id || user._id;
       }
     } catch (error) {
-      console.error('Error getting user ID:', error);
+      console.error('Error getting user ID from auth service:', error);
     }
     return null;
   };
 
-  // Helper function to get current user from auth service
   const getCurrentUser = () => {
     const user = authService.getCurrentUser();
     console.log('👤 Current User:', user);
     return user;
   };
 
-  // Use authService.getApi() instead of creating new axios instances
-  const getApi = () => {
-    return authService.getApi();
-  };
-
-  const fetchRecentTransactions = async (api) => {
+  const fetchRecentTransactions = async () => {
     try {
       const role = getUserRole();
       const userId = getCurrentUserId();
@@ -90,17 +80,11 @@ const Dashboard = () => {
       
       let transactionsData = [];
       
-      // Use the provided api instance or get a new one
-      const apiInstance = api || getApi();
-      
       if (role === 'officer') {
-        // Officer-specific transactions
         try {
-          // Try the officer-specific endpoint first
-          const response = await apiInstance.get('/transactions/my-transactions?limit=10');
+          const response = await authAxios.get('/transactions/my-transactions?limit=10');
           console.log('✅ Officer transactions response:', response.data);
           
-          // Extract transactions from response
           if (response.data.data && response.data.data.transactions) {
             transactionsData = response.data.data.transactions;
           } else if (response.data.transactions) {
@@ -116,9 +100,8 @@ const Dashboard = () => {
         } catch (officerError) {
           console.warn('⚠️ Officer endpoint failed, trying fallback:', officerError.message);
           
-          // Fallback: fetch all transactions and filter
           try {
-            const allResponse = await apiInstance.get('/transactions?limit=100');
+            const allResponse = await authAxios.get('/transactions?limit=100');
             let allTransactions = [];
             
             if (allResponse.data.data && Array.isArray(allResponse.data.data)) {
@@ -131,16 +114,12 @@ const Dashboard = () => {
               allTransactions = allResponse.data.transactions;
             }
             
-            console.log(`📋 Total transactions: ${allTransactions.length}`);
-            
-            // Filter for officer's transactions
             transactionsData = allTransactions.filter(transaction => {
               const initiatedBy = transaction.initiatedByUserId || 
                                  transaction.createdBy || 
                                  transaction.officerId || 
                                  transaction.userId;
               
-              // Check various ID formats
               if (typeof initiatedBy === 'object') {
                 return initiatedBy._id === userId || initiatedBy.id === userId;
               }
@@ -158,9 +137,8 @@ const Dashboard = () => {
           }
         }
       } else {
-        // Admin/Supervisor - show all transactions
         try {
-          const response = await apiInstance.get('/transactions?limit=10');
+          const response = await authAxios.get('/transactions?limit=10');
           
           if (response.data.data && Array.isArray(response.data.data)) {
             transactionsData = response.data.data;
@@ -178,26 +156,19 @@ const Dashboard = () => {
         }
       }
       
-      // Sort by date (newest first)
       transactionsData.sort((a, b) => {
         const dateA = new Date(a.createdAt || a.date || a.processedAt || 0);
         const dateB = new Date(b.createdAt || b.date || b.processedAt || 0);
         return dateB - dateA;
       });
       
-      // Limit to 10 most recent
-      const recentTransactions = transactionsData.slice(0, 10);
-      console.log(`📅 Setting ${recentTransactions.length} recent transactions`);
+      const recent = transactionsData.slice(0, 10);
+      console.log(`📅 Setting ${recent.length} recent transactions`);
       
-      setRecentTransactions(recentTransactions);
+      setRecentTransactions(recent);
       
     } catch (transError) {
       console.error('❌ Recent transactions error:', transError);
-      console.log('Error details:', {
-        message: transError.message,
-        response: transError.response?.data,
-        status: transError.response?.status
-      });
       setRecentTransactions([]);
     }
   };
@@ -207,16 +178,12 @@ const Dashboard = () => {
       setLoading(true);
       setError(null);
       
-      // Use authService.getApi() - this ensures proper auth headers
-      const api = getApi();
       const user = getCurrentUser();
       setCurrentUser(user);
       
       console.log('📊 Fetching dashboard data for:', user?.username);
       console.log('🔑 Auth token present:', !!authService.getToken());
-      console.log('🔑 Auth headers:', api.defaults.headers);
       
-      // Set user role
       if (user?.role) {
         setUserRole(user.role);
       } else {
@@ -224,23 +191,14 @@ const Dashboard = () => {
         setUserRole(role);
       }
 
-      // If user is officer, fetch officer-specific data
       if (userRole === 'officer' || (user && user.role === 'officer')) {
-        await fetchOfficerDashboardData(api, user);
+        await fetchOfficerDashboardData(user);
       } else {
-        // For other roles (admin/supervisor), use existing logic
-        await fetchGeneralDashboardData(api);
+        await fetchGeneralDashboardData();
       }
 
     } catch (err) {
       console.error("❌ Dashboard error:", err);
-      console.error("Error details:", {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-        url: err.config?.url
-      });
-
       setError(err.response?.data?.message || "Failed to load dashboard data");
 
       if (err.response?.status === 401) {
@@ -253,26 +211,32 @@ const Dashboard = () => {
     }
   };
 
-  const fetchOfficerDashboardData = async (api, user) => {
+  const fetchOfficerDashboardData = async (user) => {
     try {
       console.log('👮 Fetching officer-specific data...');
       
-      // Fetch officer's assigned customers - try multiple endpoints
       let customersData = [];
       try {
-        const customersRes = await api.get(`/customers/assigned-to-me`);
-        customersData = customersRes.data.data?.customers || customersRes.data.customers || [];
-        console.log('✅ Assigned customers fetched:', customersData.length);
+        const customersRes = await authAxios.get(`/customers/assigned-to-me`);
+        if (customersRes.data.success) {
+          customersData = customersRes.data.data?.items || 
+                         customersRes.data.data?.customers || 
+                         customersRes.data.customers || 
+                         [];
+          console.log('✅ Assigned customers fetched:', customersData.length);
+        }
       } catch (customerError) {
         console.warn('⚠️ Could not fetch assigned customers:', customerError.message);
-        // Try alternative endpoint
         try {
-          const allCustomersRes = await api.get("/customers?limit=1000");
-          const allCustomers = allCustomersRes.data.data?.customers || [];
+          const allCustomersRes = await authAxios.get("/customers?limit=1000");
+          const allCustomers = allCustomersRes.data.data?.items || 
+                              allCustomersRes.data.data?.customers || 
+                              allCustomersRes.data.customers || 
+                              [];
           customersData = allCustomers.filter(customer => 
-            customer.assignedTo?.username === user.username || 
-            customer.assignedTo === user.username ||
-            customer.assignedTo === user.id
+            customer.assignedToUserId === user?.id || 
+            customer.assignedTo === user?.username ||
+            customer.assignedTo === user?.id
           );
           console.log('✅ Fallback customer fetch successful:', customersData.length);
         } catch (fallbackError) {
@@ -282,7 +246,6 @@ const Dashboard = () => {
       
       console.log('📋 Officer Customers:', customersData.length);
       
-      // Calculate stats from assigned customers only
       const totalCustomers = customersData.length;
       const totalLoanPortfolio = customersData.reduce((sum, customer) => 
         sum + parseFloat(customer.loanBalance || 0), 0);
@@ -291,50 +254,19 @@ const Dashboard = () => {
       const activeCustomers = customersData.filter(c => 
         parseFloat(c.arrears || 0) > 0).length;
       
-      // Fetch officer's collections - try multiple endpoints
       let collectionsData = [];
       let totalAmountCollected = 0;
       
       try {
-        // Try /api/transactions/my-collections first
-        const collectionsRes = await api.get(`/transactions/my-collections`);
-        collectionsData = collectionsRes.data.data?.transactions || 
-                         collectionsRes.data.transactions || 
-                         collectionsRes.data || [];
-        console.log('💰 Officer Collections from /transactions/my-collections:', collectionsData.length);
-      } catch (collectionError) {
-        console.warn('⚠️ Could not fetch collections from /transactions/my-collections:', collectionError.message);
-        
-        try {
-          // Try /api/payments/my-collections
-          const paymentsRes = await api.get(`/payments/my-collections`);
-          collectionsData = paymentsRes.data.data?.transactions || 
-                           paymentsRes.data.transactions || 
-                           paymentsRes.data || [];
-          console.log('💰 Officer Collections from /payments/my-collections:', collectionsData.length);
-        } catch (paymentError) {
-          console.warn('⚠️ Could not fetch collections from /payments/my-collections:', paymentError.message);
-          
-          // Fallback: fetch all transactions and filter
-          try {
-            const allTransactionsRes = await api.get("/transactions?limit=1000");
-            const allTransactions = allTransactionsRes.data.data || 
-                                   allTransactionsRes.data.transactions || 
-                                   allTransactionsRes.data || [];
-            collectionsData = allTransactions.filter(transaction =>
-              transaction.createdBy === user.username ||
-              transaction.officerId === user.id ||
-              transaction.userId === user.id ||
-              transaction.initiatedByUserId === user.id
-            );
-            console.log('💰 Officer Collections (fallback):', collectionsData.length);
-          } catch (fallbackError) {
-            console.error('❌ All collection methods failed:', fallbackError.message);
-          }
+        const collectionsRes = await authAxios.get(`/transactions/my-collections`);
+        if (collectionsRes.data.success) {
+          collectionsData = collectionsRes.data.data || [];
+          console.log('💰 Officer Collections:', collectionsData.length);
         }
+      } catch (collectionError) {
+        console.warn('⚠️ Could not fetch collections:', collectionError.message);
       }
       
-      // Calculate total collected by this officer
       const successfulTransactions = collectionsData.filter(
         transaction => transaction.status?.toUpperCase() === 'SUCCESS'
       );
@@ -342,21 +274,21 @@ const Dashboard = () => {
         (sum, transaction) => sum + parseFloat(transaction.amount || 0), 0
       );
       
-      // Fetch officer's recent promises
       let promisesData = [];
       let pendingPromises = 0;
       
       try {
-        const promisesRes = await api.get(`/promises/my-promises`);
-        promisesData = promisesRes.data.data?.promises || promisesRes.data.promises || [];
-        pendingPromises = promisesData.filter(p => 
-          p.status === 'pending' || p.status === 'PENDING').length;
-        console.log('✅ Promises fetched:', promisesData.length);
+        const promisesRes = await authAxios.get(`/promises/my-promises`);
+        if (promisesRes.data.success) {
+          promisesData = promisesRes.data.data || [];
+          pendingPromises = promisesData.filter(p => 
+            p.status === 'pending' || p.status === 'PENDING').length;
+          console.log('✅ Promises fetched:', promisesData.length);
+        }
       } catch (promiseError) {
         console.warn('⚠️ Could not fetch promises:', promiseError.message);
       }
       
-      // Set officer-specific stats
       setStats({
         totalCustomers,
         totalLoanPortfolio,
@@ -366,7 +298,6 @@ const Dashboard = () => {
         pendingPromises
       });
       
-      // Set officer-specific additional stats
       setAdditionalStats({
         roleData: {
           assignedCustomers: totalCustomers,
@@ -388,31 +319,25 @@ const Dashboard = () => {
         }
       });
       
-      // Fetch and set recent transactions
-      await fetchRecentTransactions(api);
+      await fetchRecentTransactions();
       
     } catch (error) {
       console.error('❌ Officer dashboard data fetch failed:', error);
-      console.error('Error details:', error.response?.data || error.message);
-      
-      // Fallback to simple data
-      await fallbackOfficerData(api, user);
+      await fallbackOfficerData();
     }
   };
 
-  const fallbackOfficerData = async (api, user) => {
+  const fallbackOfficerData = async () => {
     try {
       console.log('🔄 Using fallback officer data...');
       
-      // Try to get basic stats
       let totalCustomers = 0;
       let totalLoanPortfolio = 0;
       let totalArrears = 0;
       let activeCustomers = 0;
       
       try {
-        // Try to get dashboard stats for basic info
-        const statsRes = await api.get("/customers/dashboard/stats");
+        const statsRes = await authAxios.get("/customers/dashboard/stats");
         const statsData = statsRes.data.data?.stats || {};
         
         totalCustomers = statsData.totalCustomers || 0;
@@ -423,7 +348,6 @@ const Dashboard = () => {
         console.warn('⚠️ Could not fetch stats:', statsError.message);
       }
       
-      // Set basic stats
       setStats({
         totalCustomers,
         totalLoanPortfolio,
@@ -433,8 +357,7 @@ const Dashboard = () => {
         pendingPromises: 0
       });
       
-      // Fetch recent transactions
-      await fetchRecentTransactions(api);
+      await fetchRecentTransactions();
       
       setAdditionalStats({
         roleData: {
@@ -449,7 +372,6 @@ const Dashboard = () => {
       
     } catch (error) {
       console.error('❌ Fallback also failed:', error);
-      // Set minimal data
       setStats({
         totalCustomers: 0,
         totalLoanPortfolio: 0,
@@ -462,13 +384,10 @@ const Dashboard = () => {
     }
   };
 
-  const fetchGeneralDashboardData = async (api) => {
+  const fetchGeneralDashboardData = async () => {
     try {
-      // Use existing logic for admin/supervisor
-      const statsRes = await api.get("/customers/dashboard/stats");
+      const statsRes = await authAxios.get("/customers/dashboard/stats");
       const statsData = statsRes.data.data?.stats || {};
-      
-      setUserRole(statsData.user?.role);
       
       setStats({
         totalCustomers: statsData.totalCustomers || 0,
@@ -485,22 +404,19 @@ const Dashboard = () => {
         recentActivity: statsData.recentActivity || {}
       });
       
-      // Fetch recent transactions for admin/supervisor
-      await fetchRecentTransactions(api);
+      await fetchRecentTransactions();
       
     } catch (error) {
       console.warn('⚠️ General dashboard fetch failed:', error.message);
-      // Fallback to basic dashboard
-      await fallbackGeneralData(api);
+      await fallbackGeneralData();
     }
   };
 
-  const fallbackGeneralData = async (api) => {
+  const fallbackGeneralData = async () => {
     try {
-      // Get basic counts
       const [customersRes, transactionsRes] = await Promise.all([
-        api.get("/customers?limit=1").catch(() => ({ data: { data: { customers: [] } } })),
-        api.get("/transactions?limit=10").catch(() => ({ data: { data: [] } }))
+        authAxios.get("/customers?limit=1").catch(() => ({ data: { data: { customers: [] } } })),
+        authAxios.get("/transactions?limit=10").catch(() => ({ data: { data: [] } }))
       ]);
       
       const customers = customersRes.data.data?.customers || [];
@@ -519,7 +435,6 @@ const Dashboard = () => {
       
     } catch (error) {
       console.error('❌ General fallback failed:', error);
-      // Set empty data
       setStats({
         totalCustomers: 0,
         totalLoanPortfolio: 0,
@@ -532,7 +447,6 @@ const Dashboard = () => {
     }
   };
 
-  // Add auth debugging on component mount
   useEffect(() => {
     console.log('🏁 Dashboard mounted');
     console.log('🔐 Auth status:', {
@@ -591,16 +505,15 @@ const Dashboard = () => {
   const getStatusColor = (status) => {
     const statusUpper = status?.toUpperCase();
     switch (statusUpper) {
-      case 'SUCCESS': return '#2ecc71'; // Green
-      case 'FAILED': return '#e74c3c'; // Red
-      case 'PENDING': return '#f39c12'; // Orange
-      case 'EXPIRED': return '#95a5a6'; // Grey
-      case 'CANCELLED': return '#7f8c8d'; // Dark Grey
-      default: return '#f39c12'; // Default to orange for pending
+      case 'SUCCESS': return '#2ecc71';
+      case 'FAILED': return '#e74c3c';
+      case 'PENDING': return '#f39c12';
+      case 'EXPIRED': return '#95a5a6';
+      case 'CANCELLED': return '#7f8c8d';
+      default: return '#f39c12';
     }
   };
 
-  // Officer-specific stat cards - ONLY 3 CARDS: Portfolio, Collections, Arrears
   const getStatCards = () => {
     const cards = [
       {
@@ -632,7 +545,6 @@ const Dashboard = () => {
     return cards;
   };
 
-  // Quick actions - officer specific
   const quickActions = [
     {
       label: "My Customers",
@@ -705,7 +617,6 @@ const Dashboard = () => {
 
   return (
     <Box className="dashboard-wrapper">
-      {/* Header with officer info */}
       <Box className="dashboard-header">
         <Box className="header-content">
           <Box>
@@ -726,7 +637,6 @@ const Dashboard = () => {
         </Box>
       </Box>
 
-      {/* Officer Performance Summary - HORIZONTAL CARD */}
       {userRole === 'officer' && additionalStats.roleData && (
         <div className="officer-performance-summary">
           <div className="performance-summary-card">
@@ -747,7 +657,6 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Stats Grid - ONLY 3 CARDS */}
       <div className="minimal-stats-grid">
         {statCards.map((card, idx) => (
           <div key={idx} className="minimal-stat-card">
@@ -772,9 +681,7 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Main Content Area */}
       <Box className="dashboard-main-content">
-        {/* Recent Transactions Section */}
         <Box className="recent-customers-section">
           <div className="recent-customers-card">
             <div className="section-header">
@@ -815,17 +722,14 @@ const Dashboard = () => {
                 </div>
               ) : (
                 recentTransactions.map((transaction, index) => {
-                  // Extract customer info with better fallbacks
                   let customerName = 'Unknown Customer';
                   let phoneNumber = 'N/A';
                   
-                  // Try multiple possible data structures
                   if (transaction.customerId) {
                     if (typeof transaction.customerId === 'object') {
                       customerName = transaction.customerId.name || customerName;
                       phoneNumber = transaction.customerId.phoneNumber || phoneNumber;
                     } else {
-                      // If customerId is just an ID string
                       customerName = transaction.customerName || customerName;
                     }
                   }
@@ -843,12 +747,10 @@ const Dashboard = () => {
                     phoneNumber = transaction.phoneNumber;
                   }
                   
-                  // Get transaction date
                   const transactionDate = transaction.createdAt || 
                                          transaction.date || 
                                          transaction.processedAt;
                   
-                  // Get status and determine badge class
                   const status = transaction.status?.toUpperCase() || 'PENDING';
                   let statusClass = '';
                   
@@ -925,7 +827,6 @@ const Dashboard = () => {
           </div>
         </Box>
 
-        {/* Quick Actions Section */}
         <Box className="quick-actions-section">
           <div className="quick-actions-card">
             <div className="section-header">

@@ -1,8 +1,8 @@
-// src/services/api.js
 import axios from 'axios';
 import authService from './auth.service';
 
-const API_URL = 'http://localhost:5000/api';
+// IMPORTANT: Use the CORRECT port where your backend is running
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5555/api';
 
 // Create axios instance with base URL
 const authAxios = axios.create({
@@ -10,7 +10,7 @@ const authAxios = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // Add timeout
+  timeout: 30000, // Increased timeout for larger requests
 });
 
 // Request interceptor to add token
@@ -18,89 +18,44 @@ authAxios.interceptors.request.use(
   (config) => {
     const token = authService.getToken();
     
-    // DEBUG LOGGING
-    console.log('=== API REQUEST DEBUG ===');
-    console.log('Method:', config.method?.toUpperCase());
-    console.log('URL:', config.url);
-    console.log('Token exists:', !!token);
+    // Debug logging
+    console.log(`🔐 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
     
     if (token) {
-      // Validate token format before sending
-      const parts = token.split('.');
-      if (parts.length === 3) {
-        config.headers.Authorization = `Bearer ${token}`;
-        console.log('✓ Valid JWT token attached (3 parts)');
-      } else {
-        console.error('✗ Invalid token format, not a JWT. Parts:', parts.length);
-        console.log('Token sample:', token.substring(0, 50));
-        
-        // Clean up invalid token
-        authService.logout();
-        
-        // Don't send invalid token
-        delete config.headers.Authorization;
-      }
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('✅ Token attached');
     } else {
-      console.log('⚠️ No token found, request will be unauthenticated');
+      console.log('⚠️ No token available');
     }
     
     return config;
   },
   (error) => {
-    console.error('Request interceptor error:', error);
+    console.error('❌ Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
 
-// Response interceptor to handle errors
+// Response interceptor
 authAxios.interceptors.response.use(
   (response) => {
-    console.log(`✓ ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`);
+    console.log(`✅ API Response: ${response.config.url} - Status: ${response.status}`);
     return response;
   },
   (error) => {
-    if (error.response) {
-      // Server responded with error
-      console.error('✗ API Error:', {
-        status: error.response.status,
-        url: error.config?.url,
-        method: error.config?.method,
-        data: error.response.data
-      });
-      
-      // Handle 401 Unauthorized
-      if (error.response.status === 401) {
-        console.log('Authentication failed, logging out...');
-        authService.logout();
-        
-        // Only redirect if not already on login page
-        if (!window.location.pathname.includes('/login')) {
-          window.location.href = '/login';
-        }
-      }
-    } else if (error.request) {
-      // Request made but no response
-      console.error('✗ Network Error: No response received from server');
-    } else {
-      // Something else happened
-      console.error('✗ Request Error:', error.message);
+    if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
+      console.error('❌ Cannot connect to backend. Make sure it\'s running on port 5555');
+    } else if (error.response?.status === 401) {
+      console.error('❌ 401 Unauthorized - Logging out');
+      authService.logout();
+      window.location.href = '/login';
+    } else if (error.response?.status === 500) {
+      console.error('❌ Server error (500):', error.response?.data?.message || 'Unknown error');
     }
     
     return Promise.reject(error);
   }
 );
 
-// Add a test endpoint function
-export const testConnection = async () => {
-  try {
-    const response = await authAxios.get('/auth/test');
-    return response.data;
-  } catch (error) {
-    console.error('Connection test failed:', error);
-    return null;
-  }
-};
-
-// Export BOTH default and named exports
-export { authAxios }; // Named export
-export default authAxios; // Default export
+export { authAxios };
+export default authAxios;

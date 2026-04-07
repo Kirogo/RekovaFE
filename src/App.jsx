@@ -138,6 +138,8 @@ function App() {
             }
           />
 
+          // In your App.jsx, update the Reports route:
+
           {/* Other protected routes */}
           <Route
             path="/customers"
@@ -182,18 +184,18 @@ function App() {
           <Route
             path="/reports"
             element={
-              <ProtectedRoute requireSupervisor={true}>
+              <ProtectedRoute> {/* Remove requireSupervisor={true} */}
                 <ReportsPage />
               </ProtectedRoute>
             }
           />
 
           {/* Default route - Smart redirect based on role */}
-          <Route 
-            path="/" 
+          <Route
+            path="/"
             element={
               <Navigate to={getDefaultRoute()} replace />
-            } 
+            }
           />
 
           {/* Catch-all route */}

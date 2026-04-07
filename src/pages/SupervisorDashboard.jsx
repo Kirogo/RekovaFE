@@ -1,4 +1,4 @@
-// src/pages/SupervisorDashboard.jsx - COMPLETE FIXED VERSION
+// src/pages/SupervisorDashboard.jsx - COMPLETELY FIXED
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -69,9 +69,9 @@ import {
     BarChart as BarChartIcon,
     Download,
     Download as DownloadIcon,
-    PieChart as PieChartIcon  // ✅ FIXED: Import PieChart as PieChartIcon
+    PieChart as PieChartIcon
 } from "@mui/icons-material";
-import axios from "axios";
+import { authAxios } from '../services/api'; // ✅ Import the configured axios instance
 import authService from "../services/auth.service";
 import "../styles/supervisor-dashboard.css";
 
@@ -98,50 +98,54 @@ const SupervisorDashboard = () => {
     const [reportModalOpen, setReportModalOpen] = useState(false);
     const [reportLoading, setReportLoading] = useState(false);
     const [reportError, setReportError] = useState(null);
-    
+
     // State for collections and customers data
     const [collectionsData, setCollectionsData] = useState([]);
     const [customersData, setCustomersData] = useState([]);
 
-    const getApi = () => {
-        const token = authService.getToken();
-        return axios.create({
-            baseURL: "http://localhost:5000/api",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-    };
+    // ✅ REMOVED: getApi() function - we'll use authAxios directly
 
-    const fetchSupervisorDashboard = async () => {
+    const [retryCount, setRetryCount] = useState(0);
+    const MAX_RETRIES = 3;
+
+    const fetchSupervisorDashboard = async (isRetry = false) => {
         try {
             setLoading(true);
             setError(null);
 
-            const api = getApi();
+            if (isRetry) {
+                console.log(`🔄 Retry attempt ${retryCount + 1}/${MAX_RETRIES}...`);
+            }
 
             console.log('📊 Fetching supervisor dashboard data...');
 
-            const response = await api.get("/supervisor/dashboard");
-            console.log('📈 Supervisor Dashboard Response:', response.data);
+            // Use authAxios with longer timeout for this specific request
+            const response = await authAxios.get('/supervisor/dashboard', {
+                timeout: 60000 // 60 seconds for this specific request
+            });
 
-            if (response.data.success) {
-                setDashboardData(response.data.data);
+            console.log('✅ Dashboard data received:', response.data);
+            setDashboardData(response.data.data || {});
+            setRetryCount(0); // Reset retry count on success
+
+        } catch (error) {
+            console.error('❌ Supervisor dashboard error:', error);
+
+            // Implement retry logic
+            if (retryCount < MAX_RETRIES) {
+                setRetryCount(prev => prev + 1);
+                setTimeout(() => {
+                    fetchSupervisorDashboard(true);
+                }, 2000 * (retryCount + 1)); // Exponential backoff
             } else {
-                throw new Error(response.data.message || 'Failed to load dashboard');
-            }
-
-        } catch (err) {
-            console.error("❌ Supervisor dashboard error:", err.response?.data || err.message);
-            setError(err.response?.data?.message || "Failed to load supervisor dashboard");
-
-            if (err.response?.status === 401) {
-                authService.logout();
-                navigate("/login");
-            } else if (err.response?.status === 403) {
-                setError("Access denied. Supervisor privileges required.");
-                navigate("/dashboard");
+                if (error.code === 'ECONNABORTED') {
+                    setError('Request timeout. The server is taking too long to respond. Please try again.');
+                } else if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
+                    setError('Cannot connect to backend. Please ensure it\'s running on port 5555.');
+                } else {
+                    setError(error.response?.data?.message || 'Failed to load dashboard');
+                }
+                setRetryCount(0);
             }
         } finally {
             setLoading(false);
@@ -150,8 +154,8 @@ const SupervisorDashboard = () => {
 
     const runBulkAssignment = async (loanType) => {
         try {
-            const api = getApi();
-            const response = await api.post("/supervisor/assignments/bulk", {
+            // ✅ Use authAxios
+            const response = await authAxios.post("/supervisor/assignments/bulk", {
                 loanType: loanType || null,
                 limit: 50,
                 excludeAssigned: true
@@ -172,8 +176,8 @@ const SupervisorDashboard = () => {
     const handleLoanTypeClick = async (loanType) => {
         try {
             setSelectedLoanType(loanType);
-            const api = getApi();
-            const response = await api.get(`/supervisor/loan-types/${loanType}/officers`);
+            // ✅ Use authAxios
+            const response = await authAxios.get(`/supervisor/loan-types/${loanType}/officers`);
 
             if (response.data.success) {
                 setSelectedLoanOfficers(response.data.data.officers || []);
@@ -246,7 +250,7 @@ const SupervisorDashboard = () => {
     const fetchOfficerDetails = async (officer) => {
         try {
             console.log('🔍 ========== OFFICER DETAILS FETCH START ==========');
-            
+
             if (!officer) {
                 console.error('❌ No officer data provided');
                 return;
@@ -258,7 +262,7 @@ const SupervisorDashboard = () => {
             else if (officer.id) officerId = officer.id;
             else if (officer.userId) officerId = officer.userId;
             else if (officer.officerId) officerId = officer.officerId;
-            
+
             if (!officerId) {
                 console.error('❌ Could not extract officer ID');
                 alert('Error: Could not identify officer');
@@ -269,17 +273,16 @@ const SupervisorDashboard = () => {
             setSelectedOfficer(officer);
             setOfficerModalOpen(true);
 
-            const api = getApi();
-
+            // ✅ Use authAxios
             // Fetch officer performance data
-            const performanceResponse = await api.get(`/supervisor/officers/performance?officerId=${officerId}`);
+            const performanceResponse = await authAxios.get(`/supervisor/officers/performance?officerId=${officerId}`);
             if (performanceResponse.data.success) {
                 setOfficerDetails(performanceResponse.data.data);
             }
 
             // Fetch activities
             try {
-                const activitiesResponse = await api.get(`/supervisor/officers/performance?officerId=${officerId}&includeActivities=true`);
+                const activitiesResponse = await authAxios.get(`/supervisor/officers/performance?officerId=${officerId}&includeActivities=true`);
                 if (activitiesResponse.data.success) {
                     const activities = (activitiesResponse.data.data.importantActivities || []).map(activity => ({
                         type: safeString(activity.action, 'activity').toLowerCase(),
@@ -297,7 +300,7 @@ const SupervisorDashboard = () => {
 
             // Fetch collections data - Use sample data since endpoint returns 404
             try {
-                const collectionsResponse = await api.get(`/supervisor/officers/collections?officerId=${officerId}`);
+                const collectionsResponse = await authAxios.get(`/supervisor/officers/collections?officerId=${officerId}`);
                 if (collectionsResponse.data.success) {
                     setCollectionsData(collectionsResponse.data.data || []);
                 }
@@ -305,45 +308,45 @@ const SupervisorDashboard = () => {
                 console.warn('⚠️ Using sample collections data');
                 // Use sample data if endpoint doesn't exist
                 setCollectionsData([
-                    { 
-                        date: '2026-02-12', 
-                        transactionId: 'TXN001', 
-                        customerName: 'John Doe', 
-                        phoneNumber: '254712345678', 
-                        amount: 5000, 
-                        status: 'SUCCESS', 
-                        receipt: 'MP123456', 
-                        loanType: 'Digital Loans', 
-                        paymentMethod: 'M-PESA' 
+                    {
+                        date: '2026-02-12',
+                        transactionId: 'TXN001',
+                        customerName: 'John Doe',
+                        phoneNumber: '254712345678',
+                        amount: 5000,
+                        status: 'SUCCESS',
+                        receipt: 'MP123456',
+                        loanType: 'Digital Loans',
+                        paymentMethod: 'M-PESA'
                     },
-                    { 
-                        date: '2026-02-11', 
-                        transactionId: 'TXN002', 
-                        customerName: 'Jane Smith', 
-                        phoneNumber: '254723456789', 
-                        amount: 3500, 
-                        status: 'SUCCESS', 
-                        receipt: 'MP789012', 
-                        loanType: 'Asset Finance', 
-                        paymentMethod: 'M-PESA' 
+                    {
+                        date: '2026-02-11',
+                        transactionId: 'TXN002',
+                        customerName: 'Jane Smith',
+                        phoneNumber: '254723456789',
+                        amount: 3500,
+                        status: 'SUCCESS',
+                        receipt: 'MP789012',
+                        loanType: 'Asset Finance',
+                        paymentMethod: 'M-PESA'
                     },
-                    { 
-                        date: '2026-02-10', 
-                        transactionId: 'TXN003', 
-                        customerName: 'Bob Johnson', 
-                        phoneNumber: '254734567890', 
-                        amount: 7500, 
-                        status: 'SUCCESS', 
-                        receipt: 'MP345678', 
-                        loanType: 'SME', 
-                        paymentMethod: 'Bank Transfer' 
+                    {
+                        date: '2026-02-10',
+                        transactionId: 'TXN003',
+                        customerName: 'Bob Johnson',
+                        phoneNumber: '254734567890',
+                        amount: 7500,
+                        status: 'SUCCESS',
+                        receipt: 'MP345678',
+                        loanType: 'SME',
+                        paymentMethod: 'Bank Transfer'
                     }
                 ]);
             }
 
             // Fetch customers data - Use sample data since endpoint returns 404
             try {
-                const customersResponse = await api.get(`/supervisor/officers/customers?officerId=${officerId}`);
+                const customersResponse = await authAxios.get(`/supervisor/officers/customers?officerId=${officerId}`);
                 if (customersResponse.data.success) {
                     setCustomersData(customersResponse.data.data || []);
                 }
@@ -351,37 +354,37 @@ const SupervisorDashboard = () => {
                 console.warn('⚠️ Using sample customers data');
                 // Use sample data if endpoint doesn't exist
                 setCustomersData([
-                    { 
-                        name: 'John Doe', 
-                        phone: '254712345678', 
-                        loanType: 'Digital Loans', 
-                        loanAmount: 50000, 
-                        arrears: 5000, 
-                        status: 'OVERDUE', 
+                    {
+                        name: 'John Doe',
+                        phone: '254712345678',
+                        loanType: 'Digital Loans',
+                        loanAmount: 50000,
+                        arrears: 5000,
+                        status: 'OVERDUE',
                         lastContact: '2026-02-12',
                         nextFollowUp: '2026-02-13',
                         promiseAmount: 5000,
                         promiseDate: '2026-02-15'
                     },
-                    { 
-                        name: 'Jane Smith', 
-                        phone: '254723456789', 
-                        loanType: 'Asset Finance', 
-                        loanAmount: 150000, 
-                        arrears: 0, 
-                        status: 'CURRENT', 
+                    {
+                        name: 'Jane Smith',
+                        phone: '254723456789',
+                        loanType: 'Asset Finance',
+                        loanAmount: 150000,
+                        arrears: 0,
+                        status: 'CURRENT',
                         lastContact: '2026-02-10',
                         nextFollowUp: '2026-02-17',
                         promiseAmount: null,
                         promiseDate: null
                     },
-                    { 
-                        name: 'Bob Johnson', 
-                        phone: '254734567890', 
-                        loanType: 'SME', 
-                        loanAmount: 200000, 
-                        arrears: 15000, 
-                        status: 'OVERDUE', 
+                    {
+                        name: 'Bob Johnson',
+                        phone: '254734567890',
+                        loanType: 'SME',
+                        loanAmount: 200000,
+                        arrears: 15000,
+                        status: 'OVERDUE',
                         lastContact: '2026-02-09',
                         nextFollowUp: '2026-02-14',
                         promiseAmount: 7500,
@@ -428,33 +431,32 @@ const SupervisorDashboard = () => {
         setReportLoading(false);
     };
 
-    // ✅ FIXED: Download report via BACKEND API - No frontend ReportGenerator
+    // ✅ FIXED: Download report via BACKEND API - using authAxios
     const handleDownloadReport = async (format) => {
         try {
             setReportLoading(true);
             setReportError(null);
-            
+
             // Get officer ID
             let officerId = null;
             if (selectedOfficer?._id) officerId = selectedOfficer._id;
             else if (selectedOfficer?.id) officerId = selectedOfficer.id;
             else if (selectedOfficer?.userId) officerId = selectedOfficer.userId;
-            
+
             if (!officerId) {
                 setReportError('Could not identify officer');
                 setReportLoading(false);
                 return;
             }
 
-            const officerName = (selectedOfficer?.fullName || 
-                selectedOfficer?.name || 
+            const officerName = (selectedOfficer?.fullName ||
+                selectedOfficer?.name ||
                 selectedOfficer?.username || 'Officer').replace(/\s+/g, '_');
-            
+
             const dateStr = new Date().toISOString().split('T')[0];
             const fileName = `${officerName}_Performance_Report_${dateStr}`;
 
-            const api = getApi();
-            
+            // ✅ Use authAxios
             // Prepare data for backend report generation
             const requestData = {
                 officerData: {
@@ -509,10 +511,10 @@ const SupervisorDashboard = () => {
             console.log(`📥 Requesting ${format.toUpperCase()} report from backend...`);
 
             // ✅ CALL BACKEND API TO GENERATE REPORT
-            const response = await api.post(
+            const response = await authAxios.post(
                 `/reports/officer/${officerId}/${format}`,
                 requestData,
-                { 
+                {
                     responseType: 'blob',
                     timeout: 60000 // 60 seconds timeout for large reports
                 }
@@ -521,7 +523,7 @@ const SupervisorDashboard = () => {
             // Determine file extension
             let extension = '';
             let mimeType = '';
-            switch(format) {
+            switch (format) {
                 case 'excel':
                     extension = 'xlsx';
                     mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -548,17 +550,17 @@ const SupervisorDashboard = () => {
             link.click();
             link.parentNode.removeChild(link);
             window.URL.revokeObjectURL(url);
-            
+
             console.log(`✅ ${format.toUpperCase()} report downloaded successfully`);
-            
+
             // Close modal after successful download
             setTimeout(() => {
                 handleCloseReportModal();
             }, 1500);
-            
+
         } catch (err) {
             console.error('❌ Error downloading report:', err);
-            
+
             // Try to extract error message from blob response
             let errorMessage = 'Failed to generate report. Please try again.';
             try {
@@ -575,7 +577,7 @@ const SupervisorDashboard = () => {
             } catch (e) {
                 errorMessage = err.message || errorMessage;
             }
-            
+
             setReportError(errorMessage);
         } finally {
             setReportLoading(false);
@@ -1549,7 +1551,7 @@ const SupervisorDashboard = () => {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <div className="officer-metric-card-compact">
                                                         <div className="metric-card-header-compact light-header">
                                                             <AssignmentTurnedIn sx={{ fontSize: 14, color: '#2c3e50' }} />
@@ -1709,13 +1711,13 @@ const SupervisorDashboard = () => {
                                                         <span className="metric-bar-label">Active Rate</span>
                                                         <div className="metric-bar-container-compact">
                                                             <div className="metric-bar-fill-compact" style={{
-                                                                width: `${officerDetails?.customers?.totalAssigned ? 
+                                                                width: `${officerDetails?.customers?.totalAssigned ?
                                                                     ((safeNumber(officerDetails?.customers?.active) / safeNumber(officerDetails?.customers?.totalAssigned)) * 100) : 0}%`,
                                                                 backgroundColor: '#27ae60'
                                                             }}></div>
                                                         </div>
                                                         <span className="metric-bar-percentage">
-                                                            {officerDetails?.customers?.totalAssigned ? 
+                                                            {officerDetails?.customers?.totalAssigned ?
                                                                 ((safeNumber(officerDetails?.customers?.active) / safeNumber(officerDetails?.customers?.totalAssigned)) * 100).toFixed(0) : 0}%
                                                         </span>
                                                     </div>
@@ -1723,13 +1725,13 @@ const SupervisorDashboard = () => {
                                                         <span className="metric-bar-label">Overdue Rate</span>
                                                         <div className="metric-bar-container-compact">
                                                             <div className="metric-bar-fill-compact" style={{
-                                                                width: `${officerDetails?.customers?.totalAssigned ? 
+                                                                width: `${officerDetails?.customers?.totalAssigned ?
                                                                     ((safeNumber(officerDetails?.customers?.overdue) / safeNumber(officerDetails?.customers?.totalAssigned)) * 100) : 0}%`,
                                                                 backgroundColor: '#e74c3c'
                                                             }}></div>
                                                         </div>
                                                         <span className="metric-bar-percentage warning-text">
-                                                            {officerDetails?.customers?.totalAssigned ? 
+                                                            {officerDetails?.customers?.totalAssigned ?
                                                                 ((safeNumber(officerDetails?.customers?.overdue) / safeNumber(officerDetails?.customers?.totalAssigned)) * 100).toFixed(0) : 0}%
                                                         </span>
                                                     </div>
@@ -1737,7 +1739,7 @@ const SupervisorDashboard = () => {
 
                                                 <div className="customer-distribution-compact">
                                                     <div className="distribution-header-compact">
-                                                        <PieChartIcon sx={{ fontSize: 14, color: '#2c3e50' }} />  {/* ✅ FIXED: Using PieChartIcon instead of PieChart */}
+                                                        <PieChartIcon sx={{ fontSize: 14, color: '#2c3e50' }} />
                                                         <span>Status Distribution</span>
                                                     </div>
                                                     <div className="distribution-legend-compact">
