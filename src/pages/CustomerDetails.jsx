@@ -1,5 +1,6 @@
+// src/pages/CustomerDetails.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
     Box,
     Typography,
@@ -101,6 +102,15 @@ const CustomerDetails = () => {
 
     // Tab state
     const [activeTab, setActiveTab] = useState('customers');
+    
+    // Handle query parameter for tab selection
+    const [searchParams] = useSearchParams();
+    useEffect(() => {
+        const tabParam = searchParams.get('activeTab');
+        if (tabParam && ['customers', 'arrears', 'promises'].includes(tabParam)) {
+            setActiveTab(tabParam);
+        }
+    }, [searchParams]);
 
     // Transaction modal states
     const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -401,30 +411,6 @@ const CustomerDetails = () => {
         }
     };
 
-    const fetchCustomerPromises = async () => {
-        if (!id || id === 'undefined') return;
-
-        try {
-            setPromisesLoading(true);
-
-            const response = await authAxios.get(`/promises/customer/${id}?limit=5`);
-
-            if (response.data.success) {
-                setPromises(response.data.data.promises || []);
-            }
-        } catch (error) {
-            console.error('Error fetching promises:', error.message);
-
-            if (error.response?.status === 401) {
-                console.log('⚠️ 401 Unauthorized - logging out');
-                authService.logout();
-                navigate('/login');
-                return;
-            }
-        } finally {
-            setPromisesLoading(false);
-        }
-    };
 
     const syncLocalComments = async () => {
         const commentsKey = `customer_comments_${id}`;
@@ -749,6 +735,42 @@ const CustomerDetails = () => {
         return statusMap[status] || 'pending';
     };
 
+    const fetchCustomerPromises = async () => {
+    if (!id || id === 'undefined') return;
+
+    try {
+        setPromisesLoading(true);
+        console.log('🔄 Fetching promises for customer:', id);
+
+        const response = await authAxios.get(`/promises/customer/${id}?limit=10`);
+
+        console.log('📦 Promises API Response:', response.data);
+
+        if (response.data.success) {
+            // The API returns data as an array directly
+            const promisesData = Array.isArray(response.data.data) ? response.data.data : [];
+            console.log('✅ Loaded promises:', promisesData.length);
+            setPromises(promisesData);
+        } else {
+            console.warn('⚠️ API returned success: false for promises');
+            setPromises([]);
+        }
+    } catch (error) {
+        console.error('❌ Error fetching promises:', error.message);
+
+        if (error.response?.status === 401) {
+            console.log('⚠️ 401 Unauthorized - logging out');
+            authService.logout();
+            navigate('/login');
+            return;
+        }
+        
+        setPromises([]);
+    } finally {
+        setPromisesLoading(false);
+    }
+};
+
     const createPromise = async () => {
         console.log('🔄 createPromise called with:', promiseData);
         console.log('📱 Customer ID:', id);
@@ -803,26 +825,34 @@ const CustomerDetails = () => {
     };
 
     const updatePromiseStatus = async (promiseId, status) => {
-        try {
-            const response = await authAxios.patch(`/promises/${promiseId}/status`, { status });
+    try {
+        console.log(`🔄 Updating promise ${promiseId} to ${status}`);
+        
+        // Use the promise ID (not the database id) for the update
+        const response = await authAxios.patch(`/promises/${promiseId}/status`, { status });
 
-            if (response.data.success) {
-                fetchCustomerPromises();
-                alert(`Promise marked as ${status.toLowerCase()}`);
-            }
-        } catch (error) {
-            console.error('Error updating promise:', error);
+        console.log('📦 Update response:', response.data);
 
-            if (error.response?.status === 401) {
-                console.log('⚠️ 401 Unauthorized - logging out');
-                authService.logout();
-                navigate('/login');
-                return;
-            }
-
-            setError(error.response?.data?.message || 'Failed to update promise');
+        if (response.data.success) {
+            await fetchCustomerPromises(); // Refresh the promises list
+            alert(`Promise marked as ${status.toLowerCase()}`);
+        } else {
+            setError(response.data.message || 'Failed to update promise');
         }
-    };
+    } catch (error) {
+        console.error('Error updating promise:', error);
+
+        if (error.response?.status === 401) {
+            console.log('⚠️ 401 Unauthorized - logging out');
+            authService.logout();
+            navigate('/login');
+            return;
+        }
+
+        setError(error.response?.data?.message || 'Failed to update promise');
+        setTimeout(() => setError(null), 5000);
+    }
+};
 
     const handleProcessPayment = () => {
         console.log('Opening payment modal');

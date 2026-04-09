@@ -1,9 +1,10 @@
+// src/services/auth.service.js
 import axios from 'axios';
 
-// IMPORTANT: Use the SAME port as your backend
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5555/api';
-
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 const AUTH_STORAGE_KEY = "rekova_auth_data";
+
+console.log('🔧 Auth Service initialized with API_URL:', API_URL);
 
 const authService = {
   _getStoredAuth() {
@@ -46,10 +47,6 @@ const authService = {
       console.log(`   Token: ${dataToStore.token ? dataToStore.token.substring(0, 20) + '...' : 'MISSING'}`);
       console.log(`   User: ${dataToStore.user?.username || 'MISSING'}`);
       
-      // Set default axios headers
-      axios.defaults.headers.common['Authorization'] = `Bearer ${authData.token}`;
-      console.log('✅ Authorization header set on axios defaults');
-      
       return true;
     } catch (error) {
       console.error('❌ Error storing auth data:', error);
@@ -59,7 +56,6 @@ const authService = {
   
   _clearAuth() {
     localStorage.removeItem(AUTH_STORAGE_KEY);
-    delete axios.defaults.headers.common['Authorization'];
   },
   
   async login(username, password) {
@@ -67,7 +63,6 @@ const authService = {
       console.log('🔐 Login attempt for:', username);
       console.log('Sending to:', `${API_URL}/auth/login`);
       
-      // Use regular axios for login (no auth header needed)
       const response = await axios.post(`${API_URL}/auth/login`, {
         username: String(username).trim(),
         password: String(password).trim()
@@ -78,7 +73,7 @@ const authService = {
         }
       });
 
-      console.log('✅ Login response received');
+      console.log('✅ Login response received:', response.status);
       
       const data = response.data;
 
@@ -89,7 +84,7 @@ const authService = {
         };
       }
 
-      // Store auth data - backend returns user data directly in data.data
+      // Store auth data
       const userData = {
         token: data.data.token,
         user: {
@@ -205,10 +200,8 @@ const authService = {
   },
 
   initialize() {
-    const token = this.getToken();
-    if (token && this.isAuthenticated()) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    }
+    // Just log initialization, don't set headers here
+    console.log('🔧 Auth service initialized');
   }
 };
 

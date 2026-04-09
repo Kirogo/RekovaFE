@@ -11,6 +11,39 @@
   margin: 0;
 }
 
+/* Three-Section Layout */
+.promises-page-main-layout {
+  display: flex;
+  gap: 1.5rem;
+  width: 100%;
+  height: auto;
+  align-items: flex-start;
+}
+
+.promises-page-left-section {
+  flex: 0 0 70%;
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.promises-page-right-section {
+  flex: 0 0 30%;
+  width: 30%;
+  position: sticky;
+  top: 90px;
+  height: fit-content;
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+}
+
+/* Ensure right section calendar doesn't overflow */
+.promises-page-right-section .promises-calendar-container {
+  width: 100%;
+  margin-bottom: 0;
+}
+
 /* Ensure all text uses Century Gothic */
 .promises-page-wrapper * {
   font-family: 'Century Gothic', 'CenturyGothic', 'AppleGothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
@@ -836,8 +869,40 @@
   border-color: #3498db;
 }
 
-/* ==================== RESPONSIVE DESIGN ==================== */
+/* ==================== THREE-SECTION LAYOUT RESPONSIVE ==================== */
+
+@media (max-width: 1400px) {
+  .promises-page-main-layout {
+    gap: 1.25rem;
+  }
+
+  .promises-page-left-section {
+    flex: 0 0 68%;
+    width: 68%;
+  }
+
+  .promises-page-right-section {
+    flex: 0 0 32%;
+    width: 32%;
+  }
+}
+
 @media (max-width: 1200px) {
+  .promises-page-main-layout {
+    gap: 1rem;
+  }
+
+  .promises-page-left-section {
+    flex: 0 0 65%;
+    width: 65%;
+  }
+
+  .promises-page-right-section {
+    flex: 0 0 35%;
+    width: 35%;
+    top: 80px;
+  }
+
   .customer-stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.625rem;
@@ -854,6 +919,24 @@
 }
 
 @media (max-width: 992px) {
+  .promises-page-main-layout {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .promises-page-left-section {
+    flex: 1;
+    width: 100%;
+  }
+
+  .promises-page-right-section {
+    flex: 1;
+    width: 100%;
+    position: static;
+    max-height: none;
+    order: -1;
+  }
+
   .customer-section-header {
     flex-direction: column;
     gap: 0.75rem;
@@ -866,10 +949,6 @@
   
   .promises-page-search-group {
     grid-column: span 2;
-  }
-  
-  .table-container-wrapper {
-    overflow-x: auto;
   }
 }
 

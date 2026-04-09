@@ -555,6 +555,54 @@ body {
 }
 
 /* UPCOMING PROMISE ITEM */
+/* Add to src/styles/Promises.css */
+.loan-type-badge-small {
+  display: inline-block;
+  padding: 2px 8px;
+  background-color: #f5f0ea;
+  color: #5c4730;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.promises-page-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.promises-page-status-badge.warning {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.promises-page-status-badge.success {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.promises-page-status-badge.error {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.promises-page-overdue-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 6px;
+  background-color: #fee2e2;
+  color: #dc2626;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 600;
+}
+
 .upcoming-promise-item-sidebar {
   display: flex;
   align-items: center;
